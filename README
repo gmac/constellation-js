@@ -1,0 +1,15 @@
+constellation.js
+
+A point-based grid layout and geometry search application by Greg MacWilliam.
+
+This application explores geometry management for a 2D motion grid, inspired by the geometry system built for Lassie Adventure Studio. The Lassie engine never matured beyond a point grid with rectangle-based point trapping and free motion regions. Constellation intends to reproduce these features using a polygon-based grid. Current application features include:
+
+ - Point and polygon grid creation.
+ - Pathfinding using A-star.
+ - Polygon hit test with ray scanning.
+ - Point snapping for line segments.
+ - Nearest-neighbor search.
+ - Saved layouts via local storage.
+
+
+Released under MIT license. Enjoy.

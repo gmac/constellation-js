@@ -1,7 +1,7 @@
 /**
 * constellation.js
-* A point-based grid layout and geometry search application.
-* By Greg MacWilliam.
+* A point-based grid layout and geometry search application by Greg MacWilliam.
+* Released under MIT license.
 */
 
 // JSLint options:
