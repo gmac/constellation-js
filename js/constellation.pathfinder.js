@@ -55,8 +55,8 @@
 			length: (path ? path.length : 0),
 			cycles: cycles,
 			nodes: (path ? path.nodes : [])
-		}
-	}
+		};
+	};
 	
 	/**
 	* Sort method for prioritizing a search queue of Path objects.
@@ -122,31 +122,32 @@
 					// Reject loops.
 					if (!!searchNode && !searchPath.contains( searchNode )) {
 						branchLength = searchPath.length + geom.distance( startNode, searchNode );
-						branchEstimate = branchLength + geom.distance( searchNode, goalNode );
-				
-						// Test path fitness.
-						if (branchLength <= (distances[searchNode.id] || branchLength) && // If this is as good or better a path to the working node
-							(!bestPath || branchEstimate < bestPath.length)) { // AND if best path has not been found or is beat by the working estimate
-					
-							// Log shortest route to working node.
+
+						// Test branch fitness.
+						if (branchLength <= (distances[searchNode.id] || branchLength)) {
 							distances[searchNode.id] = branchLength;
+							branchEstimate = branchLength + geom.distance( searchNode, goalNode );
+							
+							// Test for viable path to goal.
+							if (!bestPath || branchEstimate < bestPath.length) {
+	
+								// Create a new branch path extended to search node.
+								branchPath = searchPath.copy(branchLength, branchEstimate);
+								branchPath.nodes.push( searchNode );
 					
-							// Create new branch path and append working node.
-							branchPath = searchPath.copy(branchLength, branchEstimate);
-							branchPath.nodes.push( searchNode );
-					
-							// Test if goal has been reached.
-							if (searchNode.id === goalNode.id) {
-								if (bestPath) {
-									// Dispose of any existing completed path.
-									bestPath.dispose();
+								// Test if goal has been reached.
+								if (searchNode.id === goalNode.id) {
+									if (bestPath) {
+										// Dispose of any existing completed path.
+										bestPath.dispose();
+									}
+									bestPath = branchPath; // Retain best completed path.
+								} else {
+									queue.push( branchPath ); // Queue additional search path.
 								}
-								bestPath = branchPath; // Retain best complete path.
-							} else {
-								queue.push( branchPath ); // Queue additional search paths.
-							}
 					
-							branchPath = null;
+								branchPath = null;
+							}
 						}
 					}
 			
@@ -156,8 +157,7 @@
 		
 			// Dispose of search path.
 			searchPath.dispose();
-			searchPath = null;
-			startNode = null;
+			searchPath = startNode = null;
 
 			// Sort queue by estimate length, longest to shortest.
 			queue.sort(Path.prioritize);
@@ -165,10 +165,7 @@
 		}
 	
 		// Cleanup local references.
-		queue = null;
-		searchGrid = null;
-		distances = null;
-		goalNode = null;
+		queue = searchGrid = distances = goalNode = null;
 	
 		// Return best discovered path.
 		return Path.report(bestPath, cycles);

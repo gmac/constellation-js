@@ -1005,4 +1005,16 @@ var constellation = (function() {
 $(document).ready(function() {
 	"use strict";
 	constellation.init();
+	
+	$('#info button').click(function(evt) {
+		evt.preventDefault();
+		var info = $('#info div');
+		if (info.is(':visible')) {
+			info.hide();
+			$(this).text('info');
+		} else {
+			info.show();
+			$(this).text('close');
+		}
+	});
 });

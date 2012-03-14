@@ -62,3 +62,34 @@ body {
 	position:absolute;
 	text-align:center;
 }
+
+/* Info
+* -------------------------- */
+#info {
+	bottom:10px;
+	position:absolute;
+	right:10px;
+}
+#info div {
+	background-color:rgba(225,225,225,0.9);
+	border-radius:10px;
+	bottom:0;
+	padding:5px 25px 25px;
+	position:absolute;
+	right:0;
+	width:400px;
+}
+#info button {
+	bottom:10px;
+	position:absolute;
+	right:10px;
+}
+#info h1 {
+	font-size:20px;
+}
+#info h2 {
+	font-size:14px;
+}
+#info li {
+	margin:10px 0;
+}
