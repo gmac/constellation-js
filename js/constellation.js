@@ -184,9 +184,7 @@ var constellation = (function() {
 		destroy: function() {
 			// Cleanup node references.
 			if (this.nodes) {
-				while (this.nodes.length) {
-					this.nodes.pop();
-				}
+				this.nodes.length = 0;
 				this.nodes = null;
 			}
 			

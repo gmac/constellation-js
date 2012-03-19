@@ -42,10 +42,7 @@
 			return false;
 		},
 		dispose: function() {
-			var count = this.nodes.length;
-			while (count-- > 0) {
-				this.nodes.pop();
-			}
+			this.nodes.length = 0;
 			this.nodes = null;
 		}
 	};
