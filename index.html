@@ -5,33 +5,56 @@
 	<title>constellation.js</title>
 	<link href="css/constellation.css" rel="stylesheet" media="screen"/>
 </head>
-<body>
+<body ng-app="constellation">
 	
-	<div id="info">
-		<div>
-			<h1>constellation.js</h1>
-			<p>A point-based grid builder and search application.</p>
-
-			<h2>Controls:</h2>
-			<ol>
-				<li>Click in the white space to add nodes, then hold the shift key and click nodes to select them.</li>
-				<li>Select multiple nodes and "join" them into a grid.</li>
-				<li>Three or more nodes may be selected to form a polygon.</li>
-				<li>Use the advanced search features to find a path between two nodes, test the intersection of a node within a polygon, snap a node into the existing grid, or find a node's nearest neighbor.</li>
-				<li>Save your grid for easy reuse!</li>
-			</ol>
+	<div id="constellation">
+		<div class="const-toolbar">
+			<div class="const-tools" id="tools">
+				<button class="action-add">Add Point (a)</button>
+				<button class="action-join">Join Points (j)</button>
+				<button class="action-split">Split Points (b)</button>
+				<button class="action-polygon">Make Polygon (p)</button>
+				<button class="action-delete">Remove selected item (del)</button>
+				<div class="toggle-menu">
+					<h2>Functions</h2>
+					<ul>
+						<li>Find path</li>
+						<li>Find nearest point</li>
+						<li>Snap point to grid</li>
+						<li>Hittest point to polygons</li>
+					</ul>
+				</div>
+				<div class="toggle-menu">
+					<h2>Canvas</h2>
+					<ul>
+						<li>
+							Width: <input type="text" placeholder="auto" id="view-width"/>
+							Height: <input type="text" placeholder="auto" id="view-height"/>
+						</li>
+						<li>
+							Background: <input type="text"/>
+							<button>Reload</button>
+						</li>
+					</ul>
+				</div>
+			</div>
 		</div>
-		<button>close</button>
+		<div class="const-canvas" id="grid"></div>
 	</div>
-	
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
-<!-- Core -->
-<script type="text/javascript" src="js/json2.js"></script>
-<script type="text/javascript" src="js/constellation.js"></script>
-<script type="text/javascript" src="js/constellation.pathfinder.js"></script>
-<!-- Plugin Extras -->
-<script type="text/javascript" src="js/constellation.gridsnap.js"></script>
-<script type="text/javascript" src="js/constellation.polyhits.js"></script>
-<script type="text/javascript" src="js/constellation.nearestnode.js"></script>
+	<script type="text/template" id="grid-view">
+		<svg>
+			<% _.each(lines, function(n) { %>
+			<line x1="<%= n.x1 %>" y1="<%= n.y1 %>" x2="<%= n.x2 %>" y2="<%= n.y2 %>" class="<%= n.id %>" style="stroke:#000;stroke-width:2;"/>
+			<% }); %>
+		</svg>
+		<ul>
+			<% _.each(nodes, function(n) { %>
+			<li style="left:<%= n.x %>px;top:<%= n.y %>px;" id="<%= n.id %>"><span></span></li>
+			<% }); %>
+		</ul>
+	</script>
+
+<script src="js/lib/require.js" data-main="js/main"></script>
+
 </body>
 </html>
