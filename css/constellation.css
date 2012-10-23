@@ -84,8 +84,7 @@ body {
 	position: relative;
 	z-index: 1;
 }
-#constellation .const-canvas svg,
-#constellation .const-canvas ul {
+#constellation .const-canvas svg {
 	height: 100%;
 	left: 0;
 	overflow: hidden;
@@ -109,12 +108,12 @@ body {
 	cursor: default;
 	display:block;
 	font: bold 10px/10px Arial,sans-serif;
-	height: 6px;
-	left: -3px;
+	height: 10px;
+	left: -5px;
 	position: absolute;
 	text-align: center;
-	top: -3px;
-	width: 6px;
+	top: -5px;
+	width: 10px;
 }
 #constellation .const-canvas li.select span {
 	background-color: #ccc;

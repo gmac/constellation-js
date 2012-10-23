@@ -2,21 +2,21 @@ define([
 	'mod/grid-model',
 	'mod/grid-selection-model'
 ],
-function( grid, selection ) {
+function( gridModel, selectModel ) {
 	
 	return {
 		joinNodes: function() {
-			grid.joinNodes( selection.getNodeSelection() );
+			gridModel.joinNodes( selectModel.nodes );
 		},
 		splitNodes: function() {
-			grid.splitNodes( selection.getNodeSelection() );
+			gridModel.splitNodes( selectModel.nodes );
 		},
 		makePolygon: function() {
-			console.log('polygon');
+			gridModel.addPolygon( selectModel.nodes );
 		},
 		deleteGeometry: function() {
-			grid.removeNodes( selection.getNodeSelection() );
-			selection.deselectAllNodes();
+			gridModel.removeNodes( selectModel.nodes );
+			selectModel.deselectAllNodes();
 		}
 	};
 });

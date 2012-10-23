@@ -3,19 +3,19 @@
 */
 define([
 	'lib/jquery',
-	'mod/tools-view'
+	'mod/grid-controller'
 ],
-function( $, toolsView ) {
+function( $, gridController ) {
 	
 	var _enabled = true;
 	
 	$(window).on('keydown', function( evt ) {
 		if (_enabled) {
 			switch ( evt.which ) {
-				case 8: toolsView.deleteGeometry(); break; // "delete"
-				case 66: toolsView.splitNodes(); break; // "b"
-				case 74: toolsView.joinNodes(); break; // "j"
-				case 80: toolsView.makePolygon(); break; // "p"
+				case 8: gridController.deleteGeometry(); break; // "delete"
+				case 66: gridController.splitNodes(); break; // "b"
+				case 74: gridController.joinNodes(); break; // "j"
+				case 80: gridController.makePolygon(); break; // "p"
 				default: return true;
 			}
 			//console.log( evt.which );

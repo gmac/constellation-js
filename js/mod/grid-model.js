@@ -28,7 +28,7 @@ function( Backbone, _, dataService ) {
 	
 	function PolygonModel( id, nodes ) {
 		this.id = id;
-		this.nodes = nodes;
+		this.nodes = nodes.slice();
 		this.sides = nodes.length;
 	}
 	
@@ -74,11 +74,20 @@ function( Backbone, _, dataService ) {
 			this.update();
 		},
 		
+		getNodes: function() {
+			return _data.nodes;
+		},
+		
+		getPolys: function() {
+			return _data.polys;
+		},
+		
 		// Adds a new node to the grid at the specified X and Y coordinates.
 		addNode: function( x, y ) {
 			var node = new NodeModel('n'+ _data.icount++, x, y);
 			_data.nodes[ node.id ] = node;
 			this.update();
+			return node.id;
 		},
 		
 		getNodeById: function( id ) {
@@ -117,6 +126,7 @@ function( Backbone, _, dataService ) {
 				});
 
 				this.update();
+				return true;
 			}
 		},
 		
@@ -184,6 +194,13 @@ function( Backbone, _, dataService ) {
 		},
 		
 		removeNodes: function( group ) {
+			var i;
+			
+			// Normalize an array of ids into an object hashtable.
+			if ( group instanceof Array ) {
+				group = _.object(group, group);
+			}
+			
 			for ( var i in group ) {
 				if ( _data.nodes.hasOwnProperty(i) ) {
 					this.detachNode(i);
@@ -193,10 +210,22 @@ function( Backbone, _, dataService ) {
 			this.update();
 		},
 		
-		addPolygon: function( nodeIds ) {
-			var poly = new PolygonModel( 'p'+ _data.icount++, nodes );
-			_data.polys[ poly.id ] = poly;
-			this.update();
+		addPolygon: function( group ) {
+			if (group.length >= 3) {
+				var poly = new PolygonModel( 'p'+ _data.icount++, group );
+				_data.polys[ poly.id ] = poly;
+				//console.log(_data.polys);
+				this.update();
+				return poly.id;
+			}
+			return null;
+		},
+		
+		getPolygonById: function( id ) {
+			if ( _data.polys.hasOwnProperty(id) ) {
+				return _data.polys[ id ];
+			}
+			return null;
 		},
 		
 		removePolygon: function( id ) {
@@ -208,10 +237,6 @@ function( Backbone, _, dataService ) {
 		
 		update: function() {
 			this.trigger( this.RENDER );
-		},
-		
-		getData: function() {
-			return _data;
 		}
 	});
 	

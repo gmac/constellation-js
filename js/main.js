@@ -4,14 +4,14 @@ requirejs.config({
 
 define([
 	'mod/grid-view',
-	'mod/tools-view',
-	'mod/tools-keyboard'
+	'mod/tools-view'
 ],
 function( gridView, toolsView ) {
 	
 	require(['mod/grid-model'], function(model) {
-		model.addNode(100, 100);
-		model.addNode(200, 200);
+		var join = [model.addNode(100, 100), model.addNode(200, 200), model.addNode(100, 300)];
+		model.joinNodes( join );
+		model.addPolygon( join );
 	});
 	
 });

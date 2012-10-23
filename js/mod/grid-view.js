@@ -20,21 +20,53 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 		// View initializer.
 		initialize: function() {
 			var self = this;
-			gridModel.on( gridModel.RENDER, this.render, this );
-			gridModel.on( gridModel.CHANGE, this.setFrame, this );
-			windowService.on( windowService.RESIZE, this.setFrame, this );
-			selectModel.on( selectModel.UPDATE, this.setSelection, this );
-			this.setFrame();
+			// Generate grid view template.
+			self.tmpl = _.template( $('#grid-view').html() );
+			
+			// Add event listeners.
+			gridModel.on( gridModel.RENDER, self.render, self );
+			gridModel.on( gridModel.CHANGE, self.setFrame, self );
+			windowService.on( windowService.RESIZE, self.setFrame, self );
+			selectModel.on( selectModel.UPDATE, self.setSelection, self );
+			
+			// Set initial viewport.
+			self.setFrame();
+		},
+		
+		getPolygonPath: function( model ) {
+			var draw = '',
+				node,
+				i;
+			
+			for ( i = 0; i < model.sides; i++ ) {
+				node = gridModel.getNodeById( model.nodes[i] );
+				
+				if (node) {
+					draw += (i <= 0 ? 'M' : 'L') + node.x +' '+ node.y +' ';
+				}
+			}
+			return draw+'Z';
 		},
 		
 		// Renders all nodes, lines, and polygons within the display.
 		render: function() {
-			var lines = {},
-				nodes = gridModel.getData().nodes,
+			var self = this,
+				lines = {},
+				polys = {},
+				nodes = gridModel.getNodes(),
 				foreign,
 				i;
 			
-			// Assemble line/beam relationships.
+			// Assemble polygon drawings.
+			_.each(gridModel.getPolys(), function(poly, id) {
+				polys[ poly.id ] = {
+					id: poly.id,
+					clss: poly.nodes.join(' '),
+					d: self.getPolygonPath(poly)
+				};
+			});
+			
+			// Assemble node drawings.
 			_.each(nodes, function(local, id) {
 				for (i in local.to) {
 					if ( local.to.hasOwnProperty(i) && nodes.hasOwnProperty(i) ) {
@@ -52,14 +84,11 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 					}
 				}
 			});
-			
-			if (!this.tmpl) {
-				this.tmpl = _.template( $('#grid-view').html() );
-			}
-			
+
 			var view = this.tmpl({
 				nodes: nodes,
-				lines: lines
+				lines: lines,
+				polys: polys
 			});
 			
 			this.$el.html( view );
@@ -82,18 +111,19 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 		
 		// Configures appearance of the selected geometry state.
 		setSelection: function() {
-			var nodes = this.$el.find('li').removeClass('select'),
-				selection = selectModel.getNodeSelection(),
-				i;
-			
+			var nodes = this.$el
+				.find('ul').children() // Get all line items (faster ul > children reference).
+				.removeClass('select'); // Remove all 'select' classes.
+				
 			nodes.children(':first-child').text('');
-
-			for (i in selection) {
-				nodes.filter('#'+i)
+			
+			// find each selected node view; select it an set index.
+			_.each(selectModel.nodes, function(id, i) {
+				nodes.filter('#'+id)
 					.addClass('select')
 					.children(':first-child')
-					.text( selection[i].index+1 );
-			}
+					.text(i+1);
+			});
 		},
 		
 		// Gets the localized offset of event coordinates within the grid frame.
@@ -104,45 +134,54 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			return offset;
 		},
 		
+		// Apply drag-n-drop behavior to a node view.
 		dragNode: function( view ) {
-			var id = view.attr('id'),
+			var self = this,
+				id = view.attr('id'),
 				model = gridModel.getNodeById(id),
-				lines = $('line.'+id),
-				self = this;
+				lines = self.$el.find('line.'+id),
+				polys = self.$el.find('path.'+id),
+				min = Math.min,
+				max = Math.max,
+				maxX = (gridModel.get('width') || self.$el.width()),
+				maxY = (gridModel.get('height') || self.$el.height());
 			
 			$(document)
 				.on('mouseup', function() {
 					$(document).off('mouseup mousemove');
-					model = view = lines = null;
+					model = view = lines = polys = min = max = null;
 				})
 				.on('mousemove', function( evt ) {
 					var coords = self.localizeEventOffset(evt),
-						i = 0,
-						foreign,
-						line,
-						id;
+						current = new RegExp(id+'|\\s', 'g'),
+						foreign;
 
+					// Set view position and model coordinates.
 					view.css({
-						left: (model.x = coords.left),
-						top: (model.y = coords.top)
+						left: ( model.x = max(0, min(coords.left, maxX)) ),
+						top: ( model.y = max(0, min(coords.top, maxY)) )
 					});
-
-					_.each(model.to, function(val, id) {
-						foreign = gridModel.getNodeById(id);
-						line = lines[i++];
-
-						if (line) {
-							line.setAttribute('x1', model.x);
-							line.setAttribute('y1', model.y);
-							line.setAttribute('x2', foreign.x);
-							line.setAttribute('y2', foreign.y);
-						}
+					
+					// Update all lines.
+					lines.each(function(i, view) {
+						foreign = gridModel.getNodeById( view.getAttribute('class').replace(current, '') );
+						view.setAttribute('x1', model.x);
+						view.setAttribute('y1', model.y);
+						view.setAttribute('x2', foreign.x);
+						view.setAttribute('y2', foreign.y);
 					});
+					
+					// Update all polys.
+					polys.each(function(i, view) {
+						var poly = gridModel.getPolygonById( view.getAttribute('id') );
+						view.setAttribute('d', self.getPolygonPath(poly) );
+					});
+					
 					return false;
 				});
 		},
 		
-		touchPoly: function( item ) {
+		touchPoly: function( view ) {
 			
 		},
 		
@@ -150,17 +189,22 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 		onTouch: function( evt ) {
 			var coords = this.localizeEventOffset(evt),
 				target = $(evt.target);
-
+			
 			if ( target.is('li > span') ) {
-				// NODE was touched
+				// NODE was touched.
 				target = target.parent();
 				
 				// Toggle node selection, then proceed to drag if selected.
 				if ( selectModel.toggleNode(target.attr('id'), evt.shiftKey) ) {
 					this.dragNode(target);
 				}
+			
+			} else if ( target.is('path') ) {
+				// POLYGON was touched.
+				this.touchPoly( target );
 				
 			} else {
+				// CANVAS click. Add new node.
 				gridModel.addNode(coords.left, coords.top);
 			}
 			

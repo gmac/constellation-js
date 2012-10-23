@@ -3,25 +3,20 @@
 * Stores key tables of all selected elements.
 */
 define([
+	'lib/underscore',
 	'lib/backbone'
 ],
-function( Backbone ) {
-	
-	function NodeSelection( id, index ) {
-		this.id = id;
-		this.index = index;
-	}
-	
-	var _numNodes = 0,
-		_nodesById = {},
-		_polys = {};
+function( _, Backbone ) {
 	
 	var SelectionModel = Backbone.Model.extend({
 		UPDATE: 'update',
 		
+		// Stores a list of selected node ids.
+		nodes: [],
+		
 		// Toggles the selection status of a node.
 		toggleNode: function( id, shift ) {
-			var selected = _nodesById.hasOwnProperty(id);
+			var selected = _.contains(this.nodes, id);
 			
 			if ( selected && shift ) {
 				this.deselectNode( id );
@@ -35,50 +30,25 @@ function( Backbone ) {
 		
 		// Selects a node by ID reference.
 		selectNode: function( id ) {
-			if ( !_nodesById.hasOwnProperty(id) ) {
-				_nodesById[id] = new NodeSelection( id, _numNodes++ );
+			if ( !_.contains(this.nodes, id) ) {
+				this.nodes.push( id );
 				this.update();
 			}
 		},
 		
 		// Deletes a node by ID reference.
 		deselectNode: function( id ) {
-			var removed = _nodesById[id],
-				node,
-				i;
-				
-			if ( removed ) {
-				// Remove from nodes table.
-				delete _nodesById[id];
-				_numNodes--;
-				
-				// Remove from nodes array.
-				for ( i in _nodesById ) {
-					node = _nodesById[i];
-					
-					if ( node.index > removed.index ) {
-						node.index -= 1;
-					}
-				}
+			if ( _.contains(this.nodes, id) ) {
+				this.nodes.splice(_.indexOf(id), 1);
 				this.update();
 			}
 		},
 		
 		// Deselects all currently selected nodes.
-		deselectAllNodes: function( silent ) {
-			for (var i in _nodesById) {
-				if ( _nodesById.hasOwnProperty(i) ) {
-					delete _nodesById[i];
-				}
-			}
-			_numNodes = 0;
+		deselectAllNodes: function() {
+			this.nodes.length = 0;
 		},
-		
-		// Gets the current node selection table.
-		getNodeSelection: function() {
-			return _nodesById;
-		},
-		
+
 		// Selects a polygon by ID reference.
 		selectPolygon: function( id ) {
 			this.deselectAllNodes(true);
