@@ -1,9 +1,14 @@
+/**
+* Grid Model.
+* Main application model for managing node and polygon data.
+*/
 define([
 	'lib/backbone',
 	'lib/underscore',
+	'lib/constellation',
 	'mod/service-data'
 ],
-function( Backbone, _, dataService ) {
+function( Backbone, _, constellation, dataService ) {
 	
 	function GridModel() {
 		this.nodes = {};
@@ -18,19 +23,6 @@ function( Backbone, _, dataService ) {
 		height: '',
 		background: ''
 	};
-	
-	function NodeModel(id, x, y, to) {
-		this.id = id;
-		this.x = x || 0;
-		this.y = y || 0;
-		this.to = (to || {});
-	}
-	
-	function PolygonModel( id, nodes ) {
-		this.id = id;
-		this.nodes = nodes.slice();
-		this.sides = nodes.length;
-	}
 	
 	var _data;
 	
@@ -86,7 +78,7 @@ function( Backbone, _, dataService ) {
 		
 		// Adds a new node to the grid at the specified X and Y coordinates.
 		addNode: function( x, y, silent ) {
-			var node = new NodeModel( this.NODE+ _data.icount++, x, y );
+			var node = new constellation.Node( this.NODE+ _data.icount++, x, y );
 			_data.nodes[ node.id ] = node;
 			this.update(true, silent);
 			return node.id;
@@ -240,7 +232,7 @@ function( Backbone, _, dataService ) {
 			var poly;
 			
 			if ( group.length >= 3 && this.hasNodes(group) ) {
-				poly = new PolygonModel( this.POLY+ _data.icount++, group );
+				poly = new constellation.Polygon( this.POLY+ _data.icount++, group );
 				_data.polys[ poly.id ] = poly;
 				this.update(true, silent);
 				return poly.id;

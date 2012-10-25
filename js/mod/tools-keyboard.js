@@ -1,5 +1,6 @@
-/*
-* Configures keyboard shortcuts for the application.
+/**
+* Keyboard controls.
+* Configures keyboard shortcuts for calling controller methods.
 */
 define([
 	'lib/jquery',
@@ -16,6 +17,8 @@ function( $, gridController ) {
 				case 66: gridController.splitNodes(); break; // "b"
 				case 74: gridController.joinNodes(); break; // "j"
 				case 80: gridController.makePolygon(); break; // "p"
+				case 70: gridController.runPathfinder(); break; // "f"
+				case 83: gridController.snapNodeToGrid(); break; // "s"
 			}
 			//console.log( evt.which );
 			return false;

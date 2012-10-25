@@ -1,3 +1,7 @@
+/**
+* Tools View controls.
+* Configures user interface wired for calling controller methods.
+*/
 define([
 	'lib/jquery',
 	'lib/backbone',

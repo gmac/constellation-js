@@ -1,6 +1,6 @@
 /**
+* Selection Model.
 * Manages the selection state of grid geometry.
-* Stores a key array of all selected elements.
 */
 define([
 	'lib/underscore',
@@ -17,17 +17,17 @@ function( _, Backbone ) {
 		
 		// Sets current selection group type (node or polygon)
 		// Group type is defined by the first character of an id.
-		setType: function( id ) {
+		setType: function( id, silent ) {
 			id = id.substr(0, 1).toLowerCase();
 			if ( this.type.length && this.type !== id ) {
-				this.deselectAll( false );
+				this.deselectAll( silent );
 			}
 			this.type = id;
 		},
 		
 		// Toggles the selection status of a node.
 		toggle: function( id ) {
-			this.setType( id );
+			this.setType( id, true );
 			if ( !this.select( id ) ) {
 				this.deselect( id );
 				return false;
@@ -37,7 +37,7 @@ function( _, Backbone ) {
 		
 		// Selects a node by ID reference.
 		select: function( id ) {
-			this.setType( id );
+			this.setType( id, true );
 			if ( !_.contains(this.items, id) ) {
 				this.items.push( id );
 				this.update();
