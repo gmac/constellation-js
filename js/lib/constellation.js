@@ -96,10 +96,10 @@
 	};
 
 	// Finds the nearest point within an array of points to target P.
-	// @param p: The point to test.
 	// @param points: An array of points to find the nearest neighbor within.
+	// @param p: The point to test.
 	// @return: nearst point from list of points.
-	Const.findClosestPoint = function(p, points) {
+	Const.getNearestPointToPoint = function( points, p ) {
 		var i = points.length-1,
 			a,
 			dist,
@@ -113,7 +113,7 @@
 			return b - a;
 		});
 	
-		while ( i >= 0) {
+		while ( i >= 0 ) {
 			a = points[i--];
 			if (abs(p.x-a.x) < bestDist || isNaN(bestDist)) {
 				dist = Const.distance(p, a);
@@ -166,16 +166,16 @@
 			this.nodes = this.polys = null;
 		},
 		
-		getNode: function( ref ) {
-			if (typeof(ref) === 'string') {
-				return this.nodes[ ref ];
+		getNodeById: function( id ) {
+			if ( this.nodes.hasOwnProperty(id) ) {
+				return this.nodes[ id ];
 			}
-			return ref;
+			return null;
 		},
-		
+
 		// Finds the shortest path between two nodes among the grid of nodes.
-		// @param startNode: The node within the seach grid to start at.
-		// @param goalNode: The node within the search grid to reach via shortest path.
+		// @param start: The node id within the seach grid to start at.
+		// @param goal: The node id within the search grid to reach via shortest path.
 		// @attr this.nodes: The grid of nodes to search, formatted as:
 		/* {
 			n1: {id:"n1", x:25, y:25, to:{n2:true, n3:true}},
@@ -186,7 +186,7 @@
 		//  @attr length: length of completed path.
 		//  @attr cycles: number of cycles required to complete the search.
 		//  @attr nodes: an array of path nodes, formatted as [startNode, ...connections, goalNode].
-		findPath: function(startNode, goalNode) {
+		findPath: function( start, goal ) {
 			
 			function Path(nodes, length, estimate) {
 				this.nodes = (nodes || []);
@@ -238,12 +238,11 @@
 				branchPath, // A new path branch for the search queue.
 				branchLength, // Actual length of a new branch being explored.
 				branchEstimate, // Estimated best-case length of new branch reaching goal.
+				startNode = this.getNodeById( start ),
+				goalNode = this.getNodeById( goal ),
 				cycles = 0,
 				i;
 
-			// Replace start/goal string ids with node references.
-			startNode = this.getNode( startNode );
-			goalNode = this.getNode( goalNode );
 			queue.push( new Path([startNode]) );
 
 			// While the queue contains paths:
@@ -315,7 +314,10 @@
 			};
 		},
 		
-		snapPointToGrid: function( p ) {
+		// Snaps the provided point to the nearest position within the node grid.
+		// @param pt  The point to snap into the grid.
+		// @return  A new point with the snapped position, or the original point if no grid was searched.
+		snapPointToGrid: function( pt ) {
 			var a,
 				b,
 				snapped,
@@ -326,19 +328,17 @@
 				i,
 				j;
 
-			p = this.getNode(p);
-
 			// Loop through all grid nodes.
 			for ( i in this.nodes ) {
-				if ( this.nodes.hasOwnProperty(i) && p.id !== i ) {
+				if ( this.nodes.hasOwnProperty(i) && pt.id !== i ) {
 					a = this.nodes[i];
 
 					// Loop through each node's connections.
 					for (j in a.to) {
 						if (a.to.hasOwnProperty(j) && !tested.hasOwnProperty(j+' '+a.id)) {
 							b = this.nodes[j];
-							snapped = Const.snapPointToLine(p, a, b);
-							offset = Const.distance(p, snapped);
+							snapped = Const.snapPointToLine(pt, a, b);
+							offset = Const.distance(pt, snapped);
 							tested[a.id+' '+b.id] = true;
 
 							if (!bestPoint || offset < bestDistance) {
@@ -351,12 +351,31 @@
 				}
 			}
 
-			return bestPoint;
+			return bestPoint || pt;
+		},
+		
+		// Finds the nearest node to a specified point within the grid.
+		// @param pt  The point to snap into the grid.
+		// @return  A new point with the snapped position, or the original point if no grid was searched.
+		getNearestNodeToPoint: function( pt ) {
+			var nodes = [],
+				omit = pt.id || '',
+				i;
+				
+			for ( i in this.nodes ) {
+				if ( this.nodes.hasOwnProperty(i) && i !== omit ) {
+					nodes.push( this.nodes[i] );
+				}
+			}
+			
+			pt = Const.getNearestPointToPoint( nodes, pt );
+			nodes.length = 0;
+			return pt;
 		}
 	};
 	
 	// Define as AMD module.
-	if (window.define && define.amd) {
+	if (typeof(window.define) === 'function' && typeof(define.amd) === 'object') {
 		define(Const);
 	}
 	

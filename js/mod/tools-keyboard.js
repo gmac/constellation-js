@@ -19,6 +19,7 @@ function( $, gridController ) {
 				case 80: gridController.makePolygon(); break; // "p"
 				case 70: gridController.runPathfinder(); break; // "f"
 				case 83: gridController.snapNodeToGrid(); break; // "s"
+				case 78: gridController.addNearestGridNode(); break; // "n"
 			}
 			//console.log( evt.which );
 			return false;

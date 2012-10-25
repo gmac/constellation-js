@@ -77,12 +77,28 @@ function( Backbone, constellation, gridModel, selectModel ) {
 		snapNodeToGrid: function() {
 			if ( this.nodeOpsEnabled() && selectModel.items.length === 1 ) {
 				this.resetSearchGrid();
+				
 				var node = gridModel.getNodeById( selectModel.items[0] ),
 					to = this.searchGrid.snapPointToGrid( node );
 				
 				node.x = to.x;
 				node.y = to.y;
 				gridModel.update();
+
+			} else {
+				this.alert("Please select exactly one node.");
+			}
+		},
+		
+		// Finds and selects the nearest point to the current selection.
+		addNearestGridNode: function() {
+			if ( this.nodeOpsEnabled() && selectModel.items.length === 1 ) {
+				this.resetSearchGrid();
+				
+				var node = gridModel.getNodeById( selectModel.items[0] ),
+					nearest = this.searchGrid.getNearestNodeToPoint( node );
+				
+				selectModel.select( nearest.id );
 
 			} else {
 				this.alert("Please select exactly one node.");
