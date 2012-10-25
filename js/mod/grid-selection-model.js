@@ -1,6 +1,6 @@
 /**
 * Manages the selection state of grid geometry.
-* Stores key tables of all selected elements.
+* Stores a key array of all selected elements.
 */
 define([
 	'lib/underscore',
@@ -12,48 +12,60 @@ function( _, Backbone ) {
 		UPDATE: 'update',
 		
 		// Stores a list of selected node ids.
-		nodes: [],
+		items: [],
+		type: '',
+		
+		// Sets current selection group type (node or polygon)
+		// Group type is defined by the first character of an id.
+		setType: function( id ) {
+			id = id.substr(0, 1).toLowerCase();
+			if ( this.type.length && this.type !== id ) {
+				this.deselectAll( false );
+			}
+			this.type = id;
+		},
 		
 		// Toggles the selection status of a node.
-		toggleNode: function( id, shift ) {
-			var selected = _.contains(this.nodes, id);
-			
-			if ( selected && shift ) {
-				this.deselectNode( id );
+		toggle: function( id ) {
+			this.setType( id );
+			if ( !this.select( id ) ) {
+				this.deselect( id );
 				return false;
-			} else if (!shift) {
-				this.deselectAllNodes(true);
 			}
-			this.selectNode( id );
 			return true;
 		},
 		
 		// Selects a node by ID reference.
-		selectNode: function( id ) {
-			if ( !_.contains(this.nodes, id) ) {
-				this.nodes.push( id );
+		select: function( id ) {
+			this.setType( id );
+			if ( !_.contains(this.items, id) ) {
+				this.items.push( id );
 				this.update();
+				return true;
 			}
+			return false;
 		},
 		
 		// Deletes a node by ID reference.
-		deselectNode: function( id ) {
-			if ( _.contains(this.nodes, id) ) {
-				this.nodes.splice(_.indexOf(id), 1);
+		deselect: function( id ) {
+			if ( _.contains(this.items, id) ) {
+				this.items.splice( _.indexOf(this.items, id), 1 );
+				this.update();
+				return true;
+			}
+			return false;
+		},
+		
+		// Deselects all currently selected nodes.
+		deselectAll: function( silent ) {
+			this.items.length = 0;
+			this.type = '';
+			if (!silent) {
 				this.update();
 			}
 		},
 		
-		// Deselects all currently selected nodes.
-		deselectAllNodes: function() {
-			this.nodes.length = 0;
-		},
-
-		// Selects a polygon by ID reference.
-		selectPolygon: function( id ) {
-			this.deselectAllNodes(true);
-		},
-		
+		// Triggers an update event to refresh the view.
 		update: function() {
 			this.trigger( this.UPDATE );
 		}

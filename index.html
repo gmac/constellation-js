@@ -44,10 +44,10 @@
 	<script type="text/template" id="grid-view">
 		<svg>
 			<% _.each(polys, function(p) { %>
-			<path id="<%= p.id %>" class="<%= p.clss %>" d="<%= p.d %>" style="fill:#000;opacity:0.25;"/>
+			<path id="<%= p.id %>" class="<%= p.clss %>" d="<%= p.d %>"/>
 			<% }); %>
 			<% _.each(lines, function(n) { %>
-			<line x1="<%= n.x1 %>" y1="<%= n.y1 %>" x2="<%= n.x2 %>" y2="<%= n.y2 %>" class="<%= n.id %>" style="stroke:#000;stroke-width:2;"/>
+			<line x1="<%= n.x1 %>" y1="<%= n.y1 %>" x2="<%= n.x2 %>" y2="<%= n.y2 %>" class="<%= n.id %>"/>
 			<% }); %>
 		</svg>
 		<ul>
@@ -57,6 +57,11 @@
 		</ul>
 	</script>
 
+<script>
+var require = {
+    urlArgs: "bust="+(new Date()).getTime()
+};
+</script>
 <script src="js/lib/require.js" data-main="js/main"></script>
 </body>
 </html>

@@ -78,7 +78,6 @@ body {
 * ----------------------------- */
 #constellation .const-canvas {
 	background-color: #fff;
-	cursor: crosshair;
 	height: 400px;
 	margin: auto;
 	position: relative;
@@ -94,6 +93,17 @@ body {
 	top: 0;
 	width: 100%;
 }
+#constellation .const-canvas line {
+	stroke:#000;
+	stroke-width:2;
+}
+#constellation .const-canvas path {
+	fill:#000;
+	opacity:0.25;
+}
+#constellation .const-canvas path.select {
+	fill:#f00;
+}
 #constellation .const-canvas ul {
 	list-style: none;
 }
@@ -101,11 +111,11 @@ body {
 	position: absolute;
 }
 #constellation .const-canvas li span {
-	background-color: #f00;
+	background-color: #900;
 	border: 1px solid rgba(255,255,255,0.5);
 	border-radius: 50%;
 	color: #fff;
-	cursor: default;
+	cursor: pointer;
 	display:block;
 	font: bold 10px/10px Arial,sans-serif;
 	height: 10px;
@@ -116,5 +126,5 @@ body {
 	width: 10px;
 }
 #constellation .const-canvas li.select span {
-	background-color: #ccc;
+	background-color: #f00;
 }

@@ -16,7 +16,6 @@ function( $, gridController ) {
 				case 66: gridController.splitNodes(); break; // "b"
 				case 74: gridController.joinNodes(); break; // "j"
 				case 80: gridController.makePolygon(); break; // "p"
-				default: return true;
 			}
 			//console.log( evt.which );
 			return false;

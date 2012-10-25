@@ -49,7 +49,6 @@ function( $, Backbone, gridModel, gridController, keystroke ) {
 		},
 		
 		setFrame: function() {
-			//keyboard.disable();
 			gridModel.set({
 				width: (parseInt(this.$width.val(), 10) || ''),
 				height: (parseInt(this.$height.val(), 10) || '')

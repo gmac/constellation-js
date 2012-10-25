@@ -11,6 +11,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 	var GridView = Backbone.View.extend({
 		el: '#grid',
 		model: gridModel,
+		viewSelection: [],
 		
 		// Define view event patterns.
 		events: {
@@ -24,7 +25,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			self.tmpl = _.template( $('#grid-view').html() );
 			
 			// Add event listeners.
-			gridModel.on( gridModel.RENDER, self.render, self );
+			gridModel.on( gridModel.UPDATE, self.render, self );
 			gridModel.on( gridModel.CHANGE, self.setFrame, self );
 			windowService.on( windowService.RESIZE, self.setFrame, self );
 			selectModel.on( selectModel.UPDATE, self.setSelection, self );
@@ -33,6 +34,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			self.setFrame();
 		},
 		
+		// Generates a polygon drawing path based on polygon model.
 		getPolygonPath: function( model ) {
 			var draw = '',
 				node,
@@ -66,7 +68,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 				};
 			});
 			
-			// Assemble node drawings.
+			// Assemble line drawings.
 			_.each(nodes, function(local, id) {
 				for (i in local.to) {
 					if ( local.to.hasOwnProperty(i) && nodes.hasOwnProperty(i) ) {
@@ -84,14 +86,15 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 					}
 				}
 			});
-
-			var view = this.tmpl({
+			
+			// Generate and set new view template.
+			this.$el.html( this.tmpl({
 				nodes: nodes,
 				lines: lines,
 				polys: polys
-			});
+			}) );
 			
-			this.$el.html( view );
+			// Refresh view selection.
 			this.setSelection();
 		},
 		
@@ -110,19 +113,40 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 		},
 		
 		// Configures appearance of the selected geometry state.
+		// Kinda messy here given that jQuery doesn't handle DOM and SVG the same way...
 		setSelection: function() {
-			var nodes = this.$el
-				.find('ul').children() // Get all line items (faster ul > children reference).
-				.removeClass('select'); // Remove all 'select' classes.
-				
-			nodes.children(':first-child').text('');
+			var self = this;
 			
-			// find each selected node view; select it an set index.
-			_.each(selectModel.nodes, function(id, i) {
-				nodes.filter('#'+id)
-					.addClass('select')
-					.children(':first-child')
-					.text(i+1);
+			// Clear any existing selection.
+			_.each(this.viewSelection, function(item) {
+				item = $(item);
+				
+				if ( item.is('path') ) {
+					// POLYGON view item.
+					item[0].setAttribute('class', item[0].getAttribute('class').replace(/[\s]?select/g, ''));
+				} else {
+					// NODE view item.
+					item.removeClass('select').children(':first-child').text('');
+				}
+			});
+			
+			// Reset view selection.
+			this.viewSelection.length = 0;
+			
+			// Select all items in the selection model.
+			_.each(selectModel.items, function(id, i) {
+				item = self.$el.find('#'+id);
+				
+				if ( item.is('path') ) {
+					// POLYGON view item.
+					item[0].setAttribute('class', item[0].getAttribute('class') + " select");
+				} else {
+					// NODE view item.
+					item.addClass('select').children(':first-child').text(i+1);
+				}
+				
+				// Add item reference to the view selection queue.
+				self.viewSelection.push(item[0]);
 			});
 		},
 		
@@ -134,10 +158,9 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			return offset;
 		},
 		
-		// Apply drag-n-drop behavior to a node view.
-		dragNode: function( view ) {
+		// Apply drag-drop behavior to a node view.
+		dragNode: function( id, view ) {
 			var self = this,
-				id = view.attr('id'),
 				model = gridModel.getNodeById(id),
 				lines = self.$el.find('line.'+id),
 				polys = self.$el.find('path.'+id),
@@ -146,6 +169,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 				maxX = (gridModel.get('width') || self.$el.width()),
 				maxY = (gridModel.get('height') || self.$el.height());
 			
+			// Configure drag-drop events.
 			$(document)
 				.on('mouseup', function() {
 					$(document).off('mouseup mousemove');
@@ -153,7 +177,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 				})
 				.on('mousemove', function( evt ) {
 					var coords = self.localizeEventOffset(evt),
-						current = new RegExp(id+'|\\s', 'g'),
+						current = new RegExp(id+'$|'+id+'\\s|\\s', 'g'),
 						foreign;
 
 					// Set view position and model coordinates.
@@ -181,31 +205,42 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 				});
 		},
 		
-		touchPoly: function( view ) {
+		// Apply drag-drop behavior to a polygon view.
+		dragPoly: function( id, view ) {
 			
 		},
 		
 		// Generic event handler triggered by any mousedown/touch event.
 		onTouch: function( evt ) {
-			var coords = this.localizeEventOffset(evt),
-				target = $(evt.target);
+			var target = $(evt.target),
+				id;
 			
-			if ( target.is('li > span') ) {
+			target = target.is('li > span') ? target.parent() : target;
+			id = target.attr('id');
+			
+			// Clear existing selection unless Shift-key is pressed,
+			// silently if a valid element was clicked.
+			if (!evt.shiftKey) {
+				selectModel.deselectAll( !!id );
+			}
+			
+			if ( target.is('li') ) {
 				// NODE was touched.
-				target = target.parent();
-				
-				// Toggle node selection, then proceed to drag if selected.
-				if ( selectModel.toggleNode(target.attr('id'), evt.shiftKey) ) {
-					this.dragNode(target);
+				if ( selectModel.toggle(id) ) {
+					this.dragNode(id, target);
 				}
 			
 			} else if ( target.is('path') ) {
 				// POLYGON was touched.
-				this.touchPoly( target );
+				if ( selectModel.toggle(id) ) {
+					this.dragPoly(id, target);
+				}
 				
-			} else {
+			} else if (evt.shiftKey) {
 				// CANVAS click. Add new node.
-				gridModel.addNode(coords.left, coords.top);
+				target = this.localizeEventOffset(evt);
+				id = gridModel.addNode(target.left, target.top);
+				selectModel.select( id );
 			}
 			
 			return false;
