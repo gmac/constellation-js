@@ -47,6 +47,7 @@
 					delete obj[ i ];
 				}
 			}
+			return obj;
 		},
 		
 		// Gets the number of items in an array, or number of properties on an object.
@@ -85,27 +86,52 @@
 					}
 				}
 			}
+			return obj;
+		},
+		
+		// Runs a mutator function over each item in an array or object, setting the result as the new value.
+		map: function( obj, mutatorFunct, context ) {
+			var i = 0;
+			
+			if ( obj instanceof Array ) {
+				// Array.
+				var len = obj.length;
+				while ( i < len ) {
+					obj[i] = mutatorFunct.call( context, obj[i], i++ );
+				}
+
+			} else {
+				// Object.
+				for ( i in obj ) {
+					if ( obj.hasOwnProperty(i) ) {
+						obj[i] = mutatorFunct.call( context, obj[i], i );
+					}
+				}
+			}
+			return obj;
 		},
 		
 		// Tests if an array contains a value.
-		contains: function( array, item ) {
+		contains: function( obj, item ) {
+			if ( obj instanceof Array ) {
+				
+				// Test with native indexOf method.	
+				if ( typeof(Array.prototype.indexOf) === 'function' ) {
+					return obj.indexOf( item ) >= 0;
+				}
 			
-			// Test with native indexOf method.	
-			if ( typeof(Array.prototype.indexOf) === 'function' ) {
-				return array.indexOf( item ) >= 0;
-			}
+				// Brute-force search method.
+				var len = obj.length,
+					i = 0;
 			
-			// Brute-force search method.
-			var len = array.length,
-				i = 0;
-			
-			while ( i < len ) {
-				if ( array[i++] === item ) {
-					return true;
+				while ( i < len ) {
+					if ( obj[i++] === item ) {
+						return true;
+					}
 				}
 			}
 			
-			return false;
+			return obj.hasOwnProperty( item );
 		},
 		
 		// Runs a test function on each item in the array,
@@ -126,14 +152,14 @@
 	// Const.Point
 	// -----------
 	// Tests the distance between two points.
-	Const.distance = function(a, b) {
+	Const.distance = function( a, b ) {
 		var h = b.x-a.x,
 			v = b.y-a.y;
 		return sqrt(h*h + v*v);
 	};
 	
 	// Tests for intersection between line segments AB and CD.
-	Const.intersect = function(a, b, c, d) {
+	Const.intersect = function( a, b, c, d ) {
 		// Tests for counter-clockwise winding among three points.
 		// Specifically written for intersection test:
 		// Uses ">=" (rather than ">") to account for equal points.
@@ -147,22 +173,23 @@
 	// @param p: The point to test.
 	// @param poly: An array of points forming a polygonal shape.
 	// @return: true if point falls within polygon.
-	Const.hitTestPolygon = function(p, poly) {
+	Const.hitTestPolygon = function( p, poly ) {
 		var sides = poly.length,
 			origin = new Const.Point(0, p.y),
 			hits = 0,
+			i = 0,
 			s1,
-			s2,
-			i;
+			s2;
 	
 		// Test intersection of an external ray against each polygon side.
-		for (i = 0; i < sides; i++) {
+		while ( i < sides ) {
 			s1 = poly[i];
 			s2 = poly[(i+1) % sides];
 			origin.x = min(origin.x, min(s1.x, s2.x)-1);
 			hits += (this.intersect(origin, p, s1, s2) ? 1 : 0);
+			i++;
 		}
-
+		
 		// Return true if an odd number of hits were found.
 		return hits % 2 > 0;
 	};
@@ -172,7 +199,7 @@
 	// @param a: An array of points forming a polygonal shape.
 	// @param b: An array of points forming a polygonal shape.
 	// @return: A new point object with "x" and "y" coordinates.
-	Const.snapPointToLine = function(p, a, b) {
+	Const.snapPointToLine = function( p, a, b ) {
 		var ap1 = p.x-a.x,
 			ap2 = p.y-a.y,
 			ab1 = b.x-a.x,
@@ -193,11 +220,11 @@
 	// @param points: An array of points to find the nearest neighbor within.
 	// @param p: The point to test.
 	// @return: nearst point from list of points.
-	Const.getNearestPointToPoint = function( points, p ) {
+	Const.getNearestPointToPoint = function( p, points ) {
 		var i = points.length-1,
 			a,
 			dist,
-			bestPt,
+			bestPt = null,
 			bestDist = NaN;
 
 		// Sort points by horizontal offset from P.
@@ -244,7 +271,6 @@
 	Const.Polygon = function( id, nodes ) {
 		this.id = id;
 		this.nodes = nodes.slice();
-		this.sides = nodes.length;
 	};
 	
 	// Const.Grid
@@ -261,7 +287,7 @@
 		events: {
 			ADD: 'add',
 			REMOVE: 'remove',
-			CHANGE: 'change'
+			CHANGE: 'update'
 		},
 
 		// Defines keys for geometry item types.
@@ -306,9 +332,21 @@
 			return null;
 		},
 		
+		// Gets an array of nodes from an array of id references.
+		getNodesForIds: function( group ) {
+			return _c.map( group.slice(), function( id ) {
+				return this.nodes[ id ];
+			}, this);
+		},
+		
 		// Counts the number of nodes defined within the grid.
 		getNumNodes: function() {
 			return _c.size( this.nodes );
+		},
+		
+		// Tests if a single node id is defined.
+		hasNode: function( node ) {
+			return this.nodes.hasOwnProperty( node );
 		},
 		
 		// Tests if a collection of node ids are all defined.
@@ -457,6 +495,16 @@
 			return null;
 		},
 		
+		// Gets an array of nodes representing a polygon in the grid.
+		getNodesForPolygon: function( id ) {
+			if ( this.polys.hasOwnProperty(id) ) {
+				return _c.map( this.polys[id].nodes.slice(), function( id ) {
+					return this.nodes[ id ];
+				}, this);
+			}
+			return null;
+		},
+		
 		// Counts the number of polygons defined in the grid.
 		getNumPolygons: function() {
 			return _c.size( this.polys );
@@ -535,7 +583,7 @@
 				goalNode = this.getNodeById( goal ),
 				cycles = 0,
 				i;
-
+				
 			queue.push( new Path([startNode]) );
 
 			// While the queue contains paths:
@@ -611,28 +659,20 @@
 		// @param pt  The point to snap into the grid.
 		// @return  A new point with the snapped position, or the original point if no grid was searched.
 		snapPointToGrid: function( pt ) {
-			var a,
-				b,
-				snapped,
-				offset,
-				bestPoint = null,
+			var bestPoint = null,
 				bestDistance = NaN,
-				tested = {},
-				i,
-				j;
+				tested = {};
 
-			// Loop through all grid nodes.
-			for ( i in this.nodes ) {
-				if ( this.nodes.hasOwnProperty(i) && pt.id !== i ) {
-					a = this.nodes[i];
+			_c.each( this.nodes, function( local, id ) {
+				if ( pt.id !== id ) {
 
 					// Loop through each node's connections.
-					for (j in a.to) {
-						if (a.to.hasOwnProperty(j) && !tested.hasOwnProperty(j+' '+a.id)) {
-							b = this.nodes[j];
-							snapped = Const.snapPointToLine(pt, a, b);
-							offset = Const.distance(pt, snapped);
-							tested[a.id+' '+b.id] = true;
+					for ( var i in local.to ) {
+						if ( local.to.hasOwnProperty(i) && !tested.hasOwnProperty(i+' '+local.id) ) {
+							var foreign = this.nodes[i];
+							var snapped = Const.snapPointToLine(pt, local, foreign);
+							var offset = Const.distance(pt, snapped);
+							tested[local.id+' '+foreign.id] = true;
 
 							if (!bestPoint || offset < bestDistance) {
 								bestPoint = snapped;
@@ -640,30 +680,85 @@
 							}
 						}
 					}
-
 				}
-			}
-
+			}, this);
+			
 			return bestPoint || pt;
+		},
+		
+		// Finds the nearest node to the specified node.
+		// @param origin  The origin node to search from.
+		// @return  The nearest other grid node to the specified target.
+		getNearestNodeToNode: function( origin ) {
+			var nearest = null;
+			origin = this.getNodeById( origin );
+			
+			if ( origin ) {
+				var nodes = [];
+
+				_c.each( this.nodes, function( node, id ) {
+					if ( id !== origin.id ) {
+						nodes.push( node );
+					}
+				}, this);
+
+				nearest = Const.getNearestPointToPoint( origin, nodes );
+				nodes.length = 0;
+			}
+			return nearest;
 		},
 		
 		// Finds the nearest node to a specified point within the grid.
 		// @param pt  The point to snap into the grid.
-		// @return  A new point with the snapped position, or the original point if no grid was searched.
+		// @return  
 		getNearestNodeToPoint: function( pt ) {
-			var nodes = [],
-				omit = pt.id || '',
-				i;
-				
-			for ( i in this.nodes ) {
-				if ( this.nodes.hasOwnProperty(i) && i !== omit ) {
-					nodes.push( this.nodes[i] );
-				}
-			}
+			var nodes = [];
 			
-			pt = Const.getNearestPointToPoint( nodes, pt );
+			_c.each( this.nodes, function( node ) {
+				nodes.push( node );
+			}, this);
+			
+			pt = Const.getNearestPointToPoint( pt, nodes );
 			nodes.length = 0;
 			return pt;
+		},
+		
+		// Tests if a point intersects any polygon in the grid.
+		// @param pt  The point to hit test.
+		// @return  True if the point intersects any polygon.
+		/*hitTestNodeInPolygons: function( node ) {
+			node = this.getNodeById(node);
+			if (node) {
+				return this.hitTestPointInPolygons( node );
+			}
+			return false;
+		},*/
+		
+		// Tests if a point intersects any polygon in the grid.
+		// @param pt  The point to hit test.
+		// @return  True if the point intersects any polygon.
+		hitTestPointInPolygons: function( pt ) {
+			for ( var i in this.polys ) {
+				if ( this.polys.hasOwnProperty(i) && Const.hitTestPolygon( pt, this.getNodesForPolygon(i) ) ) {
+					return true;
+				}
+			}
+			return false;
+		},
+		
+		// Tests a point for intersections with all polygons in the grid, and returns their ids.
+		// @param pt  The point to snap into the grid.
+		// @return  A new point with the snapped position, or the original point if no grid was searched.
+		getPolygonHitsForPoint: function( pt ) {
+			var hits = [];
+			
+			_c.each( this.polys, function( poly, id ) {
+				if ( Const.hitTestPolygon( pt, this.getNodesForPolygon(id) ) ) {
+					hits.push( poly.id );
+				}
+			}, this);
+			
+			return hits;
 		}
 	};
 	

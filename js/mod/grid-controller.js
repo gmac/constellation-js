@@ -16,12 +16,12 @@ function( Backbone, constellation, gridModel, selectModel ) {
 		
 		// Tests if the environment is configured for performing node operations.
 		nodeOpsEnabled: function() {
-			return selectModel.type === gridModel.NODE;
+			return selectModel.type === gridModel.types.NODE;
 		},
 		
 		// Resets all data stored within the Constellation seach grid.
 		resetSearchGrid: function() {
-			this.searchGrid.setData( gridModel.getNodes(), gridModel.getPolys() );
+			this.searchGrid.setData( gridModel.nodes, gridModel.polys );
 		},
 		
 		// Joins all nodes within the current selection group.

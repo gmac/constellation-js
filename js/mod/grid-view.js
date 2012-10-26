@@ -25,8 +25,8 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			self.tmpl = _.template( $('#grid-view').html() );
 			
 			// Add event listeners.
-			gridModel.on( gridModel.UPDATE, self.render, self );
-			gridModel.on( gridModel.CHANGE, self.setFrame, self );
+			gridModel.on( gridModel.events.CHANGE, self.render, self );
+			gridModel.on( gridModel.events.CHANGE, self.setFrame, self );
 			windowService.on( windowService.RESIZE, self.setFrame, self );
 			selectModel.on( selectModel.UPDATE, self.setSelection, self );
 			
@@ -55,12 +55,12 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			var self = this,
 				lines = {},
 				polys = {},
-				nodes = gridModel.getNodes(),
+				nodes = gridModel.nodes,
 				foreign,
 				i;
 			
 			// Assemble polygon drawings.
-			_.each(gridModel.getPolys(), function(poly, id) {
+			_.each(gridModel.polys, function(poly, id) {
 				polys[ poly.id ] = {
 					id: poly.id,
 					clss: poly.nodes.join(' '),
