@@ -6,31 +6,125 @@
 
 // JSLint options:
 /*global define, console */
-/*jslint browser: true, white: true, plusplus: true */
+/*jslint browser:true, white:true, plusplus:true, vars:true */
 
 (function( sqrt, min, abs ) {
 	"use strict";
-	
-	var Const = window.constellation = {};
-	
-	Const.Point = function( x, y ) {
-		this.x = x || 0;
-		this.y = y || 0;
-	};
 
-	Const.Node = function( id, x, y, to ) {
-		this.id = id;
-		this.x = x || 0;
-		this.y = y || 0;
-		this.to = to || {};
+	var root = this;
+	
+	// The top-level namespace.
+	// All public Constellation classes and modules will be attached to this.
+	// Exported for both CommonJS and the browser.
+	var Const;
+	if (typeof exports !== 'undefined') {
+		Const = exports;
+	} else {
+		Const = root.Const = {};
+	}
+	
+	// Const._c / Underscore shim
+	// --------------------------
+	// Based on methods of Underscore.js
+	// Implementations are unique to Constellation.
+	var _c = Const.utils = {
+		
+		// Gets all of an object's keys as an array.
+		keys: function( obj ) {
+			var keys = [];
+			for ( var i in obj ) {
+				if ( obj.hasOwnProperty(i) ) {
+					keys.push( i );
+				}
+			}
+			return keys;
+		},
+		
+		// Removes all properties from an object.
+		wipe: function( obj ) {
+			for ( var i in obj ) {
+				if ( obj.hasOwnProperty(i) ) {
+					delete obj[ i ];
+				}
+			}
+		},
+		
+		// Gets the number of items in an array, or number of properties on an object.
+		size: function( obj ) {
+			// Array.
+			if ( obj instanceof Array ) {
+				return obj.length;
+			}
+
+			// Object.
+			var num = 0;
+			for ( var i in obj ) {
+				if ( obj.hasOwnProperty(i) ) {
+					num++;
+				}
+			}
+			return num;
+		},
+		
+		// Runs an iterator function over each item in an array or object.
+		each: function( obj, iteratorFunct, context ) {
+			var i = 0;
+			
+			if ( obj instanceof Array ) {
+				// Array.
+				var len = obj.length;
+				while ( i < len ) {
+					iteratorFunct.call( context, obj[i], i++ );
+				}
+
+			} else {
+				// Object.
+				for ( i in obj ) {
+					if ( obj.hasOwnProperty(i) ) {
+						iteratorFunct.call( context, obj[i], i );
+					}
+				}
+			}
+		},
+		
+		// Tests if an array contains a value.
+		contains: function( array, item ) {
+			
+			// Test with native indexOf method.	
+			if ( typeof(Array.prototype.indexOf) === 'function' ) {
+				return array.indexOf( item ) >= 0;
+			}
+			
+			// Brute-force search method.
+			var len = array.length,
+				i = 0;
+			
+			while ( i < len ) {
+				if ( array[i++] === item ) {
+					return true;
+				}
+			}
+			
+			return false;
+		},
+		
+		// Runs a test function on each item in the array,
+		// then returns true if all items pass the test.
+		all: function( array, testFunct, context ) {
+			var len = array.length,
+				i = 0;
+				
+			while ( i < len ) {
+				if ( !testFunct.call( context, array[i], i++ ) ) {
+					return false;
+				}
+			}
+			return true;
+		}
 	};
 	
-	Const.Polygon = function( id, nodes ) {
-		this.id = id;
-		this.nodes = nodes.slice();
-		this.sides = nodes.length;
-	};
-	
+	// Const.Point
+	// -----------
 	// Tests the distance between two points.
 	Const.distance = function(a, b) {
 		var h = b.x-a.x,
@@ -110,7 +204,7 @@
 		points.sort(function(a, b) {
 			a = abs(p.x-a.x);
 			b = abs(p.x-b.x);
-			return b - a;
+			return b-a;
 		});
 	
 		while ( i >= 0 ) {
@@ -129,48 +223,265 @@
 		return bestPt;
 	};
 	
+	// Const.Point
+	// -----------
+	Const.Point = function( x, y ) {
+		this.x = x || 0;
+		this.y = y || 0;
+	};
+	
+	// Const.Node
+	// ----------
+	Const.Node = function( id, x, y, to ) {
+		this.id = id;
+		this.x = x || 0;
+		this.y = y || 0;
+		this.to = to || {};
+	};
+	
+	// Const.Polygon
+	// -------------
+	Const.Polygon = function( id, nodes ) {
+		this.id = id;
+		this.nodes = nodes.slice();
+		this.sides = nodes.length;
+	};
+	
+	// Const.Grid
+	// ----------
 	Const.Grid = function(nodes, polys) {
+		this.nodes = {};
+		this.polys = {};
+		this.icount = 0;
 		this.setData(nodes, polys);
 	};
 	Const.Grid.prototype = {
-		nodes: null,
-		polys: null,
 		
-		setData: function( nodes, polys ) {
-			this.nodes = nodes || {};
-			this.polys = polys || {};
+		// Defines event names used by the library.
+		events: {
+			ADD: 'add',
+			REMOVE: 'remove',
+			CHANGE: 'change'
+		},
 
-			if (this.nodes instanceof Array) {
-				this.nodes = this.makeTable( this.nodes );
-			}
-			if (this.polys instanceof Array) {
-				this.polys = this.makeTable( this.polys );
-			}
+		// Defines keys for geometry item types.
+		types: {
+			NODE: 'n',
+			POLYGON: 'p'
 		},
 		
-		makeTable: function( geoms ) {
-			var table = {},
-				item,
-				i;
-				
-			for ( i in geoms ) {
-				if ( geoms.hasOwnProperty(i) ) {
-					item = geoms[i];
-					table[ item.id ] = item;
-				}
-			}
-			return table;
+		// Clears all existing node and polygon references from the grid.
+		reset: function() {
+			_c.wipe( this.nodes );
+			_c.wipe( this.polys );
+			this.icount = 0;
 		},
 		
-		destroy: function() {
-			this.nodes = this.polys = null;
+		// Sets new data to the grid.
+		setData: function( nodes, polys ) {
+			this.reset();
+
+			_c.each( nodes || [], function( node ) {
+				this.nodes[ node.id ] = node;
+			}, this);
+			
+			_c.each( polys || [], function( poly ) {
+				this.polys[ poly.id ] = poly;
+			}, this);
 		},
 		
+		// Adds a new node to the grid at the specified X and Y coordinates.
+		addNode: function( x, y, silent ) {
+			var node = new Const.Node( this.types.NODE+ this.icount++, x, y );
+			this.nodes[ node.id ] = node;
+			this.update(true, silent);
+			return node.id;
+		},
+		
+		// Gets a single node by id reference.
 		getNodeById: function( id ) {
 			if ( this.nodes.hasOwnProperty(id) ) {
-				return this.nodes[ id ];
+				return this.nodes[id];
 			}
 			return null;
+		},
+		
+		// Counts the number of nodes defined within the grid.
+		getNumNodes: function() {
+			return _c.size( this.nodes );
+		},
+		
+		// Tests if a collection of node ids are all defined.
+		hasNodes: function( group ) {
+			return _c.all(group, function(id) {
+				return this.nodes.hasOwnProperty( id );
+			}, this);
+		},
+		
+		// Joins nodes within a selection group.
+		// Selection group may be an array of node ids, or an object of id keys.
+		joinNodes: function( group, silent ) {
+			var change = false;
+			
+			// Group must contain two or more nodes to join...
+			if ( group.length > 1 && this.hasNodes(group) ) {
+				
+				// Loop through selection group of nodes...
+				_c.each(group, function(id) {
+					var node = this.nodes[id],
+						len = group.length,
+						i = 0;
+						
+					while ( i < len ) {
+						id = group[i++];
+						if (id !== node.id) {
+							node.to[ id ] = 1;
+							change = true;
+						}
+					}
+				}, this);
+			}
+			
+			this.update(change, silent);
+			return change;
+		},
+		
+		// Splits apart nodes within a selection group.
+		// Selection group may be an array of node ids, or an object of id keys.
+		splitNodes: function( group, silent ) {
+			var change = false;
+			
+			// Alias 'detach' method for a single node reference.
+			if (group.length < 2) {
+				this.detachNodes( group );
+				return;
+			}
+
+			// Decouple group node references.
+			_c.each(group, function(id) {
+				var node = this.nodes[id];
+				
+				if (node && node.to) {
+					for ( id in node.to ) {
+						if ( _c.contains(group, id) ) {
+							delete node.to[ id ];
+							change = true;
+						}
+					}
+				}
+			}, this);
+
+			this.update(change, silent);
+			return change;
+		},
+		
+		// Detachs a node from the grid.
+		// Each node's connections will be severed from all joining nodes.
+		detachNodes: function( group, silent ) {
+			var change = false;
+			
+			_c.each(group, function(id) {
+				var local = this.nodes[id],
+					foreign,
+					i;
+				
+				if ( local && local.to ) {
+					// Break all connections between target and its neighbors.
+					for ( i in local.to ) {
+						// Delete local reference.
+						delete local.to[i];
+					
+						// Find foreign node.
+						foreign = this.nodes[i];
+					
+						// Delete foreign key relationship.
+						if ( foreign && foreign.to ) {
+							delete foreign.to[ id ];
+						}
+					}
+					change = true;
+				}
+			}, this);
+			
+			this.update(change, silent);
+			return change;
+		},
+		
+		// Detaches and removes a collection of nodes from the grid.
+		removeNodes: function( group, silent ) {
+			// detach all nodes from the grid without triggering an update.
+			var change = this.detachNodes( group, true );
+
+			_c.each(group, function(id) {
+				var poly,
+					i;
+					
+				if ( this.nodes.hasOwnProperty(id) ) {
+					// Detach and remove the node.
+					delete this.nodes[id];
+					
+					// Remove any dependent polygons.
+					for (i in this.polys) {
+						poly = this.polys[i];
+
+						if ( poly && _c.contains( poly.nodes, id ) ) {
+							delete this.polys[i];
+						}
+					}
+					change = true;
+				}
+			}, this);
+			
+			this.update(change, silent);
+			return change;
+		},
+		
+		// Adds a polygon to the grid, formed by a collection of node ids.
+		addPolygon: function( group, silent ) {
+			var poly;
+			
+			if ( group.length >= 3 && this.hasNodes(group) ) {
+				poly = new Const.Polygon( this.types.POLYGON+ this.icount++, group );
+				this.polys[ poly.id ] = poly;
+				this.update(true, silent);
+				return poly.id;
+			}
+			return null;
+		},
+		
+		// Gets a polygon model by id reference.
+		getPolygonById: function( id ) {
+			if ( this.polys.hasOwnProperty(id) ) {
+				return this.polys[ id ];
+			}
+			return null;
+		},
+		
+		// Counts the number of polygons defined in the grid.
+		getNumPolygons: function() {
+			return _c.size( this.polys );
+		},
+		
+		// Removes a collection of polygons from the grid.
+		removePolygons: function( group, silent ) {
+			var change = false;
+			
+			_c.each(group, function(id) {
+				if ( this.polys.hasOwnProperty(id) ) {
+					delete this.polys[ id ];
+					change = true;
+				}
+			}, this);
+			
+			this.update(change, silent);
+			return change;
+		},
+		
+		// Triggers update event for view refresh.
+		update: function( change, silent ) {
+			if ( (change || change === undefined) && !silent ) {
+				this.trigger( this.events.CHANGE );
+			}
 		},
 
 		// Finds the shortest path between two nodes among the grid of nodes.
@@ -194,9 +505,6 @@
 				this.estimate = (estimate || 0);
 			}
 			Path.prototype = {
-				nodes: null,
-				length: 0,
-				estimate: 0,
 				copy: function(length, estimate) {
 					return new Path(this.nodes.slice(), (length || this.length), (estimate || this.estimate));
 				},
@@ -204,22 +512,7 @@
 					return this.nodes[ this.nodes.length-1 ];
 				},
 				contains: function(node) {
-					var i;
-
-					// Find via indexOf().
-					if (!!this.nodes.indexOf) {
-						return this.nodes.indexOf(node) >= 0;
-					}
-
-					// Find via loop.
-					for (i in this.nodes) {
-						if (this.nodes.hasOwnProperty(i) && this.nodes[i] === node) {
-							return true;
-						}
-					}
-
-					// Not in array.
-					return false;
+					return _c.contains(node);
 				},
 				prioratize: function(a, b) {
 					return b.estimate - a.estimate;
@@ -374,9 +667,116 @@
 		}
 	};
 	
-	// Define as AMD module.
-	if (typeof(window.define) === 'function' && typeof(define.amd) === 'object') {
+	// Const.Grid events
+	// -----------------
+	// Uses the Backbone.js implementation:
+	// (c) 2010-2012 Jeremy Ashkenas, DocumentCloud Inc.
+	// Backbone may be freely distributed under the MIT license.
+	(function( obj, _ ) {
+		
+		// Regular expression used to split event strings
+		var eventSplitter = /\s+/;
+		
+		// Bind one or more space separated events, `events`, to a `callback`
+	    // function. Passing `"all"` will bind the callback to all events fired.
+	    obj.on = obj.bind = function (events, callback, context) {
+	        var calls, event, list;
+	        if (!callback) return this;
+
+	        events = events.split(eventSplitter);
+	        calls = this._callbacks || (this._callbacks = {});
+
+	        while (event = events.shift()) {
+	            list = calls[event] || (calls[event] = []);
+	            list.push(callback, context);
+	        }
+
+	        return this;
+	    };
+
+	    // Remove one or many callbacks. If `context` is null, removes all callbacks
+	    // with that function. If `callback` is null, removes all callbacks for the
+	    // event. If `events` is null, removes all bound callbacks for all events.
+	    obj.off = obj.unbind = function (events, callback, context) {
+	        var event, calls, list, i;
+
+	        // No events, or removing *all* events.
+	        if (!(calls = this._callbacks)) return this;
+	        if (!(events || callback || context)) {
+	            delete this._callbacks;
+	            return this;
+	        }
+
+	        events = events ? events.split(eventSplitter) : _.keys(calls);
+
+	        // Loop through the callback list, splicing where appropriate.
+	        while (event = events.shift()) {
+	            if (!(list = calls[event]) || !(callback || context)) {
+	                delete calls[event];
+	                continue;
+	            }
+
+	            for (i = list.length - 2; i >= 0; i -= 2) {
+	                if (!(callback && list[i] !== callback || context && list[i + 1] !== context)) {
+	                    list.splice(i, 2);
+	                }
+	            }
+	        }
+
+	        return this;
+	    };
+
+	    // Trigger one or many events, firing all bound callbacks. Callbacks are
+	    // passed the same arguments as `trigger` is, apart from the event name
+	    // (unless you're listening on `"all"`, which will cause your callback to
+	    // receive the true name of the event as the first argument).
+	    obj.trigger = obj.emit = function (events) {
+	        var event, calls, list, i, length, args, all, rest;
+	        if (!(calls = this._callbacks)) return this;
+
+	        rest = [];
+	        events = events.split(eventSplitter);
+
+	        // Fill up `rest` with the callback arguments.  Since we're only copying
+	        // the tail of `arguments`, a loop is much faster than Array#slice.
+	        for (i = 1, length = arguments.length; i < length; i++) {
+	            rest[i - 1] = arguments[i];
+	        }
+
+	        // For each event, walk through the list of callbacks twice, first to
+	        // trigger the event, then to trigger any `"all"` callbacks.
+	        while (event = events.shift()) {
+	            // Copy callback lists to prevent modification.
+	            if (all = calls.all) all = all.slice();
+	            if (list = calls[event]) list = list.slice();
+
+	            // Execute event callbacks.
+	            if (list) {
+	                for (i = 0, length = list.length; i < length; i += 2) {
+	                    list[i].apply(list[i + 1] || this, rest);
+	                }
+	            }
+
+	            // Execute "all" callbacks.
+	            if (all) {
+	                args = [event].concat(rest);
+	                for (i = 0, length = all.length; i < length; i += 2) {
+	                    all[i].apply(all[i + 1] || this, args);
+	                }
+	            }
+	        }
+
+	        return this;
+	    };
+	
+	}( Const.Grid.prototype, Const.utils ));
+	
+	
+	// AMD
+	// ---
+	// Define Constellation as an AMD module if environment is configured.
+	if (typeof(define) === 'function' && typeof(define.amd) === 'object') {
 		define(Const);
 	}
 	
-}( Math.sqrt, Math.min, Math.abs ));
+}).call( this, Math.sqrt, Math.min, Math.abs );

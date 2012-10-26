@@ -1,13 +1,14 @@
 define([
-	'lib/underscore',
-	'mod/grid-model'
+	'lib/constellation',
+	'lib/underscore'
 ],
-function( _, gridModel ) {
+function( Const, _ ) {
 	
-	describe("Grid Model", function() {
+	describe("Constellation Grid", function() {
 		
 		// Environment config...
-		var numUpdateEvents = 0,
+		var gridModel = new Const.Grid(),
+			numUpdateEvents = 0,
 			n0 = 'n0',
 			n1 = 'n1',
 			n2 = 'n2';
@@ -20,7 +21,7 @@ function( _, gridModel ) {
 			return gridModel.getNodeById( a ).to[ b ];
 		}
 		
-		gridModel.on(gridModel.events.CHANGE, function() {
+		gridModel.on( gridModel.events.CHANGE, function() {
 			numUpdateEvents++;
 		});
 		
