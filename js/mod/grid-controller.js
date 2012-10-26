@@ -12,18 +12,12 @@ function( Backbone, constellation, gridModel, selectModel ) {
 	
 	var GridController = Backbone.Model.extend({
 		ALERT: 'alert',
-		searchGrid: new constellation.Grid(),
 		
 		// Tests if the environment is configured for performing node operations.
 		nodeOpsEnabled: function() {
 			return selectModel.type === gridModel.types.NODE;
 		},
-		
-		// Resets all data stored within the Constellation seach grid.
-		resetSearchGrid: function() {
-			this.searchGrid.setData( gridModel.nodes, gridModel.polys );
-		},
-		
+
 		// Joins all nodes within the current selection group.
 		joinNodes: function() {
 			if ( this.nodeOpsEnabled() ) {
@@ -65,9 +59,9 @@ function( Backbone, constellation, gridModel, selectModel ) {
 		
 		// Finds the shortest grid path between two selected points.
 		runPathfinder: function() {
-			if ( this.nodeOpsEnabled() && selectModel.items.length === 2 ) {
-				this.resetSearchGrid();
-				this.searchGrid.findPath( selectModel.items[0], selectModel.items[1] );
+			if ( this.nodeOpsEnabled() && selectModel.selectionSize() === 2 ) {
+				var result = gridModel.findPath( selectModel.items[0], selectModel.items[1] );
+				console.log( result );
 			} else {
 				this.alert("Please select exactly two nodes.");
 			}
@@ -75,11 +69,9 @@ function( Backbone, constellation, gridModel, selectModel ) {
 		
 		// Snaps a node onto the nearest grid line.
 		snapNodeToGrid: function() {
-			if ( this.nodeOpsEnabled() && selectModel.items.length === 1 ) {
-				this.resetSearchGrid();
-				
+			if ( this.nodeOpsEnabled() && selectModel.selectionSize() === 1 ) {
 				var node = gridModel.getNodeById( selectModel.items[0] ),
-					to = this.searchGrid.snapPointToGrid( node );
+					to = gridModel.snapPointToGrid( node );
 				
 				node.x = to.x;
 				node.y = to.y;
@@ -91,15 +83,24 @@ function( Backbone, constellation, gridModel, selectModel ) {
 		},
 		
 		// Finds and selects the nearest point to the current selection.
-		addNearestGridNode: function() {
-			if ( this.nodeOpsEnabled() && selectModel.items.length === 1 ) {
-				this.resetSearchGrid();
-				
-				var node = gridModel.getNodeById( selectModel.items[0] ),
-					nearest = this.searchGrid.getNearestNodeToPoint( node );
-				
+		selectNearestGridNode: function() {
+			if ( this.nodeOpsEnabled() && selectModel.selectionSize() === 1 ) {
+				var nearest = gridModel.getNearestNodeToNode( selectModel.items[0] );
 				selectModel.select( nearest.id );
-
+			} else {
+				this.alert("Please select exactly one node.");
+			}
+		},
+		
+		// Hit tests a node among all polygon definitions.
+		hitTestNodeInPolygons: function() {
+			if ( this.nodeOpsEnabled() && selectModel.selectionSize() === 1 ) {
+				var node = gridModel.getNodeById( selectModel.items[0] ),
+					polys = gridModel.getPolygonHitsForPoint( node );
+				
+				if (polys.length) {
+					selectModel.setSelection( polys );
+				}
 			} else {
 				this.alert("Please select exactly one node.");
 			}

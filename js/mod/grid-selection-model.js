@@ -15,19 +15,31 @@ function( _, Backbone ) {
 		items: [],
 		type: '',
 		
+		// Specifies the number of selected items.
+		selectionSize: function() {
+			return this.items.length;
+		},
+		
+		// Selects a group of common geometry types by id reference.
+		setSelection: function( group ) {
+			this.setType( group[0] );
+			this.items = group;
+			this.update();
+		},
+		
 		// Sets current selection group type (node or polygon)
 		// Group type is defined by the first character of an id.
-		setType: function( id, silent ) {
+		setType: function( id ) {
 			id = id.substr(0, 1).toLowerCase();
 			if ( this.type.length && this.type !== id ) {
-				this.deselectAll( silent );
+				this.deselectAll();
 			}
 			this.type = id;
 		},
 		
 		// Toggles the selection status of a node.
 		toggle: function( id ) {
-			this.setType( id, true );
+			this.setType( id );
 			if ( !this.select( id ) ) {
 				this.deselect( id );
 				return false;
@@ -37,7 +49,7 @@ function( _, Backbone ) {
 		
 		// Selects a node by ID reference.
 		select: function( id ) {
-			this.setType( id, true );
+			this.setType( id );
 			if ( !_.contains(this.items, id) ) {
 				this.items.push( id );
 				this.update();

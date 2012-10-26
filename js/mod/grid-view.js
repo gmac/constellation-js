@@ -36,17 +36,15 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 		
 		// Generates a polygon drawing path based on polygon model.
 		getPolygonPath: function( model ) {
-			var draw = '',
-				node,
-				i;
+			var draw = '';
 			
-			for ( i = 0; i < model.sides; i++ ) {
-				node = gridModel.getNodeById( model.nodes[i] );
-				
-				if (node) {
-					draw += (i <= 0 ? 'M' : 'L') + node.x +' '+ node.y +' ';
+			_.each(model.nodes, function( id, index ) {
+				var node = gridModel.getNodeById( id );
+				if ( node ) {
+					draw += (index <= 0 ? 'M' : 'L') + node.x +' '+ node.y +' ';
 				}
-			}
+			});
+			
 			return draw+'Z';
 		},
 		
@@ -63,7 +61,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			_.each(gridModel.polys, function(poly, id) {
 				polys[ poly.id ] = {
 					id: poly.id,
-					clss: poly.nodes.join(' '),
+					nodes: poly.nodes.join(' '),
 					d: self.getPolygonPath(poly)
 				};
 			});

@@ -44,7 +44,7 @@
 	<script type="text/template" id="grid-view">
 		<svg>
 			<% _.each(polys, function(p) { %>
-			<path id="<%= p.id %>" class="<%= p.clss %>" d="<%= p.d %>"/>
+			<path id="<%= p.id %>" class="<%= p.nodes %>" d="<%= p.d %>"/>
 			<% }); %>
 			<% _.each(lines, function(n) { %>
 			<line x1="<%= n.x1 %>" y1="<%= n.y1 %>" x2="<%= n.x2 %>" y2="<%= n.y2 %>" class="<%= n.id %>"/>
