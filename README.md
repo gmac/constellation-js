@@ -56,8 +56,7 @@ Constellation Grid is a discrete component which must be instanced to use its AP
 Constructor for a new Constellation grid. All grid operations are run through an instance.
 
 **Grid.Node** `use grid.addNode();`
-
-Constellation grid Node object; use a Const.Grid to create and manage node instances. Grid nodes have the following properties:
+ Constellation grid Node object; use a Const.Grid to create and manage node instances. Grid nodes have the following properties:
 
 - id: unique identifier for the node. Don't touch this.
 - x: X-coordinate of the node.
@@ -65,29 +64,26 @@ Constellation grid Node object; use a Const.Grid to create and manage node insta
 - to: Table of connections to other nodes. Seriously, don't touch this.
 - data: A data object of user-defined data attached to the node.
 
-**Grid.Polygon** `use grid.addPolygon();`
 
-Constellation grid Polygon object; use a Const.Grid to create and manage polygon instances. Grid polygons have the following properties:
+**Grid.Polygon** `use grid.addPolygon();`
+ Constellation grid Polygon object; use a Const.Grid to create and manage polygon instances. Grid polygons have the following properties:
 
 - id: unique identifier for the node. Don't touch this.
 - nodes: Array of node ids defining the polygon ring.
 - data: A data object of user-defined data attached to the polygon.
 
-**addNode** `grid.addNode( x?, y?, data? );`
 
-Adds a new Grid.Node object with specified X and Y coordinates, and an optional data object. Returns the new node id.
+**addNode** `grid.addNode( x?, y?, data? );`
+ Adds a new Grid.Node object with specified X and Y coordinates, and an optional data object. Returns the new node id.
 
 **getNodeById** `grid.getNodeById( id );`
-
-Gets a single grid node by id reference. Returns the Grid.Node object, or null if undefined.
+ Gets a single grid node by id reference. Returns the Grid.Node object, or null if undefined.
 
 **getNodesForIds** `grid.getNodesForIds( [node id] );`
-
-Takes an array of node ids, returns a mapped array of Grid.Node objects.
+ Takes an array of node ids, returns a mapped array of Grid.Node objects.
 
 **getNumNodes** `grid.getNumNodes();`
-
-Specifies the number of nodes in the grid.
+ Specifies the number of nodes in the grid.
 
 **hasNode** `grid.hasNode( id );`
 
