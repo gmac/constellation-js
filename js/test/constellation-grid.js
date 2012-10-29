@@ -3,7 +3,7 @@ define([
 	'lib/underscore'
 ],
 function( Const, _ ) {
-	
+
 	describe("Constellation Grid", function() {
 		
 		// Environment config...
@@ -123,9 +123,9 @@ function( Const, _ ) {
 		});
 		
 		it("splitNodes: should split multiple connected nodes.", function() {
-			var a = gridModel.addNode(0, 0, true),
-				b = gridModel.addNode(100, 100, true), 
-				c = gridModel.addNode(100, 200, true);
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(100, 100), 
+				c = gridModel.addNode(100, 200);
 				
 			gridModel.joinNodes( [a, b, c] );
 			
@@ -145,13 +145,13 @@ function( Const, _ ) {
 			// Remaining connection on the first two nodes should be to the third.
 			expect( getConnection(a, c) ).toBeTruthy();
 			expect( getConnection(a, c) ).toBeTruthy();
-			expect( numUpdateEvents ).toBe( 2 );
+			expect( numUpdateEvents ).toBe( 5 );
 		});
 		
 		it("splitNodes: should defer action when splitting unconnected nodes.", function() {
-			var a = gridModel.addNode(0, 0, true),
-				b = gridModel.addNode(100, 100, true), 
-				c = gridModel.addNode(100, 200, true);
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(100, 100), 
+				c = gridModel.addNode(100, 200);
 			
 			// Join two nodes.
 			gridModel.joinNodes([a, b]);
@@ -167,13 +167,13 @@ function( Const, _ ) {
 			gridModel.splitNodes( [a, c] ); // << takes no action.
 			
 			testNumConnections();
-			expect( numUpdateEvents ).toBe( 1 );
+			expect( numUpdateEvents ).toBe( 4 );
 		});
 		
 		it("splitNodes: should completely detach a single node from all connections while splitting.", function() {
-			var a = gridModel.addNode(0, 0, true),
-				b = gridModel.addNode(100, 100, true), 
-				c = gridModel.addNode(100, 200, true);
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(100, 100), 
+				c = gridModel.addNode(100, 200);
 				
 			gridModel.joinNodes([a, b, c]);
 			
@@ -187,14 +187,14 @@ function( Const, _ ) {
 			expect( numConnections(a) ).toBe(0);
 			expect( numConnections(b) ).toBe(1);
 			expect( numConnections(c) ).toBe(1);
-			expect( numUpdateEvents ).toBe( 2 );
+			expect( numUpdateEvents ).toBe( 5 );
 		});
 		
 		it("detachNodes: should completely detach a group of nodes from all connections.", function() {
-			var a = gridModel.addNode(0, 0, true),
-				b = gridModel.addNode(100, 100, true), 
-				c = gridModel.addNode(100, 200, true),
-				d = gridModel.addNode(100, 200, true);
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(100, 100), 
+				c = gridModel.addNode(100, 200),
+				d = gridModel.addNode(100, 200);
 				
 			gridModel.joinNodes( [a, b, c, d] );
 			
@@ -209,14 +209,14 @@ function( Const, _ ) {
 			expect( numConnections(b) ).toBe(0);
 			expect( numConnections(c) ).toBe(1);
 			expect( numConnections(d) ).toBe(1);
-			expect( numUpdateEvents ).toBe( 2 );
+			expect( numUpdateEvents ).toBe( 6 );
 		});
 		
 		it("removeNodes: should remove a valid node, and detach its connections.", function() {
-			var a = gridModel.addNode(0, 0, true),
-				b = gridModel.addNode(100, 100, true), 
-				c = gridModel.addNode(100, 200, true),
-				d = gridModel.addNode(200, 200, true);
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(100, 100), 
+				c = gridModel.addNode(100, 200),
+				d = gridModel.addNode(200, 200);
 			
 			// Expect four nodes in the model.
 			expect( gridModel.getNumNodes() ).toBe(4);
@@ -239,12 +239,12 @@ function( Const, _ ) {
 			// Confirm that C and D are still connected to one another.
 			expect( getConnection(c, d) ).toBeTruthy();
 			expect( getConnection(d, c) ).toBeTruthy();
-			expect( numUpdateEvents ).toBe( 2 );
+			expect( numUpdateEvents ).toBe( 6 );
 		});
 		
 		it("removeNodes: should defer action when removing an invalid node reference.", function() {
-			var a = gridModel.addNode(0, 0, true),
-				b = gridModel.addNode(100, 100, true);
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(100, 100);
 			
 			// Expect two nodes in the model.
 			expect( gridModel.getNumNodes() ).toBe(2);
@@ -254,51 +254,51 @@ function( Const, _ ) {
 			
 			// Expect A to have been removed, and the invalid reference to have been ignored.
 			expect( gridModel.getNumNodes() ).toBe(1);
-			expect( numUpdateEvents ).toBe( 1 );
+			expect( numUpdateEvents ).toBe( 3 );
 		});
 		
 		it("removeNodes: should remove all dependent polygons while removing a node.", function() {
-			var a = gridModel.addNode(0, 0, true),
-				b = gridModel.addNode(100, 100, true), 
-				c = gridModel.addNode(100, 200, true),
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(100, 100), 
+				c = gridModel.addNode(100, 200),
 				p = gridModel.addPolygon( [a, b, c] );
 				
 			expect( gridModel.getNumPolygons() ).toBe(1);
 			gridModel.removeNodes( [a, b] );
 			expect( gridModel.getNumPolygons() ).toBe(0);
-			expect( numUpdateEvents ).toBe( 2 );
+			expect( numUpdateEvents ).toBe( 5 );
 		});
 		
 		it("addPolygon: should create a polygon from a group of nodes, and return its id.", function() {
-			var a = gridModel.addNode(0, 0, true),
-				b = gridModel.addNode(100, 100, true), 
-				c = gridModel.addNode(100, 200, true),
-				p = gridModel.addPolygon( [a, b, c], true );
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(100, 100), 
+				c = gridModel.addNode(100, 200),
+				p = gridModel.addPolygon( [a, b, c] );
 
 			expect( p ).toBeTruthy();
 			expect( gridModel.getNumPolygons() ).toBe(1);
 			expect( gridModel.getPolygonById(p).nodes.length ).toBe(3);
-			expect( numUpdateEvents ).toBe( 0 );
+			expect( numUpdateEvents ).toBe( 4 );
 		});
 		
 		it("addPolygon: should defer action when creating a polygon with less than three nodes.", function() {
-			var a = gridModel.addNode(0, 0, true),
-				b = gridModel.addNode(100, 100, true),
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(100, 100),
 				p = gridModel.addPolygon( [a, b] ); // << takes no action.
 
 			expect( p ).toBeFalsy();
 			expect( gridModel.getNumPolygons() ).toBe(0);
-			expect( numUpdateEvents ).toBe( 0 );
+			expect( numUpdateEvents ).toBe( 2 );
 		});
 		
 		it("addPolygon: should defer action when creating a polygon with an invalid node reference.", function() {
-			var a = gridModel.addNode(0, 0, true),
-				b = gridModel.addNode(100, 100, true),
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(100, 100),
 				p = gridModel.addPolygon( [a, b, 'sfoo'] ); // << takes no action.
 
 			expect( p ).toBeFalsy();
 			expect( gridModel.getNumPolygons() ).toBe(0);
-			expect( numUpdateEvents ).toBe( 0 );
+			expect( numUpdateEvents ).toBe( 2 );
 		});
 		
 		it("getPolygonById: should get a single polygon by id reference.", function() {
@@ -322,38 +322,38 @@ function( Const, _ ) {
 		});
 		
 		it("removePolygons: should remove multiple valid polygons.", function() {
-			var a = gridModel.addNode(0, 0, true),
-				b = gridModel.addNode(100, 100, true), 
-				c = gridModel.addNode(100, 200, true),
-				p1 = gridModel.addPolygon([a, b, c], true),
-				p2 = gridModel.addPolygon([a, b, c], true);
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(100, 100), 
+				c = gridModel.addNode(100, 200),
+				p1 = gridModel.addPolygon([a, b, c]),
+				p2 = gridModel.addPolygon([a, b, c]);
 				
 			expect( gridModel.getNumPolygons() ).toBe(2);
 			
 			gridModel.removePolygons( [p1, p2] );
 			
 			expect( gridModel.getNumPolygons() ).toBe(0);
-			expect( numUpdateEvents ).toBe( 1 );
+			expect( numUpdateEvents ).toBe( 6 );
 		});
 		
 		it("removePolygons: should defer action when removing an invalid polygon reference.", function() {
-			var a = gridModel.addNode(0, 0, true),
-				b = gridModel.addNode(100, 100, true), 
-				c = gridModel.addNode(100, 200, true),
-				p1 = gridModel.addPolygon([a, b, c], true),
-				p2 = gridModel.addPolygon([a, b, c], true);
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(100, 100), 
+				c = gridModel.addNode(100, 200),
+				p1 = gridModel.addPolygon([a, b, c]),
+				p2 = gridModel.addPolygon([a, b, c]);
 				
 			expect( gridModel.getNumPolygons() ).toBe(2);
 			
 			gridModel.removePolygons( [p1, 'invalid'] );
 			
 			expect( gridModel.getNumPolygons() ).toBe(1);
-			expect( numUpdateEvents ).toBe( 1 );
+			expect( numUpdateEvents ).toBe( 6 );
 		});
 		
 		it("findPath: should find a path between two joined nodes.", function() {
-			var a = gridModel.addNode(0, 0, true),
-				b = gridModel.addNode(0, 100, true);
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(0, 100);
 				
 			gridModel.joinNodes( [a, b] );
 			
@@ -393,24 +393,68 @@ function( Const, _ ) {
 			expect( result.nodes.length ).toBe( 0 );
 		});
 		
-		it("findPath: should find the shortest path between two nodes, regardless of connection count.", function() {
-			var a = gridModel.addNode(0, 0, true),
-				b = gridModel.addNode(25, 0, true),
-				c = gridModel.addNode(75, 0, true),
-				d = gridModel.addNode(100, 0, true),
-				e = gridModel.addNode(50, 100, true);
+		it("findPath: should find the shortest path between two nodes by default, regardless of connection count.", function() {
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(25, 0),
+				c = gridModel.addNode(75, 0),
+				d = gridModel.addNode(100, 0),
+				e = gridModel.addNode(50, 100);
 				
 			gridModel.joinNodes( [a, b] );
 			gridModel.joinNodes( [b, c] );
 			gridModel.joinNodes( [c, d] );
 			gridModel.joinNodes( [a, e] );
-			gridModel.joinNodes( [c, d] );
+			gridModel.joinNodes( [e, d] );
 			
 			var result = gridModel.findPath( a, d );
+
+			expect( result.valid ).toBeTruthy();
+			expect( result.weight ).toBe( 100 );
+			expect( result.nodes.length ).toBe( 4 );
+		});
+		
+		it("findPath: should allow custom grid searches using weighting, estimating, and prioratizing functions.", function() {
+			var a = gridModel.addNode(0, 0, {weight: 2}),
+				b = gridModel.addNode(25, 0, {weight: 3}),
+				c = gridModel.addNode(75, 0, {weight: 3}),
+				d = gridModel.addNode(100, 0, {weight: 2}),
+				e = gridModel.addNode(50, 100, {weight: 2});
+				
+			gridModel.joinNodes( [a, b] );
+			gridModel.joinNodes( [b, c] );
+			gridModel.joinNodes( [c, d] );
+			gridModel.joinNodes( [a, e] );
+			gridModel.joinNodes( [e, d] );
+			
+			var result = gridModel.findPath(a, d, function( lastNode, currentNode ) {
+				return currentNode.data.weight;
+			}, function( currentNode, goalNode ) {
+				return goalNode.data.weight;
+			});
+
+			expect( result.valid ).toBeTruthy();
+			expect( result.weight ).toBe( 6 );
+			expect( result.nodes.length ).toBe( 3 );
+		});
+		
+		it("findPathWithFewestNodes: should find a path between two points with the fewest possible nodes connections.", function() {
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(25, 0),
+				c = gridModel.addNode(75, 0),
+				d = gridModel.addNode(100, 0),
+				e = gridModel.addNode(50, 100);
+				
+			gridModel.joinNodes( [a, b] );
+			gridModel.joinNodes( [b, c] );
+			gridModel.joinNodes( [c, d] );
+			gridModel.joinNodes( [a, e] );
+			gridModel.joinNodes( [e, d] );
+			
+			var result = gridModel.findPathWithFewestNodes(a, d);
 			
 			expect( result.valid ).toBeTruthy();
-			expect( result.length ).toBe( 100 );
-			expect( result.nodes.length ).toBe( 4 );
+			expect( result.weight ).toBe( 3 );
+			expect( result.nodes.length ).toBe( 3 );
 		});
 		
 		it("snapPointToGrid: should return a point snapped to the nearest grid line segment.", function() {
@@ -494,12 +538,12 @@ function( Const, _ ) {
 		});
 		
 		it("getPolygonHitsForPoint: should return an array of all polygon ids hit by a point.", function() {
-			var a = gridModel.addNode(0, 0, true),
-				b = gridModel.addNode(100, 0, true), 
-				c = gridModel.addNode(0, 100, true),
-				d = gridModel.addNode(100, 100, true),
-				p1 = gridModel.addPolygon( [a, b, c], true ),
-				p2 = gridModel.addPolygon( [a, c, d], true ),
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(100, 0), 
+				c = gridModel.addNode(0, 100),
+				d = gridModel.addNode(100, 100),
+				p1 = gridModel.addPolygon( [a, b, c] ),
+				p2 = gridModel.addPolygon( [a, c, d] ),
 				hit1 = gridModel.getPolygonHitsForPoint({x:5, y:50}),
 				hit2 = gridModel.getPolygonHitsForPoint({x:50, y:5}),
 				hit3 = gridModel.getPolygonHitsForPoint({x:95, y:50});
@@ -507,6 +551,29 @@ function( Const, _ ) {
 			expect( hit1.length ).toBe( 2 );
 			expect( hit2.length ).toBe( 1 );
 			expect( hit3.length ).toBe( 0 );
+		});
+		
+		it("getNodesInPolygon: should return an array of all node ids contained within a polygon.", function() {
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(100, 0), 
+				c = gridModel.addNode(0, 100),
+				d = gridModel.addNode(10, 10),
+				e = gridModel.addNode(15, 15),
+				p = gridModel.addPolygon( [a, b, c], true ),
+				hits = gridModel.getNodesInPolygon( p );
+				
+			expect( hits.length ).toBe( 2 );
+			expect( hits.sort().join() ).toBe( [d, e].sort().join() );
+		});
+		
+		it("getNodesInRect: should return an array of all node ids contained within a rectangle.", function() {
+			var a = gridModel.addNode(0, 0),
+				b = gridModel.addNode(50, 50), 
+				c = gridModel.addNode(100, 100),
+				hits = gridModel.getNodesInRect( new Const.Rect(75, 75, -100, -100) );
+				
+			expect( hits.length ).toBe( 2 );
+			expect( hits.sort().join() ).toBe( [a, b].sort().join() );
 		});
 	});
 });

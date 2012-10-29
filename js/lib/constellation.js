@@ -8,7 +8,7 @@
 /*global define, console */
 /*jslint browser:true, white:true, plusplus:true, vars:true */
 
-(function( sqrt, min, abs ) {
+(function( sqrt, min, max, abs ) {
 	"use strict";
 
 	var root = this;
@@ -151,6 +151,22 @@
 	
 	// Const.Point
 	// -----------
+	var Point = Const.Point = function( x, y ) {
+		this.x = x || 0;
+		this.y = y || 0;
+	};
+	
+	// Const.Rect
+	// ----------
+	var Rect = Const.Rect = function( x, y, w, h ) {
+		this.x = x || 0;
+		this.y = y || 0;
+		this.width = w || 0;
+		this.height = h || 0;
+	};
+	
+	// Const Geom Methods
+	// ------------------
 	// Tests the distance between two points.
 	Const.distance = function( a, b ) {
 		var h = b.x-a.x,
@@ -158,23 +174,66 @@
 		return sqrt(h*h + v*v);
 	};
 	
-	// Tests for intersection between line segments AB and CD.
-	Const.intersect = function( a, b, c, d ) {
-		// Tests for counter-clockwise winding among three points.
-		// Specifically written for intersection test:
-		// Uses ">=" (rather than ">") to account for equal points.
-		function ccw(x, y, z) {
-			return (z.y-x.y) * (y.x-x.x) >= (y.y-x.y) * (z.x-x.x);
-		}
-		return ccw(a, c, d) !== ccw(b, c, d) && ccw(a, b, c) !== ccw(a, b, d);
+	// Tests for counter-clockwise winding among three points.
+	// @param x: Point X of triangle XYZ.
+	// @param y: Point Y of triangle XYZ.
+	// @param z: Point Z of triangle XYZ.
+	// @param exclusive boolean: when true, equal points will be excluded from the test.
+	Const.ccw = function( x, y, z, exclusive ) {
+		return exclusive ?
+		 	(z.y-x.y) * (y.x-x.x) > (y.y-x.y) * (z.x-x.x) :
+			(z.y-x.y) * (y.x-x.x) >= (y.y-x.y) * (z.x-x.x);
 	};
-
+	
+	// Tests for intersection between line segments AB and CD.
+	// @param a: Point A of line AB.
+	// @param b: Point B of line AB.
+	// @param c: Point C of line CD.
+	// @param d: Point D of line CD.
+	// @return: true if AB intersects CD.
+	Const.intersect = function( a, b, c, d ) {
+		return this.ccw(a, c, d) !== this.ccw(b, c, d) && this.ccw(a, b, c) !== this.ccw(a, b, d);
+	};
+	
+	// Gets the rectangular bounds of a point ring.
+	// @param points: The ring of points to measure bounding on.
+	// @return: a new Rect object of the ring's maximum extent.
+	Const.getRectForPointRing = function( points ) {
+		var first = points[0],
+			minX = first.x,
+			maxX = first.x,
+			minY = first.y,
+			maxY = first.y;
+		
+		_c.each( points, function( pt ) {
+			minX = min( minX, pt.x );
+			maxX = max( maxX, pt.x );
+			minY = min( minY, pt.y );
+			maxY = max( maxY, pt.y );
+		});
+		
+		return new Rect(minX, minY, maxX-minX, maxY-minY);
+	};
+	
+	// Tests if point P falls within a rectangle.
+	// @param p: The point to test.
+	// @param rect: The Rect object to test against.
+	// @return: true if point falls within rectangle.
+	Const.hitTestRect = function( p, rect ) {
+		var minX = min( rect.x, rect.x + rect.width ),
+			maxX = max( rect.x, rect.x + rect.width ),
+			minY = min( rect.y, rect.y + rect.height ),
+			maxY = max( rect.y, rect.y + rect.height );
+		
+		return p.x >= minX && p.y >= minY && p.x <= maxX && p.y <= maxY;
+	};
+	
 	// Tests if point P falls within a polygonal region; test performed by ray scan.
 	// @param p: The point to test.
-	// @param poly: An array of points forming a polygonal shape.
-	// @return: true if point falls within polygon.
-	Const.hitTestPolygon = function( p, poly ) {
-		var sides = poly.length,
+	// @param points: An array of points forming a polygonal shape.
+	// @return: true if point falls within point ring.
+	Const.hitTestPointRing = function( p, points ) {
+		var sides = points.length,
 			origin = new Const.Point(0, p.y),
 			hits = 0,
 			i = 0,
@@ -183,8 +242,8 @@
 	
 		// Test intersection of an external ray against each polygon side.
 		while ( i < sides ) {
-			s1 = poly[i];
-			s2 = poly[(i+1) % sides];
+			s1 = points[i];
+			s2 = points[(i+1) % sides];
 			origin.x = min(origin.x, min(s1.x, s2.x)-1);
 			hits += (this.intersect(origin, p, s1, s2) ? 1 : 0);
 			i++;
@@ -195,10 +254,10 @@
 	};
 
 	// Snaps point P to the nearest position along line segment AB.
-	// @param p: The point to snap.
-	// @param a: An array of points forming a polygonal shape.
-	// @param b: An array of points forming a polygonal shape.
-	// @return: A new point object with "x" and "y" coordinates.
+	// @param p: Point P to snap to line segment AB.
+	// @param a: Point A of line segment AB.
+	// @param b: Point B of line segment AB.
+	// @return: new Point object with snapped coordinates.
 	Const.snapPointToLine = function( p, a, b ) {
 		var ap1 = p.x-a.x,
 			ap2 = p.y-a.y,
@@ -217,9 +276,9 @@
 	};
 
 	// Finds the nearest point within an array of points to target P.
-	// @param points: An array of points to find the nearest neighbor within.
-	// @param p: The point to test.
-	// @return: nearst point from list of points.
+	// @param p: Point P to test against.
+	// @param points: Array of Points to find the nearest point within.
+	// @return: nearest Point to P, or null if no points were available.
 	Const.getNearestPointToPoint = function( p, points ) {
 		var i = points.length-1,
 			a,
@@ -250,38 +309,58 @@
 		return bestPt;
 	};
 	
-	// Const.Point
-	// -----------
-	Const.Point = function( x, y ) {
-		this.x = x || 0;
-		this.y = y || 0;
-	};
-	
 	// Const.Node
 	// ----------
-	Const.Node = function( id, x, y, to ) {
+	var Node = Const.Node = function( id, x, y, data, to ) {
 		this.id = id;
 		this.x = x || 0;
 		this.y = y || 0;
 		this.to = to || {};
+		this.data = data || null;
 	};
 	
 	// Const.Polygon
 	// -------------
-	Const.Polygon = function( id, nodes ) {
+	var Polygon = Const.Polygon = function( id, nodes ) {
 		this.id = id;
 		this.nodes = nodes.slice();
 	};
 	
+	// Const.Path
+	// ----------
+	var Path = Const.Path = function(nodes, weight, estimate) {
+		this.nodes = (nodes || []);
+		this.weight = (weight || 0);
+		this.estimate = (estimate || 0);
+	};
+	Path.prototype = {
+		copy: function(weight, estimate) {
+			return new Path(this.nodes.slice(), (weight || this.weight), (estimate || this.estimate));
+		},
+		last: function() {
+			return this.nodes[ this.nodes.length-1 ];
+		},
+		contains: function(node) {
+			return _c.contains(node);
+		},
+		prioratize: function(a, b) {
+			return b.estimate - a.estimate;
+		},
+		dispose: function() {
+			this.nodes.length = 0;
+			this.nodes = null;
+		}
+	};
+	
 	// Const.Grid
 	// ----------
-	Const.Grid = function(nodes, polys) {
+	var Grid = Const.Grid = function(nodes, polys) {
 		this.nodes = {};
 		this.polys = {};
 		this.icount = 0;
 		this.setData(nodes, polys);
 	};
-	Const.Grid.prototype = {
+	Grid.prototype = {
 		
 		// Defines event names used by the library.
 		events: {
@@ -317,10 +396,10 @@
 		},
 		
 		// Adds a new node to the grid at the specified X and Y coordinates.
-		addNode: function( x, y, silent ) {
-			var node = new Const.Node( this.types.NODE+ this.icount++, x, y );
+		addNode: function( x, y, data, silent ) {
+			var node = new Node( this.types.NODE+ this.icount++, x, y, data );
 			this.nodes[ node.id ] = node;
-			this.update(true, silent);
+			this.update( true, silent );
 			return node.id;
 		},
 		
@@ -479,9 +558,9 @@
 			var poly;
 			
 			if ( group.length >= 3 && this.hasNodes(group) ) {
-				poly = new Const.Polygon( this.types.POLYGON+ this.icount++, group );
+				poly = new Polygon( this.types.POLYGON+ this.icount++, group );
 				this.polys[ poly.id ] = poly;
-				this.update(true, silent);
+				this.update( true, silent );
 				return poly.id;
 			}
 			return null;
@@ -545,46 +624,27 @@
 		//  @attr length: length of completed path.
 		//  @attr cycles: number of cycles required to complete the search.
 		//  @attr nodes: an array of path nodes, formatted as [startNode, ...connections, goalNode].
-		findPath: function( start, goal ) {
+		findPath: function( start, goal, weightFunction, estimateFunction ) {
 			
-			function Path(nodes, length, estimate) {
-				this.nodes = (nodes || []);
-				this.length = (length || 0);
-				this.estimate = (estimate || 0);
-			}
-			Path.prototype = {
-				copy: function(length, estimate) {
-					return new Path(this.nodes.slice(), (length || this.length), (estimate || this.estimate));
-				},
-				last: function() {
-					return this.nodes[ this.nodes.length-1 ];
-				},
-				contains: function(node) {
-					return _c.contains(node);
-				},
-				prioratize: function(a, b) {
-					return b.estimate - a.estimate;
-				},
-				dispose: function() {
-					this.nodes.length = 0;
-					this.nodes = null;
-				}
-			};
-			
-			var queue = [], // Queue of paths to search, sorted by estimated length (longest to shortest).
-				distances = {}, // Table of shortest distances found to each node id.
+			var queue = [], // Queue of paths to search, sorted by estimated weight (highest to lowest).
+				weights = {}, // Table of shortest weights found to each node id.
 				bestPath, // The best completed path found to goal.
 				searchPath, // A current path to be extended and searched.
 				searchNode, // A current node to extend outward and searched from.
 				branchPath, // A new path branch for the search queue.
-				branchLength, // Actual length of a new branch being explored.
-				branchEstimate, // Estimated best-case length of new branch reaching goal.
+				branchWeight, // Current weight of a new branch being explored.
+				branchEstimate, // Estimated best-case weight of new branch reaching goal.
 				startNode = this.getNodeById( start ),
 				goalNode = this.getNodeById( goal ),
 				cycles = 0,
 				i;
-				
-			queue.push( new Path([startNode]) );
+			
+			// Default weight and estimate functions to use distance calculation.
+			if ( typeof weightFunction !== "function" ) weightFunction = Const.distance;
+			if ( typeof estimateFunction !== "function" ) estimateFunction = Const.distance;
+
+			// Create initial search path with default weight from/to self.
+			queue.push( new Path([startNode], weightFunction(startNode, startNode)) );
 
 			// While the queue contains paths:
 			while (queue.length > 0) {
@@ -598,18 +658,18 @@
 
 						// Reject loops.
 						if (!!searchNode && !searchPath.contains( searchNode )) {
-							branchLength = searchPath.length + Const.distance( startNode, searchNode );
+							branchWeight = searchPath.weight + weightFunction( startNode, searchNode );
 
 							// Test branch fitness.
-							if (branchLength <= (distances[searchNode.id] || branchLength)) {
-								distances[searchNode.id] = branchLength;
-								branchEstimate = branchLength + Const.distance( searchNode, goalNode );
+							if (branchWeight <= (weights[searchNode.id] || branchWeight)) {
+								weights[searchNode.id] = branchWeight;
+								branchEstimate = branchWeight + estimateFunction( searchNode, goalNode );
 
 								// Test for viable path to goal.
-								if (!bestPath || branchEstimate < bestPath.length) {
+								if (!bestPath || branchEstimate < bestPath.weight) {
 
 									// Create a new branch path extended to search node.
-									branchPath = searchPath.copy(branchLength, branchEstimate);
+									branchPath = searchPath.copy(branchWeight, branchEstimate);
 									branchPath.nodes.push( searchNode );
 
 									// Test if goal has been reached.
@@ -636,23 +696,29 @@
 				searchPath.dispose();
 				searchPath = startNode = null;
 
-				// Sort queue by estimate length, longest to shortest.
-				queue.sort(Path.prototype.prioratize);
+				// Sort queue by estimate to complete, highest to lowest.
+				queue.sort( Path.prototype.prioratize );
 
 				// Count search cycle.
 				cycles++;
 			}
 
 			// Cleanup local references.
-			queue = distances = goalNode = null;
+			queue = weights = goalNode = null;
 
 			// Return best discovered path.
 			return {
 				valid: !!bestPath,
-				length: (bestPath ? bestPath.length : 0),
+				weight: (bestPath ? bestPath.weight : 0),
 				cycles: cycles,
 				nodes: (bestPath ? bestPath.nodes : [])
 			};
+		},
+		
+		// Finds a path between two points with the fewest number of connections.
+		findPathWithFewestNodes: function( start, goal ) {
+			function oneStep() { return 1; }
+			return this.findPath( start, goal, oneStep, oneStep );
 		},
 		
 		// Snaps the provided point to the nearest position within the node grid.
@@ -687,30 +753,29 @@
 		},
 		
 		// Finds the nearest node to the specified node.
-		// @param origin  The origin node to search from.
-		// @return  The nearest other grid node to the specified target.
-		getNearestNodeToNode: function( origin ) {
-			var nearest = null;
-			origin = this.getNodeById( origin );
+		// @param origin: The origin node to search from.
+		// @return: The nearest other grid node to the specified target.
+		getNearestNodeToNode: function( id ) {
+			var nearest = null,
+				nodes = [],
+				target = this.getNodeById( id );
 			
-			if ( origin ) {
-				var nodes = [];
-
-				_c.each( this.nodes, function( node, id ) {
-					if ( id !== origin.id ) {
+			if ( target ) {
+				_c.each( this.nodes, function( node ) {
+					if ( node.id !== target.id ) {
 						nodes.push( node );
 					}
 				}, this);
 
-				nearest = Const.getNearestPointToPoint( origin, nodes );
+				nearest = Const.getNearestPointToPoint( target, nodes );
 				nodes.length = 0;
 			}
 			return nearest;
 		},
 		
 		// Finds the nearest node to a specified point within the grid.
-		// @param pt  The point to snap into the grid.
-		// @return  
+		// @param pt: Point to test.
+		// @return: Nearest Node to target Point.
 		getNearestNodeToPoint: function( pt ) {
 			var nodes = [];
 			
@@ -723,41 +788,69 @@
 			return pt;
 		},
 		
-		// Tests if a point intersects any polygon in the grid.
-		// @param pt  The point to hit test.
-		// @return  True if the point intersects any polygon.
-		/*hitTestNodeInPolygons: function( node ) {
-			node = this.getNodeById(node);
-			if (node) {
-				return this.hitTestPointInPolygons( node );
-			}
-			return false;
-		},*/
-		
-		// Tests if a point intersects any polygon in the grid.
-		// @param pt  The point to hit test.
-		// @return  True if the point intersects any polygon.
+		// Tests if a Point intersects any Polygon in the grid.
+		// @param pt: Point to test.
+		// @return: True if the point intersects any polygon.
 		hitTestPointInPolygons: function( pt ) {
 			for ( var i in this.polys ) {
-				if ( this.polys.hasOwnProperty(i) && Const.hitTestPolygon( pt, this.getNodesForPolygon(i) ) ) {
+				if ( this.polys.hasOwnProperty(i) && Const.hitTestPointRing( pt, this.getNodesForPolygon(i) ) ) {
 					return true;
 				}
 			}
 			return false;
 		},
 		
-		// Tests a point for intersections with all polygons in the grid, and returns their ids.
+		// Tests a Point for intersections with all Polygons in the grid, and returns their ids.
 		// @param pt  The point to snap into the grid.
-		// @return  A new point with the snapped position, or the original point if no grid was searched.
+		// @return  Array of Polygon ids that hit the specified Point.
 		getPolygonHitsForPoint: function( pt ) {
 			var hits = [];
 			
 			_c.each( this.polys, function( poly, id ) {
-				if ( Const.hitTestPolygon( pt, this.getNodesForPolygon(id) ) ) {
+				if ( Const.hitTestPointRing( pt, this.getNodesForPolygon(id) ) ) {
 					hits.push( poly.id );
 				}
 			}, this);
 			
+			return hits;
+		},
+		
+		// Tests a Polygon for intersections with all nodes in the grid, and returns their ids.
+		// @param id  The polygon id to test.
+		// @return  Array of node ids that fall within the specified Polygon.
+		getNodesInPolygon: function( id ) {
+			var hits = [],
+				poly = this.getPolygonById( id ),
+				points = this.getNodesForPolygon( id ),
+				rect = Const.getRectForPointRing( points );
+
+			if (poly) {
+				_c.each( this.nodes, function( node ) {
+					// Run incrementally costly tests:
+					// 1) node in rect?
+					// 2) node not in ring?
+					// 3) node in polygon?
+					if ( Const.hitTestRect( node, rect ) && !_c.contains( poly.nodes, node.id ) && Const.hitTestPointRing( node, points ) ) {
+						hits.push( node.id );
+					}
+				}, this);
+			}
+
+			return hits;
+		},
+		
+		// Tests a Rect for intersections with all nodes in the grid, and returns their ids.
+		// @param id  The polygon id to test.
+		// @return  Array of node ids that fall within the specified Rect.
+		getNodesInRect: function( rect ) {
+			var hits = [];
+			
+			_c.each( this.nodes, function( node ) {
+				if ( Const.hitTestRect( node, rect ) ) {
+					hits.push( node.id );
+				}
+			}, this);
+
 			return hits;
 		}
 	};
@@ -874,4 +967,4 @@
 		define(Const);
 	}
 	
-}).call( this, Math.sqrt, Math.min, Math.abs );
+}).call( this, Math.sqrt, Math.min, Math.max, Math.abs );
