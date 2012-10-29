@@ -18,32 +18,40 @@ Constellation root scope provides basic geometry operations and geometric primit
 **Const.Point** `var point = new Const.Point( x, y );`  
 Constellation point primitive. Const.Point objects have the following properties:
 
-- x: X-coordinate of the point.
-- y: Y-coordinate of the point.
+- x: horizontal coordinate of the point.
+- y: vertical coordinate of the point.
 
 **Const.Rect** `var rect = new Const.Rect( x, y, width, height );`  
 Constellation rectangle primitive. Const.Rect objects have the following properties:
 
-- x: X-coordinate of the rectangle origin.
-- y: Y-coordinate of the rectangle origin.
+- x: horizontal coordinate of the rectangle origin.
+- y: vertical coordinate of the rectangle origin.
 - width: rectangle width.
 - height: rectangle height.
 
-**Const.distance**
+**Const.distance** `var result = Const.distance( point1, point2 );`  
+Calculates the distance between two provided Const.Point objects.
 
-**Const.ccw**
+**Const.ccw** `var result = Const.ccw( point1, point2, point3, exclusive? );`  
+Tests for counter-clockwise winding among three Const.Point objects. Returns true if the three points trend in a counter-clockwise arc. Useful for intersection tests. Passing `true` for the optional `exclusive` param will pass balanced arcs.
 
-**Const.intersect**
+**Const.intersect** `var result = Const.intersect( pointA, pointB, pointC, pointD );`  
+Tests for intersection between line segments AB and CD. Returns true if the line segments intersect.
 
-**Const.getRectForPointRing**
+**Const.getRectForPointRing** `var result = Const.getRectForPointRing( [points] );`  
+Takes an array of Const.Point objects; returns a Const.Rect object of their bounding box.
 
-**Const.hitTestRect**
+**Const.hitTestRect** `var result = Const.getRectForPointRing( pointP, rect );`  
+Takes a target point P and a rectangle object; returns true if the point falls within the rectangle.
 
-**Const.hitTestPointRing**
+**Const.hitTestPointRing** `var result = Const.hitTestPointRing( pointP, [points] );`  
+Takes a target point P and an array of points defining a ring. Returns true if P falls within the ring of points. Hit test is performed using the ray-casting method.
 
-**Const.snapPointToLine**
+**Const.snapPointToLineSegment** `var result = Const.snapPointToLineSegment( pointP, pointA, pointB );`  
+Takes a target point P, and snaps it to the nearest point along line segment AB.
 
-**Const.getNearestPointToPoint**
+**Const.getNearestPointToPoint** `var result = Const.getNearestPointToPoint( pointP, [points] );`  
+Takes a target point P, and an array of points to search. Returns the nearest point to P within the point collection.
 
 ## Const.Grid
 
@@ -56,8 +64,8 @@ Constructor for a new Constellation grid. All grid operations are run through an
 Constellation grid Node object; use a Const.Grid to create and manage node instances. Grid nodes have the following properties:
 
 - id: unique identifier for the node. Don't touch this.
-- x: X-coordinate of the node.
-- y: Y-coordinate of the node.
+- x: horizontal coordinate of the node.
+- y: vertical coordinate of the node.
 - to: Table of connections to other nodes. Seriously, don't touch this.
 - data: A data object of user-defined data attached to the node.
 
@@ -67,6 +75,15 @@ Constellation grid Polygon object; use a Const.Grid to create and manage polygon
 - id: unique identifier for the node. Don't touch this.
 - nodes: Array of node ids defining the polygon ring.
 - data: A data object of user-defined data attached to the polygon.
+
+**grid.on** `grid.on( eventName, handlerFunction, context? );`  
+Binds an event handler to the grid. Handler is called in the provided scope context.
+
+**grid.off** `grid.off( eventName, handlerFunction? );`  
+Unbinds an event handler from the grid.
+
+**grid.trigger** `grid.trigger( eventName, args... );`  
+Triggers an event with the provided event name. Optional event arguments may be passed.
 
 **grid.addNode** `grid.addNode( x?, y?, data? );`  
 Adds a new Grid.Node object with specified X and Y coordinates, and an optional data object. Returns the new node id.
@@ -130,16 +147,25 @@ Convenience method for running `grid.findPath` configured to find a path to goal
 
 ## Const.utils
 
-**Const.utils.keys**
+Constellation includes implementations of several common collection management functions for working with arrays and objects. These are very similar to Underscore.js methods, although their implementations may vary.
 
-**Const.utils.empty**
+**Const.utils.keys** `Const.utils.keys( object );`  
+Gets the provided object's property keys as an array.
 
-**Const.utils.size**
+**Const.utils.empty** `Const.utils.empty( object );`  
+Removes all items from an array, or all keyed properties from an object.
 
-**Const.utils.each**
+**Const.utils.size** `Const.utils.size( object );`  
+Counts the number of items in an array, or the number of properties on an object.
 
-**Const.utils.map**
+**Const.utils.contains** `Const.utils.contains( object, value );`  
+Accepts an array or object and a value to search for. Returns true if an array contains the provided value, or an object defines a key for the specified value.
 
-**Const.utils.contains**
+**Const.utils.each** `Const.utils.each( object, iteratorFunction, context? );`  
+Iterates an array or object with the provided function. Iterator is passed `( value, index )` for arrays, and `( value, key )` for objects. An optional scope context may be provided in which to run the interator.
 
-**Const.utils.all**
+**Const.utils.map** `Const.utils.map( object, mutatorFunction, context? );`  
+Iterates an array or object with the provided mutator function. Mutator is passed each `value`, and returns a modified value to replace the original within the collection. An optional scope context may be provided in which to run the interator.
+
+**Const.utils.all** `Const.utils.all( array, testFunction, context? );`
+Iterates through the provided array and performs a test function on each value. Returns true if all values pass the test.

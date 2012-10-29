@@ -1,0 +1,1 @@
+define(["lib/jquery","lib/underscore","lib/backbone"],function(e,t,n){function r(){var r=this,i=e(window),s=function(){r.width=i.width(),r.height=i.height()};t.extend(r,n.Events),r.RESIZE="resize",i.on("resize",function(){s(),r.trigger(r.RESIZE)}),s()}return new r})

@@ -10,5 +10,4 @@ function( gridView, toolsView ) {
 		model.addPolygon( join );
 		window.gridModel = model;
 	});
-	
 });

@@ -1,12 +1,9 @@
-/**
-* constellation.js
-* A point-based grid layout and geometry search application by Greg MacWilliam.
-* Released under MIT license.
-*/
+// Constellation.js 0.1
 
-// JSLint options:
-/*global define, console */
-/*jslint browser:true, white:true, plusplus:true, vars:true */
+// (c) 2011-2012 Greg MacWilliam, Threespot.
+// Constellation may be freely distributed under the MIT license.
+// For all details and documentation:
+// http://constellationjs.org
 
 (function( sqrt, min, max, abs ) {
 	"use strict";
@@ -17,8 +14,8 @@
 	// All public Constellation classes and modules will be attached to this.
 	// Exported for both CommonJS and the browser.
 	var Const;
-	if (typeof exports !== 'undefined') {
-		Const = exports;
+	if ( root.exports ) {
+		Const = root.exports;
 	} else {
 		Const = root.Const = {};
 	}
@@ -71,6 +68,29 @@
 			return num;
 		},
 		
+		// Tests if an array contains a value.
+		contains: function( obj, item ) {
+			if ( obj instanceof Array ) {
+				
+				// Test with native indexOf method.	
+				if ( typeof(Array.prototype.indexOf) === 'function' ) {
+					return obj.indexOf( item ) >= 0;
+				}
+			
+				// Brute-force search method.
+				var len = obj.length,
+					i = 0;
+			
+				while ( i < len ) {
+					if ( obj[i++] === item ) {
+						return true;
+					}
+				}
+			}
+			
+			return obj.hasOwnProperty( item );
+		},
+		
 		// Runs an iterator function over each item in an array or object.
 		each: function( obj, iteratorFunct, context ) {
 			var i = 0;
@@ -113,29 +133,6 @@
 				}
 			}
 			return obj;
-		},
-		
-		// Tests if an array contains a value.
-		contains: function( obj, item ) {
-			if ( obj instanceof Array ) {
-				
-				// Test with native indexOf method.	
-				if ( typeof(Array.prototype.indexOf) === 'function' ) {
-					return obj.indexOf( item ) >= 0;
-				}
-			
-				// Brute-force search method.
-				var len = obj.length,
-					i = 0;
-			
-				while ( i < len ) {
-					if ( obj[i++] === item ) {
-						return true;
-					}
-				}
-			}
-			
-			return obj.hasOwnProperty( item );
 		},
 		
 		// Runs a test function on each item in the array,
@@ -232,7 +229,7 @@
 		return p.x >= minX && p.y >= minY && p.x <= maxX && p.y <= maxY;
 	};
 	
-	// Tests if point P falls within a polygonal region; test performed by ray scan.
+	// Tests if point P falls within a polygonal region; test performed by ray casting.
 	// @param p: The point to test.
 	// @param points: An array of points forming a polygonal shape.
 	// @return: true if point falls within point ring.
@@ -262,7 +259,7 @@
 	// @param a: Point A of line segment AB.
 	// @param b: Point B of line segment AB.
 	// @return: new Point object with snapped coordinates.
-	Const.snapPointToLine = function( p, a, b ) {
+	Const.snapPointToLineSegment = function( p, a, b ) {
 		var ap1 = p.x-a.x,
 			ap2 = p.y-a.y,
 			ab1 = b.x-a.x,
@@ -475,8 +472,7 @@
 			
 			// Alias 'detach' method for a single node reference.
 			if (group.length < 2) {
-				this.detachNodes( group );
-				return;
+				return this.detachNodes( group );
 			}
 
 			// Decouple group node references.
@@ -645,8 +641,12 @@
 				i;
 			
 			// Default weight and estimate functions to use distance calculation.
-			if ( typeof weightFunction !== "function" ) weightFunction = Const.distance;
-			if ( typeof estimateFunction !== "function" ) estimateFunction = Const.distance;
+			if ( typeof weightFunction !== "function" ) {
+				weightFunction = Const.distance;
+			}
+			if ( typeof estimateFunction !== "function" ) {
+				estimateFunction = Const.distance;
+			}
 
 			// Create initial search path with default weight from/to self.
 			queue.push( new Path([startNode], weightFunction(startNode, startNode)) );
@@ -741,7 +741,7 @@
 					for ( var i in local.to ) {
 						if ( local.to.hasOwnProperty(i) && !tested.hasOwnProperty(i+' '+local.id) ) {
 							var foreign = this.nodes[i];
-							var snapped = Const.snapPointToLine(pt, local, foreign);
+							var snapped = Const.snapPointToLineSegment(pt, local, foreign);
 							var offset = Const.distance(pt, snapped);
 							tested[local.id+' '+foreign.id] = true;
 
@@ -862,8 +862,8 @@
 	
 	// Const.Grid events
 	// -----------------
-	// Uses the Backbone.js implementation:
-	// (c) 2010-2012 Jeremy Ashkenas, DocumentCloud Inc.
+	// Uses the Backbone.js implementation
+	// Jeremy Ashkenas, DocumentCloud Inc.
 	// Backbone may be freely distributed under the MIT license.
 	(function( obj, _ ) {
 		
