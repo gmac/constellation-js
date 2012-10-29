@@ -18,16 +18,16 @@ Constellation root scope provides basic geometry operations and geometric primit
 **Const.Point** `var point = new Const.Point( x, y );`  
 Constellation point primitive. Const.Point objects have the following properties:
 
-- x: horizontal coordinate of the point.
-- y: vertical coordinate of the point.
+- `x`: horizontal coordinate of the point.
+- `y`: vertical coordinate of the point.
 
 **Const.Rect** `var rect = new Const.Rect( x, y, width, height );`  
 Constellation rectangle primitive. Const.Rect objects have the following properties:
 
-- x: horizontal coordinate of the rectangle origin.
-- y: vertical coordinate of the rectangle origin.
-- width: rectangle width.
-- height: rectangle height.
+- `x`: horizontal coordinate of the rectangle origin.
+- `y`: vertical coordinate of the rectangle origin.
+- `width`: rectangle width.
+- `height`: rectangle height.
 
 **Const.distance** `var result = Const.distance( point1, point2 );`  
 Calculates the distance between two provided Const.Point objects.
@@ -63,18 +63,18 @@ Constructor for a new Constellation grid. All grid operations are run through an
 **Grid.Node** `use... grid.addNode();`  
 Constellation grid Node object; use a Const.Grid to create and manage node instances. Grid nodes have the following properties:
 
-- id: unique identifier for the node. Don't touch this.
-- x: horizontal coordinate of the node.
-- y: vertical coordinate of the node.
-- to: Table of connections to other nodes. Seriously, don't touch this.
-- data: A data object of user-defined data attached to the node.
+- `id`: unique identifier for the node. Don't touch this.
+- `x`: horizontal coordinate of the node.
+- `y`: vertical coordinate of the node.
+- `to`: Table of connections to other nodes. Seriously, don't touch this.
+- `data`: A data object of user-defined data attached to the node.
 
 **Grid.Polygon** `use... grid.addPolygon();`  
 Constellation grid Polygon object; use a Const.Grid to create and manage polygon instances. Grid polygons have the following properties:
 
-- id: unique identifier for the node. Don't touch this.
-- nodes: Array of node ids defining the polygon ring.
-- data: A data object of user-defined data attached to the polygon.
+- `id`: unique identifier for the node. Don't touch this.
+- `nodes`: Array of node ids defining the polygon ring.
+- `data`: A data object of user-defined data attached to the polygon.
 
 **grid.on** `grid.on( eventName, handlerFunction, context? );`  
 Binds an event handler to the grid. Handler is called in the provided scope context.
@@ -136,10 +136,10 @@ Triggers an update event that may be handled by observers.
 **grid.findPath** `grid.findPath( startId, goalId, weightFunction?, estimateFunction? );`  
 Takes two node ids defining start and goal nodes, then finds the shortest path between them. By default, routing favors the shortest path based on coordinate geometry. However, you may customize path routing using the optional weight and estimate functions:
 
- - weightFunction: `function( startNode, currentNode ) { return numericCost; }`  
+ - `weightFunction`: `function( startNode, currentNode ) { return numericCost; }`  
 This function is used to calculate the weight (or cost) of each new grid segment added to a path. The function is provided two Grid.Nodes as arguments, and expects a numeric segment weight to be returned. The pathfinder returns a path that accrues the lowest total weight. By default, `Const.distance` is used to measure the weight of each segment.
 
- - estimateFunction: `function( currentNode, goalNode ) { return numericEstimate; }`  
+ - `estimateFunction`: `function( currentNode, goalNode ) { return numericEstimate; }`  
 This function optimizes search performance by providing a best-case scenario estimate for each node's cost to reach the goal. This function is provided two Grid.Node objects as arguments: the current search node, and the goal node. An estimated cost-to-goal value should be returned. By default, `Const.distance` is used to estimate the best-case distance to get a working path to the goal.
 
 **grid.findPathWithFewestNodes** `grid.findPathWithFewestNodes( startId, goalId );`  
@@ -167,5 +167,5 @@ Iterates an array or object with the provided function. Iterator is passed `( va
 **Const.utils.map** `Const.utils.map( object, mutatorFunction, context? );`  
 Iterates an array or object with the provided mutator function. Mutator is passed each `value`, and returns a modified value to replace the original within the collection. An optional scope context may be provided in which to run the interator.
 
-**Const.utils.all** `Const.utils.all( array, testFunction, context? );`
+**Const.utils.all** `Const.utils.all( array, testFunction, context? );`  
 Iterates through the provided array and performs a test function on each value. Returns true if all values pass the test.
