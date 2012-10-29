@@ -12,9 +12,30 @@ module.exports = function( grunt ) {
 				src: 'js/lib/constellation.js',
 				dest: '../constellation.min.js'
 			}
+		},
+		requirejs: {
+			compile: {
+				options: {
+					appDir: "./",
+				    baseUrl: "js",
+				    dir: "../dist",
+					optimize: "uglify",
+					optimizeCss: "standard",
+					exclude: [
+						"r.js",
+						"js/app.build.js"
+					],
+					fileExclusionRegExp: /^test$|[-]?test[-]?|^node_modules$|^grunt.js$/,
+				    modules: [
+				        {
+				            name: "main"
+				        }
+				    ]
+				}
+			}
 		}
 	});
 	
-	grunt.loadNpmTasks('grunt-contrib');
-	grunt.registerTask("default", "concat min");
+	grunt.loadNpmTasks('grunt-contrib-requirejs');
+	grunt.registerTask("default", "concat min requirejs");
 };
