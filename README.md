@@ -145,6 +145,27 @@ This function optimizes search performance by providing a best-case scenario est
 **grid.findPathWithFewestNodes** `grid.findPathWithFewestNodes( startId, goalId );`  
 Convenience method for running `grid.findPath` configured to find a path to goal using the fewest node connections rather than the shortest distance.
 
+**grid.snapPointToGrid**  
+Snaps the provided point P to the nearest position among all line connections within the node grid.
+
+**grid.getNearestNodeToPoint**
+Finds the closest grid node to the specified point position.
+
+**grid.getNearestNodeToNode**  
+Finds the next closest grid node to the specified node id.
+
+**grid.hitTestPointInPolygons**
+Returns true if the provided point P intersects any Polygons within the grid.
+
+**grid.getPolygonHitsForPoint**
+Tests a Point for intersections with all Polygons in the grid, and returns their ids.
+
+**grid.getNodesInPolygon**
+Tests a Polygon for intersections with all nodes in the grid, and returns their ids.
+
+**grid.getNodesInRect**
+Tests a Rect for intersections with all nodes in the grid, and returns their ids.
+
 ## Const.utils
 
 Constellation includes implementations of several common collection management functions for working with arrays and objects. These are very similar to Underscore.js methods, although their implementations may vary.
