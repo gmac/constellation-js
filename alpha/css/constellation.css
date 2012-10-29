@@ -1,0 +1,95 @@
+body {
+	font:12px/16px arial,sans-serif;
+	margin:0;
+	position:relative;
+	width:100%;
+}
+
+/* UI styles.
+* -------------------------- */
+#constellation-ui {
+	background-color:rgba(0,0,0,0.5);
+	left:0;
+	list-style:none;
+	margin:0;
+	padding:10px 0;
+	position:absolute;
+	top:0;
+	width:100%;
+}
+#constellation-ui button,
+#constellation-ui select,
+#constellation-ui span {
+	float:left;
+	margin-left:10px;
+}
+#constellation-ui .right {
+	float:right;
+	margin:0 10px 0 0;
+}
+#constellation-ui .rule {
+	border-left:1px solid #ccc;
+	display:inline-block;
+	width:0;
+}
+
+/* Output text styles.
+* -------------------------- */
+#constellation-output {
+	background-color:rgba(0,0,0,0.25);
+	border-radius:5px;
+	bottom:10px;
+	left:10px;
+	padding:5px 10px;
+	position:absolute;
+}
+
+/* Grid styles.
+* -------------------------- */
+#constellation-grid,
+#constellation-grid svg {
+	height:100%;
+	left:0;
+	position:absolute;
+	top:0;
+	width:100%;
+}
+#constellation-grid .node {
+	border:1px solid rgba(255,255,255,0.5);
+	color:#fff;
+	cursor:pointer;
+	font:bold 10px/10px Arial,sans-serif;
+	position:absolute;
+	text-align:center;
+}
+
+/* Info
+* -------------------------- */
+#info {
+	bottom:10px;
+	position:absolute;
+	right:10px;
+}
+#info div {
+	background-color:rgba(225,225,225,0.9);
+	border-radius:10px;
+	bottom:0;
+	padding:5px 25px 25px;
+	position:absolute;
+	right:0;
+	width:400px;
+}
+#info button {
+	bottom:10px;
+	position:absolute;
+	right:10px;
+}
+#info h1 {
+	font-size:20px;
+}
+#info h2 {
+	font-size:14px;
+}
+#info li {
+	margin:10px 0;
+}

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>constellation.js</title>
+	<link href="css/constellation.css" rel="stylesheet" media="screen"/>
+</head>
+<body>
+	
+	<div id="info">
+		<div>
+			<h1>constellation.js</h1>
+			<p>A point-based grid builder and search application.</p>
+
+			<h2>Controls:</h2>
+			<ol>
+				<li>Click in the white space to add nodes, then hold the shift key and click nodes to select them.</li>
+				<li>Select multiple nodes and "join" them into a grid.</li>
+				<li>Three or more nodes may be selected to form a polygon.</li>
+				<li>Use the advanced search features to find a path between two nodes, test the intersection of a node within a polygon, snap a node into the existing grid, or find a node's nearest neighbor.</li>
+				<li>Save your grid for easy reuse!</li>
+			</ol>
+		</div>
+		<button>close</button>
+	</div>
+	
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+<!-- Core -->
+<script type="text/javascript" src="js/json2.js"></script>
+<script type="text/javascript" src="js/constellation.js"></script>
+<script type="text/javascript" src="js/constellation.pathfinder.js"></script>
+<!-- Plugin Extras -->
+<script type="text/javascript" src="js/constellation.gridsnap.js"></script>
+<script type="text/javascript" src="js/constellation.polyhits.js"></script>
+<script type="text/javascript" src="js/constellation.nearestnode.js"></script>
+</body>
+</html>
