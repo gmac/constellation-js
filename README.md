@@ -55,7 +55,7 @@ Takes a target point P, and an array of points to search. Returns the nearest po
 
 ## Const.Grid
 
-Constellation Grid is a discrete component which must be instanced to use its API methods. After constructing a grid instance, all subsequent grid operations will be performed on the grid instance where they're invoked.
+Constellation Grid is a discrete component which must be instanced to use its API. After constructing a grid instance, all subsequent grid operations will be performed on the grid instance where they're invoked.
 
 **Grid** `var grid = new Const.Grid( nodes?, polygons? );`  
 Constructor for a new Constellation grid. All grid operations are run through an instance.
@@ -100,7 +100,7 @@ Specifies the number of nodes in the grid.
 **grid.hasNode** `grid.hasNode( id );`  
 Tests if the specified node id exists within the grid.
 
-**grid.hasNodes** `grid.hasNodes( [node id] );`  
+**grid.hasNodes** `grid.hasNodes( [node ids] );`  
 Takes an array of node ids, returns true if all nodes are defined within the grid.
 
 **grid.joinNodes** `grid.joinNodes( [node ids], silent? );`  
