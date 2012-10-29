@@ -41,10 +41,14 @@
 		},
 		
 		// Removes all properties from an object.
-		wipe: function( obj ) {
-			for ( var i in obj ) {
-				if ( obj.hasOwnProperty(i) ) {
-					delete obj[ i ];
+		empty: function( obj ) {
+			if ( obj instanceof Array ) {
+				obj.length = 0;
+			} else {
+				for ( var i in obj ) {
+					if ( obj.hasOwnProperty(i) ) {
+						delete obj[ i ];
+					}
 				}
 			}
 			return obj;
@@ -321,9 +325,10 @@
 	
 	// Const.Polygon
 	// -------------
-	var Polygon = Const.Polygon = function( id, nodes ) {
+	var Polygon = Const.Polygon = function( id, nodes, data ) {
 		this.id = id;
 		this.nodes = nodes.slice();
+		this.data = data || null;
 	};
 	
 	// Const.Path
@@ -377,8 +382,8 @@
 		
 		// Clears all existing node and polygon references from the grid.
 		reset: function() {
-			_c.wipe( this.nodes );
-			_c.wipe( this.polys );
+			_c.empty( this.nodes );
+			_c.empty( this.polys );
 			this.icount = 0;
 		},
 		
@@ -554,11 +559,11 @@
 		},
 		
 		// Adds a polygon to the grid, formed by a collection of node ids.
-		addPolygon: function( group, silent ) {
+		addPolygon: function( group, data, silent ) {
 			var poly;
 			
 			if ( group.length >= 3 && this.hasNodes(group) ) {
-				poly = new Polygon( this.types.POLYGON+ this.icount++, group );
+				poly = new Polygon( this.types.POLYGON+ this.icount++, group, data );
 				this.polys[ poly.id ] = poly;
 				this.update( true, silent );
 				return poly.id;
