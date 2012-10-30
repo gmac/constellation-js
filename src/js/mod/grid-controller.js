@@ -94,12 +94,18 @@ function( Backbone, constellation, gridModel, selectModel ) {
 		
 		// Hit tests a node among all polygon definitions.
 		hitTestNodeInPolygons: function() {
-			if ( this.nodeOpsEnabled() && selectModel.selectionSize() === 1 ) {
-				var node = gridModel.getNodeById( selectModel.items[0] ),
-					polys = gridModel.getPolygonHitsForPoint( node );
+			if ( selectModel.selectionSize() === 1 ) {
+				var select;
+				// Get new selection.
+				if ( this.nodeOpsEnabled() ) {
+					var node = gridModel.getNodeById( selectModel.items[0] );
+					select = gridModel.getPolygonHitsForPoint( node );
+				} else {
+					select = gridModel.getNodesInPolygon( selectModel.items[0] );
+				}
 				
-				if (polys.length) {
-					selectModel.setSelection( polys );
+				if (select && select.length) {
+					selectModel.setSelection( select );
 				}
 			} else {
 				this.alert("Please select exactly one node.");
