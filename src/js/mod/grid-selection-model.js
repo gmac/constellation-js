@@ -10,9 +10,10 @@ function( _, Backbone ) {
 	
 	var SelectionModel = Backbone.Model.extend({
 		UPDATE: 'update',
-		
-		// Stores a list of selected node ids.
+
+		// Stores a list of selected node/poly ids.
 		items: [],
+		path: [],
 		type: '',
 		
 		// Specifies the number of selected items.
@@ -52,6 +53,7 @@ function( _, Backbone ) {
 			this.setType( id );
 			if ( !_.contains(this.items, id) ) {
 				this.items.push( id );
+				this.path.length = 0;
 				this.update();
 				return true;
 			}
@@ -62,6 +64,7 @@ function( _, Backbone ) {
 		deselect: function( id ) {
 			if ( _.contains(this.items, id) ) {
 				this.items.splice( _.indexOf(this.items, id), 1 );
+				this.path.length = 0;
 				this.update();
 				return true;
 			}
@@ -71,7 +74,16 @@ function( _, Backbone ) {
 		// Deselects all currently selected nodes.
 		deselectAll: function( silent ) {
 			this.items.length = 0;
+			this.path.length = 0;
 			this.type = '';
+			if (!silent) {
+				this.update();
+			}
+		},
+		
+		// Selects path of node ids.
+		selectPath: function( ids, silent ) {
+			this.path = ids;
 			if (!silent) {
 				this.update();
 			}

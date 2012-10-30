@@ -94,15 +94,18 @@ body {
 	width: 100%;
 }
 #constellation .const-canvas line {
-	stroke:#000;
+	stroke: #000;
 	stroke-width:2;
 }
+#constellation .const-canvas line.select {
+	stroke: #f00;
+}
 #constellation .const-canvas path {
-	fill:#000;
+	fill: #000;
 	opacity:0.25;
 }
 #constellation .const-canvas path.select {
-	fill:#f00;
+	fill: #f00;
 }
 #constellation .const-canvas ul {
 	list-style: none;

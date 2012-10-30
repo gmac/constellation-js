@@ -15,7 +15,8 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 		
 		// Define view event patterns.
 		events: {
-			'mousedown': 'onTouch'
+			'mousedown': 'onTouch',
+			'dblclick': 'onDouble'
 		},
 		
 		// View initializer.
@@ -110,42 +111,57 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			this.$el.height( h ).css({marginTop: top + m});
 		},
 		
+		// Clears any existing view selection.
+		clearSelection: function() {
+			_.each(this.viewSelection, function(item) {
+				item = $(item);
+				
+				if ( item.is('li') ) {
+					// NODE view item.
+					item.removeClass('select').children(':first-child').text('');
+				} else {
+					// POLYGON view item.
+					item[0].setAttribute('class', item[0].getAttribute('class').replace(/[\s]?select/g, ''));
+				}
+			});
+			
+			this.viewSelection.length = 0;
+		},
+		
 		// Configures appearance of the selected geometry state.
 		// Kinda messy here given that jQuery doesn't handle DOM and SVG the same way...
 		setSelection: function() {
 			var self = this;
-			
-			// Clear any existing selection.
-			_.each(this.viewSelection, function(item) {
-				item = $(item);
-				
-				if ( item.is('path') ) {
-					// POLYGON view item.
-					item[0].setAttribute('class', item[0].getAttribute('class').replace(/[\s]?select/g, ''));
-				} else {
-					// NODE view item.
-					item.removeClass('select').children(':first-child').text('');
-				}
-			});
-			
-			// Reset view selection.
-			this.viewSelection.length = 0;
+			this.clearSelection();
 			
 			// Select all items in the selection model.
-			_.each(selectModel.items, function(id, i) {
-				item = self.$el.find('#'+id);
-				
-				if ( item.is('path') ) {
-					// POLYGON view item.
-					item[0].setAttribute('class', item[0].getAttribute('class') + " select");
-				} else {
+			_.each( selectModel.items, function( item, i ) {
+				item = self.$el.find( '#'+item );
+
+				if ( item.is('li') ) {
 					// NODE view item.
 					item.addClass('select').children(':first-child').text(i+1);
+				} else {
+					// POLYGON view item.
+					item[0].setAttribute('class', item[0].getAttribute('class')+" select");
 				}
 				
 				// Add item reference to the view selection queue.
 				self.viewSelection.push(item[0]);
 			});
+			
+			// Highlight path selection.
+			if ( selectModel.path.length ) {
+				var path = [];
+				for ( var i = 0, len = selectModel.path.length-1; i < len; i++ ) {
+					path.push( 'line.'+selectModel.path[i]+'.'+selectModel.path[i+1] );
+				}
+				
+				$( path.join(',') ).each(function( index, item ) {
+					item.setAttribute('class', item.getAttribute('class')+" select");
+					self.viewSelection.push( item );
+				});
+			}
 		},
 		
 		// Gets the localized offset of event coordinates within the grid frame.
@@ -242,6 +258,14 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			}
 			
 			return false;
+		},
+		
+		onDouble: function( evt ) {
+			var target = $(evt.target);
+			
+			if ( target.is('path') ) {
+				
+			}
 		}
 	});
 	

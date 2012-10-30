@@ -3,12 +3,13 @@
 * Defines application business logic and consolidates behavior into a single API.
 */
 define([
+	'lib/underscore',
 	'lib/backbone',
 	'lib/constellation',
 	'mod/grid-model',
 	'mod/grid-selection-model'
 ],
-function( Backbone, constellation, gridModel, selectModel ) {
+function( _, Backbone, constellation, gridModel, selectModel ) {
 	
 	var GridController = Backbone.Model.extend({
 		ALERT: 'alert',
@@ -61,7 +62,10 @@ function( Backbone, constellation, gridModel, selectModel ) {
 		runPathfinder: function() {
 			if ( this.nodeOpsEnabled() && selectModel.selectionSize() === 2 ) {
 				var result = gridModel.findPath( selectModel.items[0], selectModel.items[1] );
-				console.log( result );
+				
+				if ( result.valid ) {
+					selectModel.selectPath( _.pluck(result.nodes, 'id') );
+				}
 			} else {
 				this.alert("Please select exactly two nodes.");
 			}
