@@ -25,18 +25,7 @@
 	// Based on methods of Underscore.js
 	// Implementations are unique to Constellation.
 	var _c = Const.utils = {
-		
-		// Gets all of an object's keys as an array.
-		keys: function( obj ) {
-			var keys = [];
-			for ( var i in obj ) {
-				if ( obj.hasOwnProperty(i) ) {
-					keys.push( i );
-				}
-			}
-			return keys;
-		},
-		
+
 		// Removes all properties from an object.
 		empty: function( obj ) {
 			if ( obj instanceof Array ) {
@@ -357,6 +346,8 @@
 	// Const.Grid
 	// ----------
 	var Grid = Const.Grid = function(nodes, polys) {
+		
+		this._h = {};
 		this.nodes = {};
 		this.polys = {};
 		this.icount = 0;
@@ -377,6 +368,34 @@
 			POLYGON: 'p'
 		},
 		
+		// Add a listener.
+        on: function( eventName, handler, context ) {
+            (this._h[eventName] = this._h[eventName] || []).push({
+				h: handler,
+				c: context
+			});
+            return this;
+        },
+		
+        // Remove a listener.
+        off: function( eventName, handler, context ) {
+			for (var list = this._h[eventName], i = 0, sub; list && handler && (sub = list[i]); i++) {
+				if (sub.h === handler && (!context || sub.c === context)) list.splice(i--, 1);
+			}
+			
+			if (list && !i) list.length = 0;
+			if (!list) this._h = {};
+			return this;
+        },
+		
+		// Emit an event.
+        emit: function( eventName ) {
+            for (var list = this._h[eventName], i = 0, sub; list && (sub = list[i++]);) {
+                sub.h.apply(sub.c, list.slice.call(arguments, 1));
+            }
+            return this;
+        },
+
 		// Clears all existing node and polygon references from the grid.
 		reset: function() {
 			_c.empty( this.nodes );
@@ -859,110 +878,6 @@
 			return hits;
 		}
 	};
-	
-	// Const.Grid events
-	// -----------------
-	// Uses the Backbone.js implementation
-	// Jeremy Ashkenas, DocumentCloud Inc.
-	// Backbone may be freely distributed under the MIT license.
-	(function( obj, _ ) {
-		
-		// Regular expression used to split event strings
-		var eventSplitter = /\s+/;
-		
-		// Bind one or more space separated events, `events`, to a `callback`
-	    // function. Passing `"all"` will bind the callback to all events fired.
-	    obj.on = obj.bind = function (events, callback, context) {
-	        var calls, event, list;
-	        if (!callback) return this;
-
-	        events = events.split(eventSplitter);
-	        calls = this._callbacks || (this._callbacks = {});
-
-	        while (event = events.shift()) {
-	            list = calls[event] || (calls[event] = []);
-	            list.push(callback, context);
-	        }
-
-	        return this;
-	    };
-
-	    // Remove one or many callbacks. If `context` is null, removes all callbacks
-	    // with that function. If `callback` is null, removes all callbacks for the
-	    // event. If `events` is null, removes all bound callbacks for all events.
-	    obj.off = obj.unbind = function (events, callback, context) {
-	        var event, calls, list, i;
-
-	        // No events, or removing *all* events.
-	        if (!(calls = this._callbacks)) return this;
-	        if (!(events || callback || context)) {
-	            delete this._callbacks;
-	            return this;
-	        }
-
-	        events = events ? events.split(eventSplitter) : _.keys(calls);
-
-	        // Loop through the callback list, splicing where appropriate.
-	        while (event = events.shift()) {
-	            if (!(list = calls[event]) || !(callback || context)) {
-	                delete calls[event];
-	                continue;
-	            }
-
-	            for (i = list.length - 2; i >= 0; i -= 2) {
-	                if (!(callback && list[i] !== callback || context && list[i + 1] !== context)) {
-	                    list.splice(i, 2);
-	                }
-	            }
-	        }
-
-	        return this;
-	    };
-
-	    // Trigger one or many events, firing all bound callbacks. Callbacks are
-	    // passed the same arguments as `trigger` is, apart from the event name
-	    // (unless you're listening on `"all"`, which will cause your callback to
-	    // receive the true name of the event as the first argument).
-	    obj.trigger = obj.emit = function (events) {
-	        var event, calls, list, i, length, args, all, rest;
-	        if (!(calls = this._callbacks)) return this;
-
-	        rest = [];
-	        events = events.split(eventSplitter);
-
-	        // Fill up `rest` with the callback arguments.  Since we're only copying
-	        // the tail of `arguments`, a loop is much faster than Array#slice.
-	        for (i = 1, length = arguments.length; i < length; i++) {
-	            rest[i - 1] = arguments[i];
-	        }
-
-	        // For each event, walk through the list of callbacks twice, first to
-	        // trigger the event, then to trigger any `"all"` callbacks.
-	        while (event = events.shift()) {
-	            // Copy callback lists to prevent modification.
-	            if (all = calls.all) all = all.slice();
-	            if (list = calls[event]) list = list.slice();
-
-	            // Execute event callbacks.
-	            if (list) {
-	                for (i = 0, length = list.length; i < length; i += 2) {
-	                    list[i].apply(list[i + 1] || this, rest);
-	                }
-	            }
-
-	            // Execute "all" callbacks.
-	            if (all) {
-	                args = [event].concat(rest);
-	                for (i = 0, length = all.length; i < length; i += 2) {
-	                    all[i].apply(all[i + 1] || this, args);
-	                }
-	            }
-	        }
-
-	        return this;
-	    };
-	
-	}( Const.Grid.prototype, Const.utils ));
 	
 	
 	// AMD
