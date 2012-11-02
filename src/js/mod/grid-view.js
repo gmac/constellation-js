@@ -36,14 +36,11 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 		},
 		
 		// Generates a polygon drawing path based on polygon model.
-		getPolygonPath: function( model ) {
+		getPathForNodes: function( ring ) {
 			var draw = '';
 			
-			_.each(model.nodes, function( id, index ) {
-				var node = gridModel.getNodeById( id );
-				if ( node ) {
-					draw += (index <= 0 ? 'M' : 'L') + node.x +' '+ node.y +' ';
-				}
+			_.each( ring, function( node, index ) {
+				draw += (index <= 0 ? 'M' : 'L') + node.x +' '+ node.y +' ';
 			});
 			
 			return draw+'Z';
@@ -63,7 +60,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 				polys[ poly.id ] = {
 					id: poly.id,
 					nodes: poly.nodes.join(' '),
-					d: self.getPolygonPath(poly)
+					d: self.getPathForNodes( gridModel.getNodesForPolygon( poly.id ) )
 				};
 			});
 			
@@ -172,6 +169,25 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			return offset;
 		},
 		
+		// Manages a click-and-drag sequence.
+		// Injects a localized event offset into the behavior handlers.
+		drag: function( move, release ) {
+			var self = this;
+			
+			$(document)
+				.on('mouseup', function( evt ) {
+					$(document).off('mouseup mousemove');
+					if ( typeof release === 'function' ) {
+						release( self.localizeEventOffset(evt) );
+					}
+					return false;
+				})
+				.on('mousemove', function( evt ) {
+					move( self.localizeEventOffset(evt) );
+					return false;
+				});
+		},
+		
 		// Apply drag-drop behavior to a node view.
 		dragNode: function( id, view ) {
 			var self = this,
@@ -184,44 +200,59 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 				maxY = (gridModel.get('height') || self.$el.height());
 			
 			// Configure drag-drop events.
-			$(document)
-				.on('mouseup', function() {
-					$(document).off('mouseup mousemove');
-					model = view = lines = polys = min = max = null;
-				})
-				.on('mousemove', function( evt ) {
-					var coords = self.localizeEventOffset(evt),
-						current = new RegExp(id+'$|'+id+'\\s|\\s', 'g'),
-						foreign;
+			this.drag(function( offset ) {
+				var current = new RegExp(id+'$|'+id+'\\s|\\s', 'g'),
+					foreign;
 
-					// Set view position and model coordinates.
-					view.css({
-						left: ( model.x = max(0, min(coords.left, maxX)) ),
-						top: ( model.y = max(0, min(coords.top, maxY)) )
-					});
-					
-					// Update all lines.
-					lines.each(function(i, view) {
-						foreign = gridModel.getNodeById( view.getAttribute('class').replace(current, '') );
-						view.setAttribute('x1', model.x);
-						view.setAttribute('y1', model.y);
-						view.setAttribute('x2', foreign.x);
-						view.setAttribute('y2', foreign.y);
-					});
-					
-					// Update all polys.
-					polys.each(function(i, view) {
-						var poly = gridModel.getPolygonById( view.getAttribute('id') );
-						view.setAttribute('d', self.getPolygonPath(poly) );
-					});
-					
-					return false;
+				// Set view position and model coordinates.
+				view.css({
+					left: ( model.x = max(0, min(offset.left, maxX)) ),
+					top: ( model.y = max(0, min(offset.top, maxY)) )
 				});
+				
+				// Update all lines.
+				lines.each(function(i, view) {
+					foreign = gridModel.getNodeById( view.getAttribute('class').replace(current, '') );
+					view.setAttribute('x1', model.x);
+					view.setAttribute('y1', model.y);
+					view.setAttribute('x2', foreign.x);
+					view.setAttribute('y2', foreign.y);
+				});
+				
+				// Update all polys.
+				polys.each(function(i, view) {
+					var nodes = gridModel.getNodesForPolygon( view.getAttribute('id') );
+					view.setAttribute('d', self.getPathForNodes( nodes ) );
+				});
+			}, function() {
+				model = view = lines = polys = min = max = null;
+			});
 		},
 		
 		// Apply drag-drop behavior to a polygon view.
-		dragPoly: function( id, view ) {
+		dragPoly: function( id, view, evt ) {
 			
+			var self = this,
+				nodes = gridModel.getNodesForPolygon( id ),
+				nodeView = this.$el.find( '#'+_.pluck(nodes, 'id').join(',#') ),
+				offset = this.localizeEventOffset( evt );
+			
+			this.drag(function( pos ) {
+				offset.left -= pos.left;
+				offset.top -= pos.top;
+				
+				_.each( nodes, function( node ) {
+					nodeView.filter('#'+node.id).css({
+						left: (node.x -= offset.left),
+						top: (node.y -= offset.top)
+					});
+				});
+				
+				view[0].setAttribute( 'd', self.getPathForNodes( nodes ) );
+				offset = pos;
+			}, function() {
+				self = nodes = nodeView = offset = null;
+			});
 		},
 		
 		// Generic event handler triggered by any mousedown/touch event.
@@ -241,13 +272,13 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			if ( target.is('li') ) {
 				// NODE was touched.
 				if ( selectModel.toggle(id) ) {
-					this.dragNode(id, target);
+					this.dragNode(id, target, evt);
 				}
 			
 			} else if ( target.is('path') ) {
 				// POLYGON was touched.
 				if ( selectModel.toggle(id) ) {
-					this.dragPoly(id, target);
+					this.dragPoly(id, target, evt);
 				}
 				
 			} else if (evt.shiftKey) {

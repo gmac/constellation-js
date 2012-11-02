@@ -9,6 +9,8 @@ define([
 	'mod/service-data'
 ],
 function( Backbone, _, Const, dataService ) {
+	
+	// Create new grid, then remove default event system to avoid conflicts with Backbone.
 
 	var GridModel = Backbone.Model.extend( new Const.Grid() ).extend({
 		
@@ -21,7 +23,7 @@ function( Backbone, _, Const, dataService ) {
 			height: '',
 			background: ''
 		},
-		
+
 		// Initializes the grid model (native Backbone behavior).
 		initialize: function() {
 			

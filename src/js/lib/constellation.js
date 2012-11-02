@@ -627,7 +627,7 @@
 		// Triggers update event for view refresh.
 		update: function( change, silent ) {
 			if ( (change || change === undefined) && !silent ) {
-				this.trigger( this.events.CHANGE );
+				this.emit( this.events.CHANGE );
 			}
 		},
 
