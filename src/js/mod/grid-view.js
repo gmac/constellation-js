@@ -11,7 +11,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 	var GridView = Backbone.View.extend({
 		el: '#grid',
 		model: gridModel,
-		viewSelection: [],
+		selectedViews: [],
 		
 		// Define view event patterns.
 		events: {
@@ -110,7 +110,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 		
 		// Clears any existing view selection.
 		clearSelection: function() {
-			_.each(this.viewSelection, function(item) {
+			_.each(this.selectedViews, function(item) {
 				item = $(item);
 				
 				if ( item.is('li') ) {
@@ -118,11 +118,11 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 					item.removeClass('select').children(':first-child').text('');
 				} else {
 					// POLYGON view item.
-					item[0].setAttribute('class', item[0].getAttribute('class').replace(/[\s]?select/g, ''));
+					item[0].setAttribute('class', item[0].getAttribute('class').replace(/[\s]?select[\s]?/g, ''));
 				}
 			});
 			
-			this.viewSelection.length = 0;
+			this.selectedViews.length = 0;
 		},
 		
 		// Configures appearance of the selected geometry state.
@@ -144,7 +144,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 				}
 				
 				// Add item reference to the view selection queue.
-				self.viewSelection.push(item[0]);
+				self.selectedViews.push(item[0]);
 			});
 			
 			// Highlight path selection.
@@ -154,9 +154,9 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 					path.push( 'line.'+selectModel.path[i]+'.'+selectModel.path[i+1] );
 				}
 				
-				$( path.join(',') ).each(function( index, item ) {
-					item.setAttribute('class', item.getAttribute('class')+" select");
-					self.viewSelection.push( item );
+				$( path.join(',') ).each(function() {
+					this.setAttribute('class', this.getAttribute('class')+" select");
+					self.selectedViews.push( this );
 				});
 			}
 		},
@@ -169,153 +169,183 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			return offset;
 		},
 		
-		// Manages a click-and-drag sequence.
+		// Manages a click-and-drag sequence behavior.
 		// Injects a localized event offset into the behavior handlers.
-		drag: function( move, release ) {
+		drag: function( onMove, onRelease, callback ) {
 			var self = this;
+			var dragged = false;
 			
 			$(document)
 				.on('mouseup', function( evt ) {
 					$(document).off('mouseup mousemove');
-					if ( typeof release === 'function' ) {
-						release( self.localizeEventOffset(evt) );
+					if ( typeof onRelease === 'function' ) {
+						onRelease( self.localizeEventOffset(evt) );
+					}
+					if ( typeof callback === 'function' ) {
+						callback( dragged );
 					}
 					return false;
 				})
 				.on('mousemove', function( evt ) {
-					move( self.localizeEventOffset(evt) );
+					dragged = true;
+					onMove( self.localizeEventOffset(evt) );
 					return false;
 				});
 		},
 		
-		// Apply drag-drop behavior to a node view.
-		dragNode: function( id, view ) {
+		// Drag all geometry views tethered to a group of nodes.
+		dragGeom: function( nodeIds, offset, callback ) {
 			var self = this,
-				model = gridModel.getNodeById(id),
-				lines = self.$el.find('line.'+id),
-				polys = self.$el.find('path.'+id),
-				min = Math.min,
-				max = Math.max,
-				maxX = (gridModel.get('width') || self.$el.width()),
-				maxY = (gridModel.get('height') || self.$el.height());
-			
-			// Configure drag-drop events.
-			this.drag(function( offset ) {
-				// Drag.
-				var current = new RegExp(id+'$|'+id+'\\s|\\s', 'g'),
-					foreign;
-
-				// Set view position and model coordinates.
-				view.css({
-					left: ( model.x = max(0, min(offset.left, maxX)) ),
-					top: ( model.y = max(0, min(offset.top, maxY)) )
-				});
-				
-				// Update all lines.
-				lines.each(function(i, view) {
-					foreign = gridModel.getNodeById( view.getAttribute('class').replace(current, '') );
-					view.setAttribute('x1', model.x);
-					view.setAttribute('y1', model.y);
-					view.setAttribute('x2', foreign.x);
-					view.setAttribute('y2', foreign.y);
-				});
-				
-				// Update all polys.
-				polys.each(function(i, view) {
-					var nodes = gridModel.getNodesForPolygon( view.getAttribute('id') );
-					view.setAttribute('d', self.getPathForNodes( nodes ) );
-				});
-			});
-		},
-		
-		// Apply drag-drop behavior to a polygon view.
-		dragPoly: function( id, view, evt ) {
-			var self = this,
-				nodeIds = gridModel.getPolygonById( id ).nodes,
 				nodeView = this.$el.find( '#'+nodeIds.join(',#') ),
 				lineView = this.$el.find( 'line.'+nodeIds.join(',line.') ),
-				polyView = this.$el.find( 'path.'+nodeIds.join(',path.') ),
-				offset = this.localizeEventOffset( evt );
+				polyView = this.$el.find( 'path.'+nodeIds.join(',path.') );
 			
 			this.drag(function( pos ) {
 				// Drag.
 				offset.left -= pos.left;
 				offset.top -= pos.top;
 				
-				// Offset nodes.
+				// Update nodes.
 				nodeView.each(function() {
-					var node = $(this),
-						model = gridModel.getNodeById( node.attr('id') );
-						
+					var node = $(this);
+					var model = gridModel.getNodeById( node.attr('id') );
+
 					node.css({
 						left: (model.x -= offset.left),
 						top: (model.y -= offset.top)
 					});
 				});
-				
+
 				// Update lines.
 				lineView.each(function() {
-					var to = this.getAttribute('class').split(' '),
-						a = gridModel.getNodeById( to[0] ),
-						b = gridModel.getNodeById( to[1] );
+					var to = this.getAttribute('class').split(' ');
+					var a = gridModel.getNodeById( to[0] );
+					var b = gridModel.getNodeById( to[1] );
+					
 					this.setAttribute('x1', a.x);
 					this.setAttribute('y1', a.y);
 					this.setAttribute('x2', b.x);
 					this.setAttribute('y2', b.y);
 				});
-				
+
 				// Update polys.
 				polyView.each(function() {
-					var poly = this.getAttribute('id'),
-						nodes = gridModel.getNodesForPolygon( poly );
+					var poly = this.getAttribute('id');
+					var nodes = gridModel.getNodesForPolygon( poly );
+					
 					this.setAttribute( 'd', self.getPathForNodes( nodes ) );
 				});
 				
 				offset = pos;
+			}, null, callback);
+		},
+		
+		// Performs drag-bounds selection behavior.
+		dragMarquee: function( offset ) {
+			var view = $('#marquee').show();
+			
+			function plotRect( a, b ) {
+				var minX = Math.min(a.left, b.left),
+					maxX = Math.max(a.left, b.left),
+					minY = Math.min(a.top, b.top),
+					maxY = Math.max(a.top, b.top),
+					rect = {
+						x: minX,
+						y: minY,
+						left: minX,
+						top: minY,
+						width: maxX-minX,
+						height: maxY-minY
+					};
+					
+				view.css(rect);
+				return rect;
+			}
+			
+			plotRect( offset, offset );	
+
+			this.drag(function( pos ) {
+				// Drag.
+				plotRect( offset, pos );	
+				
+			}, function( pos ) {
+				// Drop.
+				_.each( gridModel.getNodesInRect( plotRect(offset, pos) ), function( node ) {
+					selectModel.select( node );
+				});
+				view.hide();
 			});
 		},
 		
 		// Generic event handler triggered by any mousedown/touch event.
 		onTouch: function( evt ) {
 			var target = $(evt.target),
+				pos = this.localizeEventOffset(evt),
 				id;
 	
 			target = target.is('li > span') ? target.parent() : target;
 			id = target.attr('id');
-			
-			// Clear existing selection unless Shift-key is pressed,
-			// silently if a valid element was clicked.
-			if (!evt.shiftKey) {
-				selectModel.deselectAll( !!id );
-			}
-			
+
 			if ( target.is('li') ) {
-				// NODE was touched.
-				if ( selectModel.toggle(id) ) {
-					this.dragNode(id, target, evt);
+				// NODE touch.
+				var selected = selectModel.contains( id ),
+					added = false;
+				
+				if (evt.shiftKey) {
+					// Shift key is pressed: toggle node selection.
+					selected = selectModel.toggle( id );
+					added = true;
 				}
-			
-			} else if ( target.is('path') ) {
-				// POLYGON was touched.
-				if ( selectModel.toggle(id) ) {
-					this.dragPoly(id, target, evt);
+				else if ( !selected ) {
+					// Was not already selected: set new selection.
+					selectModel.deselectAll();
+					selectModel.select( id );
+					selected = true;
 				}
 				
-			} else if (evt.shiftKey) {
-				// CANVAS click. Add new node.
-				target = this.localizeEventOffset(evt);
-				id = gridModel.addNode(target.left, target.top);
-				selectModel.select( id );
+				if ( selected ) {
+					
+					// Node has resolved as selected: start dragging.
+					this.dragGeom( selectModel.items, pos, function( dragged ) {
+						// Callback triggered on release...
+						// If the point was not dragged, nor a new addition to the selection
+						// Then refine selection to just this point.
+						if (!dragged && !added) {
+							selectModel.deselectAll();
+							selectModel.select( id );
+						}
+					});
+				}
+			}
+			else if ( target.is('path') ) {
+				// POLYGON touch.
+				if ( !evt.shiftKey ) {
+					selectModel.deselectAll();
+				}
+				if ( selectModel.toggle(id) ) {
+					this.dragGeom( gridModel.getPolygonById( id ).nodes, pos);
+				}
+			}
+			else {
+				// CANVAS touch. Drag marquee selection.
+				if ( !evt.shiftKey ) {
+					selectModel.deselectAll();
+				}
+				this.dragMarquee( pos );
 			}
 			return false;
 		},
 		
+		// Generic handler called upon double-clicking.
 		onDouble: function( evt ) {
 			var target = $(evt.target);
-
+			
 			if ( target.is('path') ) {
 				var nodeIds = gridModel.getPolygonById( target.attr('id') ).nodes;
 				selectModel.setSelection( nodeIds );
+				
+			} else if ( target.is( this.$el ) ) {
+				
 			}
 			return false;
 		}

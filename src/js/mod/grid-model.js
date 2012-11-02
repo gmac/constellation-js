@@ -10,12 +10,7 @@ define([
 ],
 function( Backbone, _, Const, dataService ) {
 	
-	// Create new grid, then remove default event system to avoid conflicts with Backbone.
-	var model = new Const.Grid();
-	delete model.on;
-	delete model.off;
-	
-	var GridModel = Backbone.Model.extend( model ).extend({
+	var GridModel = Backbone.Model.extend( new Const.Grid() ).extend({
 		
 		// Default model attributes.
 		defaults: {
@@ -27,11 +22,14 @@ function( Backbone, _, Const, dataService ) {
 			background: ''
 		},
 
-		// Initializes the grid model (native Backbone behavior).
+		// Initializes the grid model.
 		initialize: function() {
-			
+			// Override Constellation event model with Backbone behaviors.
+			this.on = Backbone.Events.on;
+			this.off = Backbone.Events.off;
+			this.emit = Backbone.Events.trigger;
 		},
-		
+
 		// Loads new grid data into the model.
 		getLayoutsList: function() {
 			dataService.getLayoutsList();
