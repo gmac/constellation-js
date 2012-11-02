@@ -11,8 +11,11 @@ define([
 function( Backbone, _, Const, dataService ) {
 	
 	// Create new grid, then remove default event system to avoid conflicts with Backbone.
-
-	var GridModel = Backbone.Model.extend( new Const.Grid() ).extend({
+	var model = new Const.Grid();
+	delete model.on;
+	delete model.off;
+	
+	var GridModel = Backbone.Model.extend( model ).extend({
 		
 		// Default model attributes.
 		defaults: {

@@ -24,7 +24,7 @@ function( _, Backbone ) {
 		// Selects a group of common geometry types by id reference.
 		setSelection: function( group ) {
 			this.setType( group[0] );
-			this.items = group;
+			this.items = group.slice();
 			this.update();
 		},
 		
@@ -83,7 +83,7 @@ function( _, Backbone ) {
 		
 		// Selects path of node ids.
 		selectPath: function( ids, silent ) {
-			this.path = ids;
+			this.path = ids.slice();
 			if (!silent) {
 				this.update();
 			}

@@ -27,7 +27,6 @@ function( $, Backbone, gridModel, gridController, keystroke ) {
 			
 			this.$width = $('#view-width');
 			this.$height = $('#view-height');
-			//this.model.on('change', this.update, this);
 			this.update();
 		},
 		

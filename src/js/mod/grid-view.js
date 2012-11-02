@@ -27,7 +27,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			
 			// Add event listeners.
 			gridModel.on( gridModel.events.CHANGE, self.render, self );
-			gridModel.on( gridModel.events.CHANGE, self.setFrame, self );
+			gridModel.on( "change:width change:height", self.setFrame, self );
 			windowService.on( windowService.RESIZE, self.setFrame, self );
 			selectModel.on( selectModel.UPDATE, self.setSelection, self );
 			
@@ -35,7 +35,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			self.setFrame();
 		},
 		
-		// Generates a polygon drawing path based on polygon model.
+		// Generates a polygon drawing path based on an array of node models.
 		getPathForNodes: function( ring ) {
 			var draw = '';
 			
@@ -279,7 +279,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 		onTouch: function( evt ) {
 			var target = $(evt.target),
 				id;
-			
+	
 			target = target.is('li > span') ? target.parent() : target;
 			id = target.attr('id');
 			
@@ -307,18 +307,17 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 				id = gridModel.addNode(target.left, target.top);
 				selectModel.select( id );
 			}
-			
 			return false;
 		},
 		
 		onDouble: function( evt ) {
 			var target = $(evt.target);
-			
+
 			if ( target.is('path') ) {
 				var nodeIds = gridModel.getPolygonById( target.attr('id') ).nodes;
-				console.log( nodeIds );
 				selectModel.setSelection( nodeIds );
 			}
+			return false;
 		}
 	});
 	
