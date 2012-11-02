@@ -13,7 +13,7 @@ function( $, gridController ) {
 	$(window).on('keydown', function( evt ) {
 		if (_enabled) {
 			switch ( evt.which ) {
-				case 8: gridController.deleteGeometry(); return false; // "delete"
+				case 82: gridController.deleteGeometry(); return false; // "delete"
 				case 66: gridController.splitNodes(); return false; // "b"
 				case 74: gridController.joinNodes(); return false; // "j"
 				case 80: gridController.makePolygon(); return false; // "p"

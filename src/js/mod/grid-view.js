@@ -12,11 +12,11 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 		el: '#grid',
 		model: gridModel,
 		selectedViews: [],
+		lastTouch: 0,
 		
 		// Define view event patterns.
 		events: {
-			'mousedown': 'onTouch',
-			'dblclick': 'onDouble'
+			'mousedown': 'onTouch'
 		},
 		
 		// View initializer.
@@ -134,7 +134,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			// Select all items in the selection model.
 			_.each( selectModel.items, function( item, i ) {
 				item = self.$el.find( '#'+item );
-
+				
 				if ( item.is('li') ) {
 					// NODE view item.
 					item.addClass('select').children(':first-child').text(i+1);
@@ -277,75 +277,92 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			});
 		},
 		
-		// Generic event handler triggered by any mousedown/touch event.
-		onTouch: function( evt ) {
-			var target = $(evt.target),
-				pos = this.localizeEventOffset(evt),
-				id;
-	
-			target = target.is('li > span') ? target.parent() : target;
-			id = target.attr('id');
-
-			if ( target.is('li') ) {
-				// NODE touch.
-				var selected = selectModel.contains( id ),
-					added = false;
-				
-				if (evt.shiftKey) {
-					// Shift key is pressed: toggle node selection.
-					selected = selectModel.toggle( id );
-					added = true;
-				}
-				else if ( !selected ) {
-					// Was not already selected: set new selection.
-					selectModel.deselectAll();
-					selectModel.select( id );
-					selected = true;
-				}
-				
-				if ( selected ) {
-					
-					// Node has resolved as selected: start dragging.
-					this.dragGeom( selectModel.items, pos, function( dragged ) {
-						// Callback triggered on release...
-						// If the point was not dragged, nor a new addition to the selection
-						// Then refine selection to just this point.
-						if (!dragged && !added) {
-							selectModel.deselectAll();
-							selectModel.select( id );
-						}
-					});
-				}
+		// Triggered upon touching a node element.
+		touchNode: function( id, pos, shiftKey, dblclick ) {
+			// NODE touch.
+			var selected = selectModel.contains( id ),
+				added = false;
+			
+			if ( shiftKey ) {
+				// Shift key is pressed: toggle node selection.
+				selected = selectModel.toggle( id );
+				added = true;
 			}
-			else if ( target.is('path') ) {
-				// POLYGON touch.
-				if ( !evt.shiftKey ) {
+			else if ( !selected ) {
+				// Was not already selected: set new selection.
+				selectModel.deselectAll();
+				selectModel.select( id );
+				selected = true;
+			}
+			
+			if ( selected ) {
+				// Node has resolved as selected: start dragging.
+				this.dragGeom( selectModel.items, pos, function( dragged ) {
+					// Callback triggered on release...
+					// If the point was not dragged, nor a new addition to the selection
+					// Then refine selection to just this point.
+					if (!dragged && !added) {
+						selectModel.deselectAll();
+						selectModel.select( id );
+					}
+				});
+			}
+		},
+		
+		// Triggered upon touching a polygon shape.
+		touchPoly: function( id, pos, shiftKey, dblclick ) {
+			if ( dblclick ) {
+				// Double-click polygon: select all nodes.
+				var nodeIds = gridModel.getPolygonById( id ).nodes;
+				selectModel.setSelection( nodeIds );
+			}
+			else {
+				// Single-click polygon: perform selection box.
+				if ( !shiftKey ) {
 					selectModel.deselectAll();
 				}
 				if ( selectModel.toggle(id) ) {
 					this.dragGeom( gridModel.getPolygonById( id ).nodes, pos);
 				}
 			}
+		},
+		
+		// Triggered upon touching the canvas/background.
+		touchCanvas: function( pos, shiftKey, dblclick ) {
+			if ( dblclick ) {
+				// Double-click canvas: add node.
+				gridModel.addNode( pos.left, pos.top );
+			}
 			else {
-				// CANVAS touch. Drag marquee selection.
-				if ( !evt.shiftKey ) {
+				// Single-click canvas: activate selection marquee.
+				if ( !shiftKey ) {
 					selectModel.deselectAll();
 				}
 				this.dragMarquee( pos );
 			}
-			return false;
 		},
 		
-		// Generic handler called upon double-clicking.
-		onDouble: function( evt ) {
-			var target = $(evt.target);
-			
-			if ( target.is('path') ) {
-				var nodeIds = gridModel.getPolygonById( target.attr('id') ).nodes;
-				selectModel.setSelection( nodeIds );
-				
-			} else if ( target.is( this.$el ) ) {
-				
+		// Generic handler for triggering view behaviors.
+		onTouch: function( evt ) {
+			var target = $(evt.target),
+				time = new Date().getTime(),
+				dblclick = (time - this.lastTouch < 200),
+				pos = this.localizeEventOffset( evt ),
+				id;
+	
+			target = target.is('li > span') ? target.parent() : target;
+			id = target.attr('id');
+			this.lastTouch = time;
+
+			if ( target.is('li') ) {
+				// Node
+				this.touchNode( id, pos, evt.shiftKey, dblclick );
+			} else if ( target.is('path') ) {
+				// Poly
+				this.touchPoly( id, pos, evt.shiftKey, dblclick );
+			} else {
+				// Canvas
+				this.touchCanvas( pos, evt.shiftKey, dblclick );
 			}
 			return false;
 		}
