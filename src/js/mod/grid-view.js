@@ -201,6 +201,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			
 			// Configure drag-drop events.
 			this.drag(function( offset ) {
+				// Drag.
 				var current = new RegExp(id+'$|'+id+'\\s|\\s', 'g'),
 					foreign;
 
@@ -224,34 +225,53 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 					var nodes = gridModel.getNodesForPolygon( view.getAttribute('id') );
 					view.setAttribute('d', self.getPathForNodes( nodes ) );
 				});
-			}, function() {
-				model = view = lines = polys = min = max = null;
 			});
 		},
 		
 		// Apply drag-drop behavior to a polygon view.
 		dragPoly: function( id, view, evt ) {
-			
 			var self = this,
-				nodes = gridModel.getNodesForPolygon( id ),
-				nodeView = this.$el.find( '#'+_.pluck(nodes, 'id').join(',#') ),
+				nodeIds = gridModel.getPolygonById( id ).nodes,
+				nodeView = this.$el.find( '#'+nodeIds.join(',#') ),
+				lineView = this.$el.find( 'line.'+nodeIds.join(',line.') ),
+				polyView = this.$el.find( 'path.'+nodeIds.join(',path.') ),
 				offset = this.localizeEventOffset( evt );
 			
 			this.drag(function( pos ) {
+				// Drag.
 				offset.left -= pos.left;
 				offset.top -= pos.top;
 				
-				_.each( nodes, function( node ) {
-					nodeView.filter('#'+node.id).css({
-						left: (node.x -= offset.left),
-						top: (node.y -= offset.top)
+				// Offset nodes.
+				nodeView.each(function() {
+					var node = $(this),
+						model = gridModel.getNodeById( node.attr('id') );
+						
+					node.css({
+						left: (model.x -= offset.left),
+						top: (model.y -= offset.top)
 					});
 				});
 				
-				view[0].setAttribute( 'd', self.getPathForNodes( nodes ) );
+				// Update lines.
+				lineView.each(function() {
+					var to = this.getAttribute('class').split(' '),
+						a = gridModel.getNodeById( to[0] ),
+						b = gridModel.getNodeById( to[1] );
+					this.setAttribute('x1', a.x);
+					this.setAttribute('y1', a.y);
+					this.setAttribute('x2', b.x);
+					this.setAttribute('y2', b.y);
+				});
+				
+				// Update polys.
+				polyView.each(function() {
+					var poly = this.getAttribute('id'),
+						nodes = gridModel.getNodesForPolygon( poly );
+					this.setAttribute( 'd', self.getPathForNodes( nodes ) );
+				});
+				
 				offset = pos;
-			}, function() {
-				self = nodes = nodeView = offset = null;
 			});
 		},
 		
@@ -295,7 +315,9 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			var target = $(evt.target);
 			
 			if ( target.is('path') ) {
-				
+				var nodeIds = gridModel.getPolygonById( target.attr('id') ).nodes;
+				console.log( nodeIds );
+				selectModel.setSelection( nodeIds );
 			}
 		}
 	});
