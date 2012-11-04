@@ -4,37 +4,54 @@
 */
 define([
 	'lib/jquery',
+	'lib/underscore',
 	'lib/backbone',
 	'mod/grid-model',
+	'mod/grid-index-model',
 	'mod/grid-controller',
 	'mod/tools-keyboard'
 ],
-function( $, Backbone, gridModel, gridController, keystroke ) {
+function( $, _, Backbone, gridModel, gridIndex, gridController, keystroke ) {
 	
 	var ToolsView = Backbone.View.extend({
 		el: '#tools',
-		model: gridModel,
 		
 		events: {
-			'click button.action': 'performTask',
-			'click .toggle-menu h2': 'toggleMenu',
-			'blur #view-width': 'setFrame',
-			'blur #view-height': 'setFrame',
+			'click button.action': 'onSelectTask',
+			'click .toggle-menu h2': 'onToggleMenu',
+			'change #grids-list': 'onChangeGrid',
+			'blur #view-width,#view-height,#grid-name': 'onSetAttr'
 		},
 		
 		initialize: function() {
 			var self = this;
-			this.$width = $('#view-width');
-			this.$height = $('#view-height');
+			this.$list = this.$el.find('#grids-list');
+			this.$width = this.$el.find('#view-width');
+			this.$height = this.$el.find('#view-height');
+			this.$name = this.$el.find('#grid-name');
 			this.update();
+			
+			gridIndex.on('reset add', this.setGridsList, this);
+			gridModel.on('change', this.update, this);
 		},
 		
 		render: function() {
 			// Do nothing.
 		},
 		
+		// Renders the list of grid ids.
+		setGridsList: function() {
+			var opts = '';
+			gridIndex.each(function( model ) {
+				opts += '<option value="'+ model.id +'">'+ model.attributes.name +'</option>';
+			});
+			
+			this.$list.empty().html( opts );
+			this.$list.val( gridModel.id );
+		},
+		
 		// Performs a basic grid controller task based on a button click.
-		performTask: function(evt) {
+		onSelectTask: function(evt) {
 			var type = evt.target.className.replace(/action|\s/g, '');
 			
 			switch (type) {
@@ -45,22 +62,31 @@ function( $, Backbone, gridModel, gridController, keystroke ) {
 			}
 		},
 		
-		toggleMenu: function( evt ) {
+		onToggleMenu: function( evt ) {
 			var target = $(evt.target).closest('.toggle-menu').toggleClass('open');
 			$('.toggle-menu').not(target).removeClass('open');
 		},
 		
-		setFrame: function() {
+		onChangeGrid: function() {
+			gridController.loadGrid( parseInt(this.$list.val(), 10) );
+		},
+		
+		onSetAttr: function() {
 			gridModel.set({
 				width: (parseInt(this.$width.val(), 10) || ''),
-				height: (parseInt(this.$height.val(), 10) || '')
+				height: (parseInt(this.$height.val(), 10) || ''),
+				name: this.$name.val()
 			});
+			
+			// Force update to refresh invalidated fields.
 			this.update();
 		},
 		
 		update: function() {
-			this.$width.val( this.model.get('width') );
-			this.$height.val( this.model.get('height') );
+			this.$width.val( gridModel.get('width') );
+			this.$height.val( gridModel.get('height') );
+			this.$name.val( gridModel.get('name') );
+			this.$list.find(':selected').text( gridModel.get('name') );
 		}
 	});
 	

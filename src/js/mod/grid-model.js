@@ -5,15 +5,18 @@
 define([
 	'lib/backbone',
 	'lib/underscore',
-	'lib/constellation',
-	'mod/service-data'
+	'lib/constellation'
 ],
-function( Backbone, _, Const, dataService ) {
+function( Backbone, _, Const ) {
 	
 	var GridModel = Backbone.Model.extend( new Const.Grid() ).extend({
 		
+		localStorage: new Backbone.LocalStorage("constellation"),
+
 		// Default model attributes.
 		defaults: {
+			id: 0,
+			name: 'Untitled',
 			icount: 0,
 			nodes: null,
 			polys: null,
@@ -29,25 +32,46 @@ function( Backbone, _, Const, dataService ) {
 			this.off = Backbone.Events.off;
 			this.emit = Backbone.Events.trigger;
 		},
-
-		// Loads new grid data into the model.
-		getLayoutsList: function() {
-			dataService.getLayoutsList();
+		
+		// Override id factory method so that instance counter is saved with the model.
+		_id: function( type ) {
+			return type + this.attributes.icount++;
+		},
+		
+		// Creates a new grid instance.
+		newGrid: function() {
+			this.defaults.id++;
+			this.set( this.defaults, {silent:true} );
+			this.nodes = {};
+			this.polys = {};
+			this.trigger('new');
+			this.saveGrid();
+			this.update();
 		},
 		
 		// Loads new grid data into the model.
-		loadLayout: function( name ) {
-			dataService.loadLayout( name );
+		loadGrid: function( id ) {
+			this.set('id', id);
+			this.fetch({
+				success: function( model ) {
+					model.nodes = model.get('nodes');
+					model.polys = model.get('polys');
+					model.update();
+				}
+			});
+		},
+		
+		// Saves data currently stored within the model.
+		saveGrid: function() {
+			this.save({
+				nodes: this.nodes,
+				polys: this.polys
+			});
 		},
 		
 		// Loads new grid data into the model.
-		saveLayout: function( name ) {
-			dataService.saveLayout( name, _data );
-		},
-		
-		// Loads new grid data into the model.
-		deleteLayout: function( name ) {
-			dataService.deleteLayout( name );
+		deleteGrid: function() {
+			this.destroy();
 		}
 	});
 	

@@ -3,7 +3,7 @@ define([
 	'lib/jquery'
 ],
 function( _, jQuery ) {
-	
+
 // Backbone.js 0.9.2
 
 // (c) 2010-2012 Jeremy Ashkenas, DocumentCloud Inc.
@@ -42,6 +42,13 @@ for(var b in a){var c=a[b];f.isFunction(c)||(c=this[a[b]]);if(!c)throw Error('Me
 !1);else{var a=n(this,"attributes")||{};this.id&&(a.id=this.id);this.className&&(a["class"]=this.className);this.setElement(this.make(this.tagName,a),!1)}}});o.extend=r.extend=u.extend=v.extend=function(a,b){var c=G(this,a,b);c.extend=this.extend;return c};var H={create:"POST",update:"PUT","delete":"DELETE",read:"GET"};g.sync=function(a,b,c){var d=H[a];c||(c={});var e={type:d,dataType:"json"};c.url||(e.url=n(b,"url")||t());if(!c.data&&b&&("create"==a||"update"==a))e.contentType="application/json",
 e.data=JSON.stringify(b.toJSON());g.emulateJSON&&(e.contentType="application/x-www-form-urlencoded",e.data=e.data?{model:e.data}:{});if(g.emulateHTTP&&("PUT"===d||"DELETE"===d))g.emulateJSON&&(e.data._method=d),e.type="POST",e.beforeSend=function(a){a.setRequestHeader("X-HTTP-Method-Override",d)};"GET"!==e.type&&!g.emulateJSON&&(e.processData=!1);return i.ajax(f.extend(e,c))};g.wrapError=function(a,b,c){return function(d,e){e=d===b?e:d;a?a(b,e,c):b.trigger("error",b,e,c)}};var x=function(){},G=function(a,
 b,c){var d;d=b&&b.hasOwnProperty("constructor")?b.constructor:function(){a.apply(this,arguments)};f.extend(d,a);x.prototype=a.prototype;d.prototype=new x;b&&f.extend(d.prototype,b);c&&f.extend(d,c);d.prototype.constructor=d;d.__super__=a.prototype;return d},n=function(a,b){return!a||!a[b]?null:f.isFunction(a[b])?a[b]():a[b]},t=function(){throw Error('A "url" property or function must be specified');}}).call(this);
+
+/**
+ * Backbone localStorage Adapter
+ * https://github.com/jeromegn/Backbone.localStorage
+ */
+(function(e,t,n){function r(){return((1+Math.random())*65536|0).toString(16).substring(1)}function i(){return r()+r()+"-"+r()+"-"+r()+"-"+r()+"-"+r()+r()+r()}e.LocalStorage=window.Store=function(e){this.name=e;var t=this.localStorage().getItem(this.name);this.records=t&&t.split(",")||[]};t.extend(e.LocalStorage.prototype,{save:function(){this.localStorage().setItem(this.name,this.records.join(","))},create:function(e){if(!e.id){e.id=i();e.set(e.idAttribute,e.id)}this.localStorage().setItem(this.name+"-"+e.id,JSON.stringify(e));this.records.push(e.id.toString());this.save();return e.toJSON()},update:function(e){this.localStorage().setItem(this.name+"-"+e.id,JSON.stringify(e));if(!t.include(this.records,e.id.toString()))this.records.push(e.id.toString());this.save();return e.toJSON()},find:function(e){return JSON.parse(this.localStorage().getItem(this.name+"-"+e.id))},findAll:function(){return t(this.records).chain().map(function(e){return JSON.parse(this.localStorage().getItem(this.name+"-"+e))},this).compact().value()},destroy:function(e){this.localStorage().removeItem(this.name+"-"+e.id);this.records=t.reject(this.records,function(t){return t==e.id.toString()});this.save();return e},localStorage:function(){return localStorage}});e.LocalStorage.sync=window.Store.sync=e.localSync=function(e,t,r,i){var s=t.localStorage||t.collection.localStorage;if(typeof r=="function"){r={success:r,error:i}}var o,u=n.Deferred&&n.Deferred();switch(e){case"read":o=t.id!=undefined?s.find(t):s.findAll();break;case"create":o=s.create(t);break;case"update":o=s.update(t);break;case"delete":o=s.destroy(t);break}if(o){r.success(o);if(u)u.resolve()}else{r.error("Record not found");if(u)u.reject()}return u&&u.promise()};e.ajaxSync=e.sync;e.getSyncMethod=function(t){if(t.localStorage||t.collection&&t.collection.localStorage){return e.localSync}return e.ajaxSync};e.sync=function(t,n,r,i){return e.getSyncMethod(n).apply(this,[t,n,r,i])}})(Backbone,_,jQuery);
+
 
 return Backbone.noConflict();
 });

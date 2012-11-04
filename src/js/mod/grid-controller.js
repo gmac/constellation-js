@@ -18,7 +18,24 @@ function( _, Backbone, constellation, gridModel, selectModel ) {
 		nodeOpsEnabled: function() {
 			return selectModel.type === gridModel.types.NODE;
 		},
-
+		
+		// Resets selection and then creates a new grid.
+		newGrid: function() {
+			selectModel.deselectAll( true );
+			gridModel.newGrid();
+		},
+		
+		// Resets selection and then loads a grid.
+		loadGrid: function( id ) {
+			selectModel.deselectAll( true );
+			gridModel.loadGrid( parseInt(id, 10) );
+		},
+		
+		// Saves the existing grid model.
+		saveGrid: function() {
+			gridModel.saveGrid();
+		},
+		
 		// Joins all nodes within the current selection group.
 		joinNodes: function() {
 			if ( this.nodeOpsEnabled() ) {

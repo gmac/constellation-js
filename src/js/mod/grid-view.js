@@ -91,6 +91,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			}) );
 			
 			// Refresh view selection.
+			this.selectedViews.length = 0;
 			this.setSelection();
 		},
 		
@@ -108,7 +109,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			this.$el.height( h ).css({marginTop: top + m});
 		},
 		
-		// Clears any existing view selection.
+		// Actively clears "select" classes from selected view nodes.
 		clearSelection: function() {
 			_.each(this.selectedViews, function(item) {
 				item = $(item);
@@ -125,7 +126,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			this.selectedViews.length = 0;
 		},
 		
-		// Configures appearance of the selected geometry state.
+		// Actively sets "select" classes onto view node selection.
 		// Kinda messy here given that jQuery doesn't handle DOM and SVG the same way...
 		setSelection: function() {
 			var self = this;

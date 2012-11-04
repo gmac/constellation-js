@@ -348,9 +348,9 @@
 	var Grid = Const.Grid = function(nodes, polys) {
 		
 		this._h = {};
+		this._i = 0;
 		this.nodes = {};
 		this.polys = {};
-		this.icount = 0;
 		this.setData(nodes, polys);
 	};
 	Grid.prototype = {
@@ -366,6 +366,11 @@
 		types: {
 			NODE: 'n',
 			POLYGON: 'p'
+		},
+		
+		// Creates unique ids for geometry items.
+		_id: function( type ) {
+			return type + this._i++;
 		},
 		
 		// Add a listener.
@@ -418,7 +423,7 @@
 		
 		// Adds a new node to the grid at the specified X and Y coordinates.
 		addNode: function( x, y, data, silent ) {
-			var node = new Node( this.types.NODE+ this.icount++, x, y, data );
+			var node = new Node( this._id(this.types.NODE), x, y, data );
 			this.nodes[ node.id ] = node;
 			this.update( true, silent );
 			return node.id;
@@ -578,7 +583,7 @@
 			var poly;
 			
 			if ( group.length >= 3 && this.hasNodes(group) ) {
-				poly = new Polygon( this.types.POLYGON+ this.icount++, group, data );
+				poly = new Polygon( this._id(this.types.POLYGON), group, data );
 				this.polys[ poly.id ] = poly;
 				this.update( true, silent );
 				return poly.id;

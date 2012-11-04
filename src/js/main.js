@@ -1,13 +1,19 @@
 define([
 	'mod/grid-view',
-	'mod/tools-view'
+	'mod/tools-view',
+	'mod/grid-index-model',
+	'mod/grid-model'
 ],
-function( gridView, toolsView ) {
+function( gridView, toolsView, indexModel, gridModel ) {
 	
-	require(['mod/grid-model'], function(model) {
-		var join = [model.addNode(100, 100), model.addNode(200, 200), model.addNode(100, 300)];
-		model.joinNodes( join );
-		model.addPolygon( join );
-		window.gridModel = model;
+	indexModel.fetch({
+		success: function( collect, response ) {
+			if ( indexModel.models.length ) {
+				gridModel.loadGrid( indexModel.at(0).id );
+			} else {
+				gridModel.newGrid();
+			}
+		}
 	});
+	
 });

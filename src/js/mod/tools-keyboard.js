@@ -21,6 +21,10 @@ function( $, gridController ) {
 				case 83: gridController.snapNodeToGrid(); return false; // "s"
 				case 78: gridController.selectNearestGridNode(); return false; // "n"
 				case 72: gridController.hitTestNodeInPolygons(); return false; // "h"
+				
+				case 49: gridController.newGrid(); return false; // "1"
+				case 50: gridController.saveGrid(); return false; // "2"
+				//case 51: gridController.saveGrid(); return false; // "2"
 			}
 			//console.log( evt.which );
 		}
