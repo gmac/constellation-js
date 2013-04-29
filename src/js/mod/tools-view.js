@@ -14,7 +14,7 @@ define([
 function( $, _, Backbone, gridModel, gridIndex, gridController, keystroke ) {
 	
 	var ToolsView = Backbone.View.extend({
-		el: '#tools',
+		el: '#toolbar',
 		
 		events: {
 			'click button.action': 'onSelectTask',
@@ -25,14 +25,11 @@ function( $, _, Backbone, gridModel, gridIndex, gridController, keystroke ) {
 		
 		initialize: function() {
 			var self = this;
-			this.$list = this.$el.find('#grids-list');
-			this.$width = this.$el.find('#view-width');
-			this.$height = this.$el.find('#view-height');
-			this.$name = this.$el.find('#grid-name');
-			this.update();
+			this.y = $('.header').outerHeight();
+			//this.update();
 			
-			gridIndex.on('reset add', this.setGridsList, this);
-			gridModel.on('change', this.update, this);
+			//gridIndex.on('reset add', this.setGridsList, this);
+			//gridModel.on('change', this.update, this);
 		},
 		
 		render: function() {
@@ -46,8 +43,8 @@ function( $, _, Backbone, gridModel, gridIndex, gridController, keystroke ) {
 				opts += '<option value="'+ model.id +'">'+ model.attributes.name +'</option>';
 			});
 			
-			this.$list.empty().html( opts );
-			this.$list.val( gridModel.id );
+			//this.$list.empty().html( opts );
+			//this.$list.val( gridModel.id );
 		},
 		
 		// Performs a basic grid controller task based on a button click.
@@ -83,9 +80,6 @@ function( $, _, Backbone, gridModel, gridIndex, gridController, keystroke ) {
 		},
 		
 		update: function() {
-			this.$width.val( gridModel.get('width') );
-			this.$height.val( gridModel.get('height') );
-			this.$name.val( gridModel.get('name') );
 			this.$list.find(':selected').text( gridModel.get('name') );
 		}
 	});

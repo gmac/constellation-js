@@ -9,11 +9,12 @@ js/lib/jquery.js
 js/lib/underscore.js
 js/lib/backbone.js
 js/lib/constellation.js
-js/mod/service-data.js
 js/mod/grid-model.js
 js/mod/grid-selection-model.js
 js/mod/service-window.js
 js/mod/grid-view.js
+js/lib/Backbone.js
+js/mod/grid-index-model.js
 js/mod/grid-controller.js
 js/mod/tools-keyboard.js
 js/mod/tools-view.js

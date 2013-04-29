@@ -1,89 +1,119 @@
+/* Reset
+* ----------------------------- */
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code, del,
+dfn, em, font, img, ins, kbd, q, s, samp, small,
+strike, strong, sub, sup, tt, var, b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td {
+  background: transparent;
+  border: 0;
+  font-size: 100%;
+  margin: 0;
+  outline: 0;
+  padding: 0;
+  vertical-align: baseline;
+}
+
+body { line-height: 1; }
+
+nav ol,
+nav ul,
+.nav ol,
+.nav ul {
+  list-style: none;
+}
+
+blockquote,
+q { quotes: none; }
+
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
+  content: '';
+  content: none;
+}
+
+button,
+input,
+label,
+select,
+textarea { vertical-align: middle; }
+
+a img { border: 0; }
+:focus { outline: 0; }
+ins { text-decoration: none; }
+del { text-decoration: line-through; }
+
+address, caption, cite, code,
+dfn, em, th, var {
+  font-style: normal;
+  font-weight: normal;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+caption,
+th {
+  text-align: left;
+}
+
+article, aside, canvas, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section, summary {
+  display:block;
+}
+
+/* Global
+* ----------------------------- */
 body {
-	background:url(bg.png);
 	font:12px/16px arial,sans-serif;
 	margin:0;
 	position:relative;
 }
-/* Clearing Floats */
-.group:before,
-.group:after { content: "\0020"; display: block; height: 0; overflow: hidden; }
-.group:after { clear: both; }
-.group { zoom: 1; }
 
-#constellation {
-	
-}
 
-/* Toolbar
-* ----------------------------- */
-#constellation .const-toolbar {
+.header {
 	background-color: #000;
-	height: 46px;
-	left: 0;
-	position: fixed;
-	top: 0;
-	width: 100%;
-	z-index: 2;
-}
-#constellation .const-tools {
-	position: absolute;
-	right: 15px;
-}
-#constellation .const-tools button {
-	cursor: pointer;
-	height: 30px;
-	margin: 8px 4px;
-	width: 30px;
-}
-#constellation .const-tools button,
-#constellation .toggle-menu {
-	float: left;
-	position: relative;
-}
-#constellation .toggle-menu {
-	margin: 8px 0 0;
-}
-#constellation .toggle-menu h2 {
 	color: #fff;
-	cursor: default;
-	display: inline-block;
-	height: 30px;
-	line-height: 30px;
-	margin: 0;
-	padding: 0 10px 8px;
+	height: 60px;
+	line-height: 60px;
 }
-#constellation .toggle-menu.open h2 {
-	background-color: #fff;
-	color: #000;
+
+.header h1,
+.header ul,
+.header li {
+	display: inline;
+	margin: 0 20px;
 }
-#constellation .toggle-menu ul {
-	background-color: #fff;
-	display: none;
-	list-style: none;
-	margin: 0;
-	padding: 10px;
-	position: absolute;
-	right:0;
-	width:250px;
+
+.header a {
+	display: inline;
 }
-#constellation .toggle-menu.open ul {
-	display: block;
-}
-#view-width,
-#view-height {
-	width: 50px;
+
+
+.toolbar {
+	background-color: #ccc;
+	float: left;
+	padding: 25px 15px;
+	width: 150px;
 }
 
 /* Canvas Display
 * ----------------------------- */
-#constellation .const-canvas {
+.canvas {
 	background-color: #fff;
+	float: left;
 	height: 400px;
-	margin: auto;
 	position: relative;
 	z-index: 1;
 }
-#constellation .const-canvas svg {
+
+.canvas svg {
 	height: 100%;
 	left: 0;
 	overflow: hidden;
@@ -93,27 +123,34 @@ body {
 	top: 0;
 	width: 100%;
 }
-#constellation .const-canvas line {
+
+.canvas line {
 	stroke: #000;
 	stroke-width:2;
 }
-#constellation .const-canvas line.select {
+
+.canvas line.select {
 	stroke: #f00;
 }
-#constellation .const-canvas path {
+
+.canvas path {
 	fill: #000;
 	opacity:0.25;
 }
-#constellation .const-canvas path.select {
+
+.canvas path.select {
 	fill: #f00;
 }
-#constellation .const-canvas ul {
+
+.canvas ul {
 	list-style: none;
 }
-#constellation .const-canvas li {
+
+.canvas li {
 	position: absolute;
 }
-#constellation .const-canvas li span {
+
+.canvas li span {
 	background-color: #900;
 	border: 1px solid rgba(255,255,255,0.5);
 	border-radius: 50%;
@@ -128,11 +165,12 @@ body {
 	top: -5px;
 	width: 10px;
 }
-#constellation .const-canvas li.select span {
+
+.canvas li.select span {
 	background-color: #f00;
 }
 
-#constellation #marquee {
+#marquee {
 	background: rgba(0, 0, 0, 0.1);
 	border: 1px solid #ccc;
 	display: none;

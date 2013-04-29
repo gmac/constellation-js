@@ -24,10 +24,11 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 			var self = this;
 			// Generate grid view template.
 			self.tmpl = _.template( $('#grid-view').html() );
+			self.x = $('.toolbar').outerWidth();
+			self.y = $('.header').outerHeight();
 			
 			// Add event listeners.
 			gridModel.on( gridModel.events.CHANGE, self.render, self );
-			gridModel.on( "change:width change:height", self.setFrame, self );
 			windowService.on( windowService.RESIZE, self.setFrame, self );
 			selectModel.on( selectModel.UPDATE, self.setSelection, self );
 			
@@ -97,16 +98,7 @@ function( $, _, Backbone, gridModel, selectModel, windowService ) {
 		
 		// Resets the work area frame dimensions and background image.
 		setFrame: function() {
-			var w = gridModel.get('width'),
-				h = gridModel.get('height'),
-				m = w ? 'auto' : 10,
-				top = 45;
-			
-			this.$el.width( w ).css({marginLeft: m, marginRight: m});
-			
-			m = h ? (windowService.height - top - h) / 2 : 10;
-			h = h ? h : windowService.height - top - m * 2;
-			this.$el.height( h ).css({marginTop: top + m});
+			this.$el.width( windowService.width-this.x ).height( windowService.height-this.y );
 		},
 		
 		// Actively clears "select" classes from selected view nodes.

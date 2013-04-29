@@ -10,6 +10,7 @@
 	<div id="constellation">
 		<div class="const-toolbar">
 			<div class="const-tools" id="tools">
+				<select id="grids-list"></select>
 				<button class="action add">Add Point (a)</button>
 				<button class="action join">Join Points (j)</button>
 				<button class="action split">Split Points (b)</button>
@@ -27,6 +28,7 @@
 				<div class="toggle-menu">
 					<h2>Canvas</h2>
 					<ul>
+						<li>Name: <input type="text" id="grid-name"/></li>
 						<li>
 							Width: <input type="text" placeholder="auto" id="view-width"/>
 							Height: <input type="text" placeholder="auto" id="view-height"/>
@@ -55,6 +57,7 @@
 			<li style="left:<%= n.x %>px;top:<%= n.y %>px;" id="<%= n.id %>"><span></span></li>
 			<% }); %>
 		</ul>
+		<div id="marquee"></div>
 	</script>
 
 <script>

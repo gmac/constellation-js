@@ -3,7 +3,7 @@
 * Kind of a kludgy method for tracking a list of grid instances without a real server.
 */
 define([
-	'lib/Backbone',
+	'lib/backbone',
 	'mod/grid-model'
 ],
 function( Backbone, gridModel ) {
