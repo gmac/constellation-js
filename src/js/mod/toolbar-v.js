@@ -7,12 +7,12 @@ define([
 	'lib/underscore',
 	'lib/backbone',
 	'mod/grid-m',
-	'mod/grid-index-m',
+	'mod/cache-m',
 	'mod/grid-c',
 	'mod/keyboard-c',
 	'mod/window-v'
 ],
-function( $, _, Backbone, gridModel, gridIndex, gridController, keystroke, windowView ) {
+function( $, _, Backbone, gridModel, cacheModel, gridController, keystroke, windowView ) {
 	
 	var ToolsView = Backbone.View.extend({
 		el: '#toolbar',

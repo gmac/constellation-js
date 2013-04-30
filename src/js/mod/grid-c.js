@@ -7,27 +7,27 @@ define([
 	'lib/backbone',
 	'lib/constellation',
 	'mod/grid-m',
-	'mod/grid-selection-m'
+	'mod/selection-m'
 ],
-function( _, Backbone, constellation, gridModel, selectModel ) {
+function( _, Backbone, constellation, gridModel, selectionModel ) {
 	
 	var GridController = Backbone.Model.extend({
 		ALERT: 'alert',
 		
 		// Tests if the environment is configured for performing node operations.
 		nodeOpsEnabled: function() {
-			return selectModel.type === gridModel.types.NODE;
+			return selectionModel.type === gridModel.types.NODE;
 		},
 		
 		// Resets selection and then creates a new grid.
 		newGrid: function() {
-			selectModel.deselectAll( true );
+			selectionModel.deselectAll( true );
 			gridModel.newGrid();
 		},
 		
 		// Resets selection and then loads a grid.
 		loadGrid: function( id ) {
-			selectModel.deselectAll( true );
+			selectionModel.deselectAll( true );
 			gridModel.loadGrid( parseInt(id, 10) );
 		},
 		
@@ -39,7 +39,7 @@ function( _, Backbone, constellation, gridModel, selectModel ) {
 		// Joins all nodes within the current selection group.
 		joinNodes: function() {
 			if ( this.nodeOpsEnabled() ) {
-				gridModel.joinNodes( selectModel.items );
+				gridModel.joinNodes( selectionModel.items );
 			} else {
 				this.alert("Please select two or more nodes.");
 			}
@@ -48,7 +48,7 @@ function( _, Backbone, constellation, gridModel, selectModel ) {
 		// Splits all nodes within the current selection group.
 		splitNodes: function() {
 			if ( this.nodeOpsEnabled() ) {
-				gridModel.splitNodes( selectModel.items );
+				gridModel.splitNodes( selectionModel.items );
 			} else {
 				this.alert("Please select two or more nodes.");
 			}
@@ -57,7 +57,7 @@ function( _, Backbone, constellation, gridModel, selectModel ) {
 		// Makes a polygon using the nodes in the current selection group.
 		makePolygon: function() {
 			if ( this.nodeOpsEnabled() ) {
-				gridModel.addPolygon( selectModel.items );
+				gridModel.addPolygon( selectionModel.items );
 			} else {
 				this.alert("Please select two or more nodes.");
 			}
@@ -67,21 +67,21 @@ function( _, Backbone, constellation, gridModel, selectModel ) {
 		deleteGeometry: function() {
 			if ( this.nodeOpsEnabled() ) {
 				// NODES
-				gridModel.removeNodes( selectModel.items );
+				gridModel.removeNodes( selectionModel.items );
 			} else {
 				// POLYGONS
-				gridModel.removePolygons( selectModel.items );
+				gridModel.removePolygons( selectionModel.items );
 			}
-			selectModel.deselectAll();
+			selectionModel.deselectAll();
 		},
 		
 		// Finds the shortest grid path between two selected points.
 		runPathfinder: function() {
-			if ( this.nodeOpsEnabled() && selectModel.selectionSize() === 2 ) {
-				var result = gridModel.findPath( selectModel.items[0], selectModel.items[1] );
+			if ( this.nodeOpsEnabled() && selectionModel.selectionSize() === 2 ) {
+				var result = gridModel.findPath( selectionModel.items[0], selectionModel.items[1] );
 				
 				if ( result.valid ) {
-					selectModel.selectPath( _.pluck(result.nodes, 'id') );
+					selectionModel.selectPath( _.pluck(result.nodes, 'id') );
 				}
 			} else {
 				this.alert("Please select exactly two nodes.");
@@ -90,8 +90,8 @@ function( _, Backbone, constellation, gridModel, selectModel ) {
 		
 		// Snaps a node onto the nearest grid line.
 		snapNodeToGrid: function() {
-			if ( this.nodeOpsEnabled() && selectModel.selectionSize() === 1 ) {
-				var node = gridModel.getNodeById( selectModel.items[0] ),
+			if ( this.nodeOpsEnabled() && selectionModel.selectionSize() === 1 ) {
+				var node = gridModel.getNodeById( selectionModel.items[0] ),
 					to = gridModel.snapPointToGrid( node );
 				
 				node.x = to.x;
@@ -105,9 +105,9 @@ function( _, Backbone, constellation, gridModel, selectModel ) {
 		
 		// Finds and selects the nearest point to the current selection.
 		selectNearestGridNode: function() {
-			if ( this.nodeOpsEnabled() && selectModel.selectionSize() === 1 ) {
-				var nearest = gridModel.getNearestNodeToNode( selectModel.items[0] );
-				selectModel.select( nearest.id );
+			if ( this.nodeOpsEnabled() && selectionModel.selectionSize() === 1 ) {
+				var nearest = gridModel.getNearestNodeToNode( selectionModel.items[0] );
+				selectionModel.select( nearest.id );
 			} else {
 				this.alert("Please select exactly one node.");
 			}
@@ -115,18 +115,18 @@ function( _, Backbone, constellation, gridModel, selectModel ) {
 		
 		// Hit tests a node among all polygon definitions.
 		hitTestNodeInPolygons: function() {
-			if ( selectModel.selectionSize() === 1 ) {
+			if ( selectionModel.selectionSize() === 1 ) {
 				var select;
 				// Get new selection.
 				if ( this.nodeOpsEnabled() ) {
-					var node = gridModel.getNodeById( selectModel.items[0] );
+					var node = gridModel.getNodeById( selectionModel.items[0] );
 					select = gridModel.getPolygonHitsForPoint( node );
 				} else {
-					select = gridModel.getNodesInPolygon( selectModel.items[0] );
+					select = gridModel.getNodesInPolygon( selectionModel.items[0] );
 				}
 				
 				if (select && select.length) {
-					selectModel.setSelection( select );
+					selectionModel.setSelection( select );
 				}
 			} else {
 				this.alert("Please select exactly one node.");

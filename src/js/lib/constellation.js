@@ -437,7 +437,7 @@
 			var change = false;
 			
 			// Group must contain two or more nodes to join...
-			if ( group.length > 1 && this.hasNodes(group) ) {
+			if ( group.length > 1 && this.hasNode(group) ) {
 				
 				// Loop through selection group of nodes...
 				_c.each(group, function(id) {
@@ -546,7 +546,7 @@
 		addPolygon: function( group, data ) {
 			var poly;
 			
-			if ( group.length >= 3 && this.hasNodes(group) ) {
+			if ( group.length >= 3 && this.hasNode(group) ) {
 				poly = new Polygon( this._id(this.types.POLYGON), group, data );
 				this.polys[ poly.id ] = poly;
 				return poly.id;

@@ -3,10 +3,10 @@ define([
 	'lib/underscore',
 	'lib/backbone',
 	'mod/grid-m',
-	'mod/grid-selection-m',
+	'mod/selection-m',
 	'mod/window-v'
 ],
-function( $, _, Backbone, gridModel, selectModel, windowView ) {
+function( $, _, Backbone, gridModel, selectionModel, windowView ) {
 	
 	var GridView = Backbone.View.extend({
 		el: '#grid',
@@ -30,7 +30,7 @@ function( $, _, Backbone, gridModel, selectModel, windowView ) {
 			// Add event listeners.
 			gridModel.on( 'change', self.render, self );
 			windowView.on( windowView.RESIZE, self.setFrame, self );
-			selectModel.on( selectModel.UPDATE, self.setSelection, self );
+			selectionModel.on( selectionModel.UPDATE, self.setSelection, self );
 			
 			// Set initial viewport.
 			self.setFrame();
@@ -125,7 +125,7 @@ function( $, _, Backbone, gridModel, selectModel, windowView ) {
 			this.clearSelection();
 			
 			// Select all items in the selection model.
-			_.each( selectModel.items, function( item, i ) {
+			_.each( selectionModel.items, function( item, i ) {
 				item = self.$el.find( '#'+item );
 				
 				if ( item.is('li') ) {
@@ -141,10 +141,10 @@ function( $, _, Backbone, gridModel, selectModel, windowView ) {
 			});
 			
 			// Highlight path selection.
-			if ( selectModel.path.length ) {
+			if ( selectionModel.path.length ) {
 				var path = [];
-				for ( var i = 0, len = selectModel.path.length-1; i < len; i++ ) {
-					path.push( 'line.'+selectModel.path[i]+'.'+selectModel.path[i+1] );
+				for ( var i = 0, len = selectionModel.path.length-1; i < len; i++ ) {
+					path.push( 'line.'+selectionModel.path[i]+'.'+selectionModel.path[i+1] );
 				}
 				
 				$( path.join(',') ).each(function() {
@@ -264,7 +264,7 @@ function( $, _, Backbone, gridModel, selectModel, windowView ) {
 			}, function( pos ) {
 				// Drop.
 				_.each( gridModel.getNodesInRect( plotRect(offset, pos) ), function( node ) {
-					selectModel.select( node );
+					selectionModel.select( node );
 				});
 				view.hide();
 			});
@@ -273,30 +273,30 @@ function( $, _, Backbone, gridModel, selectModel, windowView ) {
 		// Triggered upon touching a node element.
 		touchNode: function( id, pos, shiftKey, dblclick ) {
 			// NODE touch.
-			var selected = selectModel.contains( id ),
+			var selected = selectionModel.contains( id ),
 				added = false;
 			
 			if ( shiftKey ) {
 				// Shift key is pressed: toggle node selection.
-				selected = selectModel.toggle( id );
+				selected = selectionModel.toggle( id );
 				added = true;
 			}
 			else if ( !selected ) {
 				// Was not already selected: set new selection.
-				selectModel.deselectAll();
-				selectModel.select( id );
+				selectionModel.deselectAll();
+				selectionModel.select( id );
 				selected = true;
 			}
 			
 			if ( selected ) {
 				// Node has resolved as selected: start dragging.
-				this.dragGeom( selectModel.items, pos, function( dragged ) {
+				this.dragGeom( selectionModel.items, pos, function( dragged ) {
 					// Callback triggered on release...
 					// If the point was not dragged, nor a new addition to the selection
 					// Then refine selection to just this point.
 					if (!dragged && !added) {
-						selectModel.deselectAll();
-						selectModel.select( id );
+						selectionModel.deselectAll();
+						selectionModel.select( id );
 					}
 				});
 			}
@@ -307,14 +307,14 @@ function( $, _, Backbone, gridModel, selectModel, windowView ) {
 			if ( dblclick ) {
 				// Double-click polygon: select all nodes.
 				var nodeIds = gridModel.getPolygonById( id ).nodes;
-				selectModel.setSelection( nodeIds );
+				selectionModel.setSelection( nodeIds );
 			}
 			else {
 				// Single-click polygon: perform selection box.
 				if ( !shiftKey ) {
-					selectModel.deselectAll();
+					selectionModel.deselectAll();
 				}
-				if ( selectModel.toggle(id) ) {
+				if ( selectionModel.toggle(id) ) {
 					this.dragGeom( gridModel.getPolygonById( id ).nodes, pos);
 				}
 			}
@@ -329,7 +329,7 @@ function( $, _, Backbone, gridModel, selectModel, windowView ) {
 			else {
 				// Single-click canvas: activate selection marquee.
 				if ( !shiftKey ) {
-					selectModel.deselectAll();
+					selectionModel.deselectAll();
 				}
 				this.dragMarquee( pos );
 			}
