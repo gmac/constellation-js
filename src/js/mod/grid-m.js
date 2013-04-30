@@ -9,6 +9,16 @@ define([
 ],
 function( Backbone, _, Const ) {
 	
+	var updateMethods = [
+		'addNode',
+		'joinNodes',
+		'splitNodes',
+		//'detachNodes',
+		'removeNodes',
+		'addPolygon',
+		'removePolygons'
+	];
+	
 	var GridModel = Backbone.Model.extend( new Const.Grid() ).extend({
 		
 		localStorage: new Backbone.LocalStorage("constellation"),
@@ -25,10 +35,15 @@ function( Backbone, _, Const ) {
 
 		// Initializes the grid model.
 		initialize: function() {
-			// Override Constellation event model with Backbone behaviors.
-			this.on = Backbone.Events.on;
-			this.off = Backbone.Events.off;
-			this.emit = Backbone.Events.trigger;
+			var self = this;
+			
+			// Wrap all grid mutators with event-firing method wrappers:
+			_.each(updateMethods, function(methodName) {
+				self[ methodName ] = function() {
+					Const.Grid.prototype[ methodName ].apply(self, arguments);
+					self.trigger('change');
+				};
+			});
 		},
 		
 		// Override id factory method so that instance counter is saved with the model.
@@ -54,7 +69,7 @@ function( Backbone, _, Const ) {
 				success: function( model ) {
 					model.nodes = model.get('nodes');
 					model.polys = model.get('polys');
-					model.update();
+					//model.update();
 				}
 			});
 		},

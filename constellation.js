@@ -1,23 +1,30 @@
-// Constellation.js 0.1
+// Constellation.js 0.2.0
 
 // (c) 2011-2012 Greg MacWilliam, Threespot.
 // Constellation may be freely distributed under the MIT license.
 // For all details and documentation:
 // http://constellationjs.org
 
-(function( sqrt, min, max, abs ) {
-	"use strict";
-
-	var root = this;
+(function( context, factory ) {
 	
-	// The top-level namespace.
-	// All public Constellation classes and modules will be attached to this.
-	// Exported for both CommonJS and the browser.
-	var Const;
-	if ( root.exports ) {
-		Const = root.exports;
-	} else {
-		Const = root.Const = {};
+	var C = factory(Math.sqrt, Math.min, Math.max, Math.abs);
+	
+	if (typeof exports !== "undefined") module.exports = C;
+	else if (typeof define === "function" && define.amd) define(C);
+
+}(this, function( sqrt, min, max, abs ) {
+
+	// Top-level namespace:
+	// all public Constellation classes and modules will attach to this.
+	var Const = {};
+	
+	// Type-assessment utils:
+	function isArray(obj) {
+		return obj instanceof Array;
+	}
+	
+	function isFunction(obj) {
+		return typeof obj === 'function';
 	}
 	
 	// Const._c / Underscore shim
@@ -25,10 +32,10 @@
 	// Based on methods of Underscore.js
 	// Implementations are unique to Constellation.
 	var _c = Const.utils = {
-
+				
 		// Removes all properties from an object.
 		empty: function( obj ) {
-			if ( obj instanceof Array ) {
+			if ( isArray(obj) ) {
 				obj.length = 0;
 			} else {
 				for ( var i in obj ) {
@@ -43,7 +50,7 @@
 		// Gets the number of items in an array, or number of properties on an object.
 		size: function( obj ) {
 			// Array.
-			if ( obj instanceof Array ) {
+			if ( isArray(obj) ) {
 				return obj.length;
 			}
 
@@ -59,16 +66,16 @@
 		
 		// Tests if an array contains a value.
 		contains: function( obj, item ) {
-			if ( obj instanceof Array ) {
+			if ( isArray(obj) ) {
 				
 				// Test with native indexOf method.	
-				if ( typeof(Array.prototype.indexOf) === 'function' ) {
+				if ( isFunction(Array.prototype.indexOf) ) {
 					return obj.indexOf( item ) >= 0;
 				}
 			
 				// Brute-force search method.
-				var len = obj.length,
-					i = 0;
+				var len = obj.length;
+				var i = 0;
 			
 				while ( i < len ) {
 					if ( obj[i++] === item ) {
@@ -84,7 +91,7 @@
 		each: function( obj, iteratorFunct, context ) {
 			var i = 0;
 			
-			if ( obj instanceof Array ) {
+			if ( isArray(obj) ) {
 				// Array.
 				var len = obj.length;
 				while ( i < len ) {
@@ -106,7 +113,7 @@
 		map: function( obj, mutatorFunct, context ) {
 			var i = 0;
 			
-			if ( obj instanceof Array ) {
+			if ( isArray(obj) ) {
 				// Array.
 				var len = obj.length;
 				while ( i < len ) {
@@ -127,8 +134,8 @@
 		// Runs a test function on each item in the array,
 		// then returns true if all items pass the test.
 		all: function( array, testFunct, context ) {
-			var len = array.length,
-				i = 0;
+			var len = array.length;
+			var i = 0;
 				
 			while ( i < len ) {
 				if ( !testFunct.call( context, array[i], i++ ) ) {
@@ -355,13 +362,6 @@
 	};
 	Grid.prototype = {
 		
-		// Defines event names used by the library.
-		events: {
-			ADD: 'add',
-			REMOVE: 'remove',
-			CHANGE: 'update'
-		},
-
 		// Defines keys for geometry item types.
 		types: {
 			NODE: 'n',
@@ -372,34 +372,6 @@
 		_id: function( type ) {
 			return type + this._i++;
 		},
-		
-		// Add a listener.
-        on: function( eventName, handler, context ) {
-            (this._h[eventName] = this._h[eventName] || []).push({
-				h: handler,
-				c: context
-			});
-            return this;
-        },
-		
-        // Remove a listener.
-        off: function( eventName, handler, context ) {
-			for (var list = this._h[eventName], i = 0, sub; list && handler && (sub = list[i]); i++) {
-				if (sub.h === handler && (!context || sub.c === context)) list.splice(i--, 1);
-			}
-			
-			if (list && !i) list.length = 0;
-			if (!list) this._h = {};
-			return this;
-        },
-		
-		// Emit an event.
-        emit: function( eventName ) {
-            for (var list = this._h[eventName], i = 0, sub; list && (sub = list[i++]);) {
-                sub.h.apply(sub.c, list.slice.call(arguments, 1));
-            }
-            return this;
-        },
 
 		// Clears all existing node and polygon references from the grid.
 		reset: function() {
@@ -422,10 +394,9 @@
 		},
 		
 		// Adds a new node to the grid at the specified X and Y coordinates.
-		addNode: function( x, y, data, silent ) {
+		addNode: function( x, y, data ) {
 			var node = new Node( this._id(this.types.NODE), x, y, data );
 			this.nodes[ node.id ] = node;
-			this.update( true, silent );
 			return node.id;
 		},
 		
@@ -463,7 +434,7 @@
 		
 		// Joins nodes within a selection group.
 		// Selection group may be an array of node ids, or an object of id keys.
-		joinNodes: function( group, silent ) {
+		joinNodes: function( group ) {
 			var change = false;
 			
 			// Group must contain two or more nodes to join...
@@ -485,13 +456,12 @@
 				}, this);
 			}
 			
-			this.update(change, silent);
 			return change;
 		},
 		
 		// Splits apart nodes within a selection group.
 		// Selection group may be an array of node ids, or an object of id keys.
-		splitNodes: function( group, silent ) {
+		splitNodes: function( group ) {
 			var change = false;
 			
 			// Alias 'detach' method for a single node reference.
@@ -513,19 +483,17 @@
 				}
 			}, this);
 
-			this.update(change, silent);
 			return change;
 		},
 		
 		// Detachs a node from the grid.
 		// Each node's connections will be severed from all joining nodes.
-		detachNodes: function( group, silent ) {
+		detachNodes: function( group ) {
 			var change = false;
 			
 			_c.each(group, function(id) {
-				var local = this.nodes[id],
-					foreign,
-					i;
+				var local = this.nodes[id];
+				var foreign, i;
 				
 				if ( local && local.to ) {
 					// Break all connections between target and its neighbors.
@@ -545,18 +513,16 @@
 				}
 			}, this);
 			
-			this.update(change, silent);
 			return change;
 		},
 		
 		// Detaches and removes a collection of nodes from the grid.
-		removeNodes: function( group, silent ) {
-			// detach all nodes from the grid without triggering an update.
-			var change = this.detachNodes( group, true );
+		removeNodes: function( group ) {
+			// detach all nodes from the grid.
+			var change = this.detachNodes( group );
 
 			_c.each(group, function(id) {
-				var poly,
-					i;
+				var poly, i;
 					
 				if ( this.nodes.hasOwnProperty(id) ) {
 					// Detach and remove the node.
@@ -574,18 +540,16 @@
 				}
 			}, this);
 			
-			this.update(change, silent);
 			return change;
 		},
 		
 		// Adds a polygon to the grid, formed by a collection of node ids.
-		addPolygon: function( group, data, silent ) {
+		addPolygon: function( group, data ) {
 			var poly;
 			
 			if ( group.length >= 3 && this.hasNodes(group) ) {
 				poly = new Polygon( this._id(this.types.POLYGON), group, data );
 				this.polys[ poly.id ] = poly;
-				this.update( true, silent );
 				return poly.id;
 			}
 			return null;
@@ -615,7 +579,7 @@
 		},
 		
 		// Removes a collection of polygons from the grid.
-		removePolygons: function( group, silent ) {
+		removePolygons: function( group ) {
 			var change = false;
 			
 			_c.each(group, function(id) {
@@ -625,15 +589,7 @@
 				}
 			}, this);
 			
-			this.update(change, silent);
 			return change;
-		},
-		
-		// Triggers update event for view refresh.
-		update: function( change, silent ) {
-			if ( (change || change === undefined) && !silent ) {
-				this.emit( this.events.CHANGE );
-			}
 		},
 
 		// Finds the shortest path between two nodes among the grid of nodes.
@@ -665,12 +621,8 @@
 				i;
 			
 			// Default weight and estimate functions to use distance calculation.
-			if ( typeof weightFunction !== "function" ) {
-				weightFunction = Const.distance;
-			}
-			if ( typeof estimateFunction !== "function" ) {
-				estimateFunction = Const.distance;
-			}
+			if (!isFunction(weightFunction)) weightFunction = Const.distance;
+			if (!isFunction(estimateFunction)) estimateFunction = Const.distance;
 
 			// Create initial search path with default weight from/to self.
 			queue.push( new Path([startNode], weightFunction(startNode, startNode)) );
@@ -746,17 +698,17 @@
 		
 		// Finds a path between two points with the fewest number of connections.
 		findPathWithFewestNodes: function( start, goal ) {
-			function oneStep() { return 1; }
-			return this.findPath( start, goal, oneStep, oneStep );
+			var step = function() { return 1; };
+			return this.findPath( start, goal, step, step );
 		},
 		
 		// Snaps the provided point to the nearest position within the node grid.
 		// @param pt  The point to snap into the grid.
 		// @return  A new point with the snapped position, or the original point if no grid was searched.
 		snapPointToGrid: function( pt ) {
-			var bestPoint = null,
-				bestDistance = NaN,
-				tested = {};
+			var bestPoint = null;
+			var bestDistance = NaN;
+			var tested = {};
 
 			_c.each( this.nodes, function( local, id ) {
 				if ( pt.id !== id ) {
@@ -785,9 +737,9 @@
 		// @param origin: The origin node to search from.
 		// @return: The nearest other grid node to the specified target.
 		getNearestNodeToNode: function( id ) {
-			var nearest = null,
-				nodes = [],
-				target = this.getNodeById( id );
+			var nearest = null;
+			var nodes = [];
+			var target = this.getNodeById( id );
 			
 			if ( target ) {
 				_c.each( this.nodes, function( node ) {
@@ -848,10 +800,10 @@
 		// @param id  The polygon id to test.
 		// @return  Array of node ids that fall within the specified Polygon.
 		getNodesInPolygon: function( id ) {
-			var hits = [],
-				poly = this.getPolygonById( id ),
-				points = this.getNodesForPolygon( id ),
-				rect = Const.getRectForPointRing( points );
+			var hits = [];
+			var poly = this.getPolygonById( id );
+			var points = this.getNodesForPolygon( id );
+			var rect = Const.getRectForPointRing( points );
 
 			if (poly) {
 				_c.each( this.nodes, function( node ) {
@@ -884,12 +836,5 @@
 		}
 	};
 	
-	
-	// AMD
-	// ---
-	// Define Constellation as an AMD module if environment is configured.
-	if (typeof(define) === 'function' && typeof(define.amd) === 'object') {
-		define(Const);
-	}
-	
-}).call( this, Math.sqrt, Math.min, Math.max, Math.abs );
+	return Const;
+}));

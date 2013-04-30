@@ -28,7 +28,7 @@ function( $, _, Backbone, gridModel, selectModel, windowView ) {
 			self.y = $('.header').outerHeight();
 			
 			// Add event listeners.
-			gridModel.on( gridModel.events.CHANGE, self.render, self );
+			gridModel.on( 'change', self.render, self );
 			windowView.on( windowView.RESIZE, self.setFrame, self );
 			selectModel.on( selectModel.UPDATE, self.setSelection, self );
 			
