@@ -2,7 +2,7 @@
 * Grid Selection Model test specs.
 */
 define([
-	'mod/grid-selection-model'
+	'mod/grid-selection-m'
 ],
 function( selectModel ) {
 	

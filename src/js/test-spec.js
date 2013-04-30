@@ -1,6 +1,6 @@
 define([
-	'test/grid-model',
-	'test/grid-selection-model',
+	'test/grid-m',
+	'test/grid-selection-m',
 	'test/constellation-grid'
 ],
 function( gridModel, selectModel, constGrid ) {

@@ -99,16 +99,17 @@ body {
 .toolbar {
 	background-color: #ccc;
 	float: left;
-	padding: 25px 15px;
+	margin-right: -100%;
+	padding: 0 15px;
 	width: 150px;
 }
 
 /* Canvas Display
 * ----------------------------- */
 .canvas {
-	background-color: #fff;
 	float: left;
 	height: 400px;
+	margin-left: 180px;
 	position: relative;
 	z-index: 1;
 }

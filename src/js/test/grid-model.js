@@ -1,6 +1,6 @@
 define([
 	'lib/underscore',
-	'mod/grid-model'
+	'mod/grid-m'
 ],
 function( _, gridModel ) {
 	
