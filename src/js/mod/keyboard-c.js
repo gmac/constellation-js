@@ -4,7 +4,7 @@
 */
 define([
 	'lib/jquery',
-	'mod/grid-c'
+	'./grid-c'
 ],
 function( $, gridController ) {
 	

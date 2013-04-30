@@ -6,8 +6,8 @@ define([
 	'lib/underscore',
 	'lib/backbone',
 	'lib/constellation',
-	'mod/grid-m',
-	'mod/selection-m'
+	'./grid-m',
+	'./selection-m'
 ],
 function( _, Backbone, constellation, gridModel, selectionModel ) {
 	

@@ -2,9 +2,9 @@ define([
 	'lib/jquery',
 	'lib/underscore',
 	'lib/backbone',
-	'mod/grid-m',
-	'mod/selection-m',
-	'mod/window-v'
+	'./grid-m',
+	'./selection-m',
+	'./window-v'
 ],
 function( $, _, Backbone, gridModel, selectionModel, windowView ) {
 	

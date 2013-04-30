@@ -6,43 +6,42 @@ define([
 	'lib/jquery',
 	'lib/underscore',
 	'lib/backbone',
-	'mod/grid-m',
-	'mod/cache-m',
-	'mod/grid-c',
-	'mod/keyboard-c',
-	'mod/window-v'
+	'./cache-m',
+	'./grid-m',
+	'./grid-c',
+	'./window-v'
 ],
-function( $, _, Backbone, gridModel, cacheModel, gridController, keystroke, windowView ) {
+function( $, _, Backbone, cacheModel, gridModel, gridController, windowView ) {
 	
 	var ToolsView = Backbone.View.extend({
 		el: '#toolbar',
 		
 		initialize: function() {
-			var self = this;
-			this.y = $('.header').outerHeight();
-			
-			windowView.on(windowView.RESIZE, this.render, this);
-			this.render();
-			
-			//this.update();
-			
-			//gridIndex.on('reset add', this.setGridsList, this);
-			//gridModel.on('change', this.update, this);
+			windowView.on(windowView.RESIZE, this.setFrame, this);
+			cacheModel.on('reset add remove', this.setGrids, this);
+			cacheModel.on('select', this.render, this);
+			this.$grids = this.$('select');
+			this.setFrame();
 		},
 		
 		render: function() {
+			
+		},
+		
+		setFrame: function() {
+			this.y = this.y || $('.header').outerHeight();
 			this.$el.height( windowView.height - this.y );
 		},
 		
 		// Renders the list of grid ids.
-		setGridsList: function() {
+		setGrids: function() {
 			var opts = '';
-			gridIndex.each(function( model ) {
-				opts += '<option value="'+ model.id +'">'+ model.attributes.name +'</option>';
+			cacheModel.each(function( model ) {
+				opts += '<option value="'+ model.id +'">'+ model.get('name') +'</option>';
 			});
 			
-			//this.$list.empty().html( opts );
-			//this.$list.val( gridModel.id );
+			this.$grids.empty().html( opts );
+			this.$grids[0].selectedIndex = cacheModel.selectedIndex();
 		},
 		
 		events: {
@@ -52,7 +51,8 @@ function( $, _, Backbone, gridModel, cacheModel, gridController, keystroke, wind
 			'click .funct-path': 'onFindPath',
 			'click .funct-nearest': 'onNearestPoint',
 			'click .funct-snap': 'onSnapPoint',
-			'click .funct-hittest': 'onHitTestPoly'
+			'click .funct-hittest': 'onHitTestPoly',
+			'change select': 'onSelectGrid'
 		},
 		
 		onJoin: function() {
@@ -83,12 +83,8 @@ function( $, _, Backbone, gridModel, cacheModel, gridController, keystroke, wind
 			gridController.hitTestNodeInPolygons();
 		},
 		
-		onChangeGrid: function() {
-			gridController.loadGrid( parseInt(this.$list.val(), 10) );
-		},
-		
-		update: function() {
-			this.$list.find(':selected').text( gridModel.get('name') );
+		onSelectGrid: function() {
+			cacheModel.selectedIndex( this.$grids[0].selectedIndex );
 		}
 	});
 	
