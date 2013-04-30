@@ -402,17 +402,17 @@
 		
 		// Gets a single node by id reference.
 		getNodeById: function( id ) {
+			if ( isArray(id) ) {
+				return _c.map( id.slice(), function( i ) {
+					return this.nodes[ i ];
+				}, this);
+			}
+			
 			if ( this.nodes.hasOwnProperty(id) ) {
 				return this.nodes[id];
 			}
+			
 			return null;
-		},
-		
-		// Gets an array of nodes from an array of id references.
-		getNodesForIds: function( group ) {
-			return _c.map( group.slice(), function( id ) {
-				return this.nodes[ id ];
-			}, this);
 		},
 		
 		// Counts the number of nodes defined within the grid.
@@ -421,17 +421,16 @@
 		},
 		
 		// Tests if a single node id is defined.
-		hasNode: function( node ) {
-			return this.nodes.hasOwnProperty( node );
+		hasNode: function( id ) {
+			if ( isArray(id) ) {
+				return _c.all(id, function(i) {
+					return this.nodes.hasOwnProperty( i );
+				}, this);
+			}
+			
+			return this.nodes.hasOwnProperty( id );
 		},
-		
-		// Tests if a collection of node ids are all defined.
-		hasNodes: function( group ) {
-			return _c.all(group, function(id) {
-				return this.nodes.hasOwnProperty( id );
-			}, this);
-		},
-		
+
 		// Joins nodes within a selection group.
 		// Selection group may be an array of node ids, or an object of id keys.
 		joinNodes: function( group ) {

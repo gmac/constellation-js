@@ -80,19 +80,13 @@ Constellation grid Polygon object; use a Const.Grid to create and manage polygon
 Adds a new Grid.Node object with specified X and Y coordinates, and an optional data object. Returns the new node id.
 
 **grid.getNodeById** `grid.getNodeById( id );`  
-Gets a single grid node by id reference. Returns the Grid.Node object, or null if undefined.
-
-**grid.getNodesForIds** `grid.getNodesForIds( [node id] );`  
-Takes an array of node ids, returns a mapped array of Grid.Node objects.
+Gets a single grid node by id reference, or maps an array of grid nodes. Returns the Grid.Node object, or null if undefined.
 
 **grid.getNumNodes** `grid.getNumNodes();`  
 Specifies the number of nodes in the grid.
 
 **grid.hasNode** `grid.hasNode( id );`  
-Tests if the specified node id exists within the grid.
-
-**grid.hasNodes** `grid.hasNodes( [node ids] );`  
-Takes an array of node ids, returns true if all nodes are defined within the grid.
+Tests if a single node id, or an array node ids, exists within the grid.
 
 **grid.joinNodes** `grid.joinNodes( [node ids], silent? );`  
 Takes an array of two or more node ids and joins them with connections. Pass `true` as the optional second argument to perform changes silently without triggering an update event. Returns true if changes are made.
@@ -128,7 +122,7 @@ Takes two node ids defining start and goal nodes, then finds the shortest path b
 This function is used to calculate the weight (or cost) of each new grid segment added to a path. The function is provided two Grid.Nodes as arguments, and expects a numeric segment weight to be returned. The pathfinder returns a path that accrues the lowest total weight. By default, `Const.distance` is used to measure the weight of each segment.
 
  - `estimateFunction`: `function( currentNode, goalNode ) { return numericEstimate; }`  
-This function optimizes search performance by providing a best-case scenario estimate for each node's cost to reach the goal. This function is provided two Grid.Node objects as arguments: the current search node, and the goal node. An estimated cost-to-goal value should be returned. By default, `Const.distance` is used to estimate the best-case distance to get a working path to the goal.
+This function optimizes search performance by providing a best-case scenario estimate for each node's cost to reach the goal. This function is provided two Grid.Node objects as arguments: the current search node, and the goal node. An estimated cost-to-goal value should be returned. By default, `Const.distance` is used to estimate the best-case distance from a working path to the goal.
 
 **grid.findPathWithFewestNodes** `grid.findPathWithFewestNodes( startId, goalId );`  
 Convenience method for running `grid.findPath` configured to find a path to goal using the fewest node connections rather than the shortest distance.
