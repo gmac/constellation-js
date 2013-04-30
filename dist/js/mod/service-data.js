@@ -1,1 +1,0 @@
-define([],function(){return{getLayoutsList:function(){},loadLayout:function(e){},saveLayout:function(e,t){},deleteLayout:function(e){}}})
