@@ -76,15 +76,6 @@ Constellation grid Polygon object; use a Const.Grid to create and manage polygon
 - `nodes`: Array of node ids defining the polygon ring.
 - `data`: A data object of user-defined data attached to the polygon.
 
-**grid.on** `grid.on( eventName, handlerFunction, context? );`  
-Binds an event handler to the grid. Handler is called in the provided scope context.
-
-**grid.off** `grid.off( eventName, handlerFunction? );`  
-Unbinds an event handler from the grid.
-
-**grid.trigger** `grid.trigger( eventName, args... );`  
-Triggers an event with the provided event name. Optional event arguments may be passed.
-
 **grid.addNode** `grid.addNode( x?, y?, data? );`  
 Adds a new Grid.Node object with specified X and Y coordinates, and an optional data object. Returns the new node id.
 
@@ -129,9 +120,6 @@ Gets the number of polygons defined within the grid.
 
 **grid.removePolygons** `grid.removePolygons( [polygon ids], silent? );`  
 Takes an array of polygon ids and removes them from the grid. All nodes defining the polygon rings are left intact. Pass `true` as the optional second argument to perform changes silently without triggering an update event. Returns true if changes are made.
-
-**grid.update** `grid.update();`  
-Triggers an update event that may be handled by observers.
 
 **grid.findPath** `grid.findPath( startId, goalId, weightFunction?, estimateFunction? );`  
 Takes two node ids defining start and goal nodes, then finds the shortest path between them. By default, routing favors the shortest path based on coordinate geometry. However, you may customize path routing using the optional weight and estimate functions:
