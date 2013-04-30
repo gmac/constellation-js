@@ -1,0 +1,30 @@
+{
+  "name": "constellation",
+  "description": "Point-based grid geometry toolkit.",
+  "homepage": "http://constellationjs.org",
+  "url": "http://constellationjs.org",
+  "keywords": [
+    "geometry",
+    "grid",
+    "a*",
+    "a-star",
+    "pathfinding"
+  ],
+  "author": {
+    "name": "Greg MacWilliam",
+    "email": "greg.macwilliam@threespot.com",
+    "web": "https://github.com/gmac"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gmac/constellation.js"
+  },
+  "github": "https://github.com/gmac/constellation.js",
+  "license": "MIT",
+  "main": "constellation.js",
+  "version": "0.2.0",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-uglify": "~0.1.2"
+  }
+}

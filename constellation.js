@@ -1,8 +1,8 @@
 // Constellation.js 0.2.0
 
-// (c) 2011-2012 Greg MacWilliam, Threespot.
-// Constellation may be freely distributed under the MIT license.
-// For all details and documentation:
+// (c) 2011-2013 Greg MacWilliam
+// Constellation may be freely distributed under the MIT license
+// For details and documentation:
 // http://constellationjs.org
 
 (function( context, factory ) {
@@ -11,6 +11,7 @@
 	
 	if (typeof exports !== "undefined") module.exports = C;
 	else if (typeof define === "function" && define.amd) define(C);
+	else context.Const = C;
 
 }(this, function( sqrt, min, max, abs ) {
 
@@ -134,8 +135,8 @@
 		// Runs a test function on each item in the array,
 		// then returns true if all items pass the test.
 		all: function( array, testFunct, context ) {
-			var len = array.length;
 			var i = 0;
+			var len = array.length;
 				
 			while ( i < len ) {
 				if ( !testFunct.call( context, array[i], i++ ) ) {
@@ -166,9 +167,9 @@
 	// ------------------
 	// Tests the distance between two points.
 	Const.distance = function( a, b ) {
-		var h = b.x-a.x,
-			v = b.y-a.y;
-		return sqrt(h*h + v*v);
+		var x = b.x-a.x;
+		var y = b.y-a.y;
+		return sqrt(x*x + y*y);
 	};
 	
 	// Tests for counter-clockwise winding among three points.
@@ -189,7 +190,7 @@
 	// @param d: Point D of line CD.
 	// @return: true if AB intersects CD.
 	Const.intersect = function( a, b, c, d ) {
-		return this.ccw(a, c, d) !== this.ccw(b, c, d) && this.ccw(a, b, c) !== this.ccw(a, b, d);
+		return Const.ccw(a, c, d) !== Const.ccw(b, c, d) && Const.ccw(a, b, c) !== Const.ccw(a, b, d);
 	};
 	
 	// Gets the rectangular bounds of a point ring.
@@ -231,7 +232,7 @@
 	// @return: true if point falls within point ring.
 	Const.hitTestPointRing = function( p, points ) {
 		var sides = points.length,
-			origin = new Const.Point(0, p.y),
+			origin = new Point(0, p.y),
 			hits = 0,
 			i = 0,
 			s1,
@@ -265,11 +266,11 @@
 			t = dot/mag;
 
 		if (t < 0) {
-			return new Const.Point(a.x, a.y);
+			return new Point(a.x, a.y);
 		} else if (t > 1) {
-			return new Const.Point(b.x, b.y);
+			return new Point(b.x, b.y);
 		}
-		return new Const.Point( a.x + ab1*t, a.y + ab2*t );
+		return new Point( a.x + ab1*t, a.y + ab2*t );
 	};
 
 	// Finds the nearest point within an array of points to target P.
@@ -331,6 +332,7 @@
 		this.weight = (weight || 0);
 		this.estimate = (estimate || 0);
 	};
+	
 	Path.prototype = {
 		copy: function(weight, estimate) {
 			return new Path(this.nodes.slice(), (weight || this.weight), (estimate || this.estimate));
@@ -360,6 +362,7 @@
 		this.polys = {};
 		this.setData(nodes, polys);
 	};
+	
 	Grid.prototype = {
 		
 		// Defines keys for geometry item types.
@@ -402,17 +405,17 @@
 		
 		// Gets a single node by id reference.
 		getNodeById: function( id ) {
+			if ( isArray(id) ) {
+				return _c.map( id.slice(), function( i ) {
+					return this.nodes[ i ];
+				}, this);
+			}
+			
 			if ( this.nodes.hasOwnProperty(id) ) {
 				return this.nodes[id];
 			}
+			
 			return null;
-		},
-		
-		// Gets an array of nodes from an array of id references.
-		getNodesForIds: function( group ) {
-			return _c.map( group.slice(), function( id ) {
-				return this.nodes[ id ];
-			}, this);
 		},
 		
 		// Counts the number of nodes defined within the grid.
@@ -421,24 +424,23 @@
 		},
 		
 		// Tests if a single node id is defined.
-		hasNode: function( node ) {
-			return this.nodes.hasOwnProperty( node );
+		hasNode: function( id ) {
+			if ( isArray(id) ) {
+				return _c.all(id, function(i) {
+					return this.nodes.hasOwnProperty( i );
+				}, this);
+			}
+			
+			return this.nodes.hasOwnProperty( id );
 		},
-		
-		// Tests if a collection of node ids are all defined.
-		hasNodes: function( group ) {
-			return _c.all(group, function(id) {
-				return this.nodes.hasOwnProperty( id );
-			}, this);
-		},
-		
+
 		// Joins nodes within a selection group.
 		// Selection group may be an array of node ids, or an object of id keys.
 		joinNodes: function( group ) {
 			var change = false;
 			
 			// Group must contain two or more nodes to join...
-			if ( group.length > 1 && this.hasNodes(group) ) {
+			if ( group.length > 1 && this.hasNode(group) ) {
 				
 				// Loop through selection group of nodes...
 				_c.each(group, function(id) {
@@ -547,7 +549,7 @@
 		addPolygon: function( group, data ) {
 			var poly;
 			
-			if ( group.length >= 3 && this.hasNodes(group) ) {
+			if ( group.length >= 3 && this.hasNode(group) ) {
 				poly = new Polygon( this._id(this.types.POLYGON), group, data );
 				this.polys[ poly.id ] = poly;
 				return poly.id;
