@@ -33,20 +33,6 @@
 	// Based on methods of Underscore.js
 	// Implementations are unique to Constellation.
 	var _c = Const.utils = {
-				
-		// Removes all properties from an object.
-		empty: function( obj ) {
-			if ( isArray(obj) ) {
-				obj.length = 0;
-			} else {
-				for ( var i in obj ) {
-					if ( obj.hasOwnProperty(i) ) {
-						delete obj[ i ];
-					}
-				}
-			}
-			return obj;
-		},
 		
 		// Gets the number of items in an array, or number of properties on an object.
 		size: function( obj ) {
@@ -354,51 +340,46 @@
 	
 	// Const.Grid
 	// ----------
-	var Grid = Const.Grid = function(nodes, polys) {
-		
-		this._h = {};
-		this._i = 0;
-		this.nodes = {};
-		this.polys = {};
-		this.setData(nodes, polys);
+	var Grid = Const.Grid = function( data ) {
+		this.reset( data );
 	};
 	
 	Grid.prototype = {
+		nodes: {},
+		polys: {},
+		_i: 0,
 		
-		// Defines keys for geometry item types.
-		types: {
-			NODE: 'n',
-			POLYGON: 'p'
+		// Creates a raw data representation of the grid:
+		toJSON: function() {
+			return {
+				nodes: this.nodes,
+				polys: this.polys,
+				_i: this._i
+			};
 		},
 		
-		// Creates unique ids for geometry items.
-		_id: function( type ) {
-			return type + this._i++;
-		},
-
 		// Clears all existing node and polygon references from the grid.
-		reset: function() {
-			_c.empty( this.nodes );
-			_c.empty( this.polys );
-			this.icount = 0;
-		},
-		
-		// Sets new data to the grid.
-		setData: function( nodes, polys ) {
-			this.reset();
-
-			_c.each( nodes || [], function( node ) {
-				this.nodes[ node.id ] = node;
-			}, this);
+		reset: function( data ) {
+			this.nodes = {};
+			this.polys = {};
+			this._i = 0;
 			
-			_c.each( polys || [], function( poly ) {
-				this.polys[ poly.id ] = poly;
-			}, this);
+			if (data) {
+				if (data._i) this._i = data._i;
+				
+				_c.each( data.nodes || {}, function( node ) {
+					this.nodes[ node.id ] = node;
+				}, this);
+				
+				_c.each( data.polys || {}, function( poly ) {
+					this.polys[ poly.id ] = poly;
+				}, this);
+			}
 		},
 		
 		// Adds a new node to the grid at the specified X and Y coordinates.
 		addNode: function( x, y, data ) {
-			var node = new Node( this._id(this.types.NODE), x, y, data );
+			var node = new Node(('n'+ this._i++), x, y, data);
 			this.nodes[ node.id ] = node;
 			return node.id;
 		},
@@ -550,7 +531,7 @@
 			var poly;
 			
 			if ( group.length >= 3 && this.hasNode(group) ) {
-				poly = new Polygon( this._id(this.types.POLYGON), group, data );
+				poly = new Polygon(('p'+ this._i++), group, data );
 				this.polys[ poly.id ] = poly;
 				return poly.id;
 			}

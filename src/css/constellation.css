@@ -95,13 +95,43 @@ body {
 	display: inline;
 }
 
-
+/* Toolbar
+* ----------------------------- */
 .toolbar {
 	background-color: #ccc;
 	float: left;
 	margin-right: -100%;
 	padding: 0 15px;
 	width: 150px;
+}
+
+.toolbar h2 {
+	margin: 25px 0 10px;
+}
+
+.toolbar ul {
+	list-style: none;
+}
+
+.toolbar li {
+	margin: 8px 0;
+}
+
+.toolbar button {
+	display: block;
+	width: 100%;
+}
+
+/* Message
+* ----------------------------- */
+
+.message {
+	background-color: rgba(0,0,0,0.25);
+	border-radius: 5px;
+	display: none;
+	float: left;
+	margin: 20px -100% 0 200px;
+	padding: 5px 10px;
 }
 
 /* Canvas Display

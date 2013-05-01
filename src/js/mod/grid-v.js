@@ -21,19 +21,13 @@ function( $, _, Backbone, gridModel, selectionModel, windowView ) {
 		
 		// View initializer.
 		initialize: function() {
-			var self = this;
-			// Generate grid view template.
-			self.tmpl = _.template( $('#grid-view').html() );
-			self.x = parseInt(this.$el.css('margin-left').slice(0, -2), 10);
-			self.y = $('.header').outerHeight();
+			// Add event listeners:
+			this.listenTo(gridModel, 'change', this.render);
+			this.listenTo(windowView, 'resize', this.setFrame);
+			this.listenTo(selectionModel, 'update', this.setSelection);
 			
-			// Add event listeners.
-			gridModel.on( 'change', self.render, self );
-			windowView.on( windowView.RESIZE, self.setFrame, self );
-			selectionModel.on( selectionModel.UPDATE, self.setSelection, self );
-			
-			// Set initial viewport.
-			self.setFrame();
+			// Set initial viewport:
+			this.setFrame();
 		},
 		
 		// Generates a polygon drawing path based on an array of node models.
@@ -49,12 +43,12 @@ function( $, _, Backbone, gridModel, selectionModel, windowView ) {
 		
 		// Renders all nodes, lines, and polygons within the display.
 		render: function() {
-			var self = this,
-				lines = {},
-				polys = {},
-				nodes = gridModel.nodes,
-				foreign,
-				i;
+			var self = this;
+			var lines = {};
+			var polys = {};
+			var nodes = gridModel.nodes;
+			var foreign;
+			var i;
 			
 			// Assemble polygon drawings.
 			_.each(gridModel.polys, function(poly, id) {
@@ -84,6 +78,9 @@ function( $, _, Backbone, gridModel, selectionModel, windowView ) {
 				}
 			});
 			
+			// Generate grid view template:
+			this.tmpl = this.tmpl || _.template( $('#grid-view').html() );
+			
 			// Generate and set new view template.
 			this.$el.html( this.tmpl({
 				nodes: nodes,
@@ -98,6 +95,8 @@ function( $, _, Backbone, gridModel, selectionModel, windowView ) {
 		
 		// Resets the work area frame dimensions and background image.
 		setFrame: function() {
+			this.x = this.x || parseInt(this.$el.css('margin-left').slice(0, -2), 10);
+			this.y = this.y || $('.header').outerHeight();
 			this.$el.width( windowView.width-this.x ).height( windowView.height-this.y );
 		},
 		
@@ -126,18 +125,20 @@ function( $, _, Backbone, gridModel, selectionModel, windowView ) {
 			
 			// Select all items in the selection model.
 			_.each( selectionModel.items, function( item, i ) {
-				item = self.$el.find( '#'+item );
+				item = document.getElementById(item);
 				
-				if ( item.is('li') ) {
+				if (!item) return;
+					
+				if ( item.tagName.toLowerCase() === 'li' ) {
 					// NODE view item.
-					item.addClass('select').children(':first-child').text(i+1);
+					$(item).addClass('select').children(':first').text(i+1);
 				} else {
 					// POLYGON view item.
-					item[0].setAttribute('class', item[0].getAttribute('class')+" select");
+					item.setAttribute('class', item.getAttribute('class')+" select");
 				}
 				
 				// Add item reference to the view selection queue.
-				self.selectedViews.push(item[0]);
+				self.selectedViews.push(item);
 			});
 			
 			// Highlight path selection.
@@ -230,7 +231,9 @@ function( $, _, Backbone, gridModel, selectionModel, windowView ) {
 				});
 				
 				offset = pos;
-			}, null, callback);
+			}, function() {
+				gridModel.save();
+			}, callback);
 		},
 		
 		// Performs drag-bounds selection behavior.
@@ -337,15 +340,14 @@ function( $, _, Backbone, gridModel, selectionModel, windowView ) {
 		
 		// Generic handler for triggering view behaviors.
 		onTouch: function( evt ) {
-			var target = $(evt.target),
-				time = new Date().getTime(),
-				dblclick = (time - this.lastTouch < 250),
-				pos = this.localizeEventOffset( evt ),
-				id;
+			var target = $(evt.target);
+			var dblclick = (evt.timeStamp - this.lastTouch < 250);
+			var pos = this.localizeEventOffset( evt );
+			var id;
 	
 			target = target.is('li > span') ? target.parent() : target;
 			id = target.attr('id');
-			this.lastTouch = time;
+			this.lastTouch = evt.timeStamp;
 
 			if ( target.is('li') ) {
 				// Node

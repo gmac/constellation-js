@@ -8,16 +8,10 @@ function( Backbone ) {
 	// Grid Data
 	// ---------
 	// Stores data for an individual grid layout.
-	var GridDataModel = Backbone.Model.extend({
+	var GridRecordModel = Backbone.Model.extend({
 		defaults: {
-			name: 'New Grid',
-			nodes: null,
-			polys: null
-		},
-		
-		initialize: function() {
-			this.nodes = this.nodes || {};
-			this.polys = this.polys || {};
+			uid: 0,
+			name: 'New Grid'
 		}
 	});
 	
@@ -26,40 +20,40 @@ function( Backbone ) {
 	// Manages the collection of grid layout options.
 	var CacheModel = Backbone.Collection.extend({
 		
-		model: GridDataModel,
-		localStorage: new Backbone.LocalStorage("constellation"),
+		model: GridRecordModel,
+		localStorage: new Backbone.LocalStorage('constellation-index'),
+		selectedModel: null,
+		selectedIndex: -1,
 		
-		_selectedIndex: -1,
-		
-		// Get / Set selected model index:
-		selectedIndex: function(index) {
-			if ( index !== 'undefined' && this._selectedIndex !== index ) {
-				this._selectedIndex = Math.max(0, Math.min(index, this.models.length-1));
-				this.trigger('select');
-			}
-			return this._selectedIndex;
+		_uid: 0,
+
+		initialize: function() {
+			this.listenTo(this, 'sync', this.onSync);
 		},
 		
-		// Get selected grid data model:
-		selectedModel: function() {
-			return this.at( this._selectedIndex );
+		onSync: function() {
+			if (this.length) {
+				this._uid = Math.max.apply(null, this.pluck('uid').concat([0]))+1;
+				this.selectModelAt(0);
+			} else {
+				this.newRecord();
+			}
 		},
 		
 		// Creates a new record:
-		newRecord: function(name, clone) {
-			var params = {};
-			
-			if (name) {
-				params.name = name;
+		newRecord: function() {
+			this.create({uid:this._uid++});
+			this.selectModelAt(this.length-1);
+		},
+		
+		// Get / Set selected model index:
+		selectModelAt: function( index ) {
+			if (index !== this.selectedIndex && index >= 0 && index < this.length) {
+				this.selectedIndex = index;
+				this.selectedModel = this.at(index);
+				this.trigger('select');
 			}
-			
-			if (clone) {
-				params.nodes = this.selectedModel().get('nodes');
-				params.polys = this.selectedModel().get('polys');
-			}
-			
-			this.create(params);
-			this.selectedIndex( this.models.length-1 );
+			return this.selectedModel;
 		}
 	});
 	

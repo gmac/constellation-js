@@ -17,35 +17,37 @@
 </div>
 
 <div class="toolbar" id="toolbar">
-	<h2>Layouts</h2>
+	<!--h2>Layouts</h2>
 	<select>
 		<option>Select...</option>
 	</select>
 	<input type="text" value="Untitled">
+	<button class="save">Save</button>
+	<button class="new">New</button-->
 	
 	<h2>Actions</h2>
 	<ul>
-		<li><button class="join">Join Points (j)</button></li>
-		<li><button class="split">Break Points (b)</button></li>
-		<li><button class="polygon">Make Polygon (p)</button></li>
+		<li><button class="action" data-action="join">Join Points (j)</button></li>
+		<li><button class="action" data-action="split">Break Points (b)</button></li>
+		<li><button class="action" data-action="polygon">Make Polygon (p)</button></li>
+		<li><button class="action" data-action="remove">Remove Geometry (DEL)</button></li>
 	</ul>
 
 	<h2>Functions</h2>
 	<ul>
-		<li><button class="funct-path">Find Path</button></li>
-		<li><button class="funct-nearest">Nearest Point</button></li>
-		<li><button class="funct-snap">Snap to Grid</button></li>
-		<li><button class="funct-hittest">Hittest Polygons</button></li>
+		<li><button class="action" data-action="path">Find Path</button></li>
+		<li><button class="action" data-action="nearest">Nearest Point</button></li>
+		<li><button class="action" data-action="snap">Snap to Grid</button></li>
+		<li><button class="action" data-action="hittest">Hittest Polygons</button></li>
 	</ul>
 	
-	<h2>Background URL</h2>
+	<!--h2>Background URL</h2>
 	<input type="text"/>
-	<button>Reload</button>
+	<button>Reload</button-->
 </div>
 
-<div class="canvas" id="grid">
-	
-</div>
+<div class="message" id="message">Hello World</div>
+<div class="canvas" id="grid"></div>
 
 <script type="text/template" id="grid-view">
 	<svg>

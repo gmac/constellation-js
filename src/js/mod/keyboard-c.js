@@ -10,34 +10,31 @@ function( $, gridController ) {
 	
 	var _enabled = true;
 	
-	$(window).on('keydown', function( evt ) {
-		if (_enabled) {
-			switch ( evt.which ) {
-				case 82: gridController.deleteGeometry(); return false; // "delete"
-				case 66: gridController.splitNodes(); return false; // "b"
-				case 74: gridController.joinNodes(); return false; // "j"
-				case 80: gridController.makePolygon(); return false; // "p"
-				case 70: gridController.runPathfinder(); return false; // "f"
-				case 83: gridController.snapNodeToGrid(); return false; // "s"
-				case 78: gridController.selectNearestGridNode(); return false; // "n"
-				case 72: gridController.hitTestNodeInPolygons(); return false; // "h"
-				case 49: gridController.newGrid(); return false; // "1"
-				case 50: gridController.saveGrid(); return false; // "2"
-				//case 51: gridController.saveGrid(); return false; // "2"
+	$(window)
+		.on('keydown', function(evt) {
+			if (_enabled) {
+				evt.preventDefault();
+			
+				switch ( evt.which ) {
+					case 8: gridController.deleteGeometry(); return false; // "delete"
+					case 66: gridController.splitNodes(); return false; // "b"
+					case 74: gridController.joinNodes(); return false; // "j"
+					case 80: gridController.makePolygon(); return false; // "p"
+					case 70: gridController.findPath(); return false; // "f"
+					case 83: evt.ctrlKey ? gridController.saveGrid() : gridController.snapNodeToGrid(); return false; // "s"
+					case 78: evt.ctrlKey ? gridController.newGrid() : gridController.selectNearestGridNode(); return false; // "n"
+					case 72: gridController.hitTestNodeInPolygons(); return false; // "h"
+				}
+				return false;
 			}
-			//console.log( evt.which );
-		}
-	});
-	
-	return {
-		enable: function() {
+			return true;
+		})
+		.on('focus', function(evt) {
+			if (evt.target.tagName) {
+				_enabled = !(evt.target.tagName.toLowerCase() === 'input');
+			}
+		})
+		.on('blur', function(evt) {
 			_enabled = true;
-		},
-		disable: function() {
-			_enabled = false;
-		},
-		getEnabled: function() {
-			return _enabled;
-		}
-	};
+		});
 });

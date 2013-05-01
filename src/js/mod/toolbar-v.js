@@ -17,74 +17,46 @@ function( $, _, Backbone, cacheModel, gridModel, gridController, windowView ) {
 		el: '#toolbar',
 		
 		initialize: function() {
-			windowView.on(windowView.RESIZE, this.setFrame, this);
-			cacheModel.on('reset add remove', this.setGrids, this);
-			cacheModel.on('select', this.render, this);
 			this.$grids = this.$('select');
-			this.setFrame();
+			this.listenTo(cacheModel, 'reset add remove sync', this.setGrids);
+			this.listenTo(cacheModel, 'select', this.render);
 		},
 		
 		render: function() {
 			
 		},
 		
-		setFrame: function() {
-			this.y = this.y || $('.header').outerHeight();
-			this.$el.height( windowView.height - this.y );
-		},
-		
 		// Renders the list of grid ids.
 		setGrids: function() {
 			var opts = '';
 			cacheModel.each(function( model ) {
-				opts += '<option value="'+ model.id +'">'+ model.get('name') +'</option>';
+				opts += '<option value="'+ model.get('uid') +'">'+ model.get('name') +'</option>';
 			});
 			
 			this.$grids.empty().html( opts );
-			this.$grids[0].selectedIndex = cacheModel.selectedIndex();
+			//this.$grids[0].selectedIndex = cacheModel.selectedIndex();
 		},
 		
 		events: {
-			'click .join': 'onJoin',
-			'click .break': 'onBreak',
-			'click .polygon': 'onPolygon',
-			'click .funct-path': 'onFindPath',
-			'click .funct-nearest': 'onNearestPoint',
-			'click .funct-snap': 'onSnapPoint',
-			'click .funct-hittest': 'onHitTestPoly',
+			'click .action': 'onAction',
 			'change select': 'onSelectGrid'
 		},
 		
-		onJoin: function() {
-			gridController.joinNodes();
-		},
-		
-		onBreak: function() {
-			gridController.splitNodes();
-		},
-		
-		onPolygon: function() {
-			gridController.makePolygon();
-		},
-		
-		onFindPath: function() {
-			gridController.runPathfinder();
-		},
-		
-		onNearestPoint: function() {
-			gridController.snapNodeToGrid();
-		},
-		
-		onSnapPoint: function() {
-			gridController.snapNodeToGrid();
-		},
-		
-		onHitTestPoly: function() {
-			gridController.hitTestNodeInPolygons();
+		onAction: function(evt) {
+			switch ( $(evt.currentTarget).attr('data-action') ) {
+				case 'join': gridController.joinNodes(); return;
+				case 'split': gridController.splitNodes(); return;
+				case 'polygon': gridController.makePolygon(); return;
+				case 'remove': gridController.deleteGeometry(); return;
+				case 'path': gridController.findPath(); return;
+				case 'nearest': gridController.snapNodeToGrid(); return;
+				case 'snap': gridController.snapNodeToGrid(); return;
+				case 'hittest': gridController.hitTestNodeInPolygons(); return;
+			}
 		},
 		
 		onSelectGrid: function() {
-			cacheModel.selectedIndex( this.$grids[0].selectedIndex );
+			//cacheModel.selectedIndex( this.$grids[0].selectedIndex );
 		}
 	});
 	

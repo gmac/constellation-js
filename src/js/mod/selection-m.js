@@ -9,8 +9,6 @@ define([
 function( _, Backbone ) {
 	
 	var SelectionModel = Backbone.Model.extend({
-		UPDATE: 'update',
-
 		// Stores a list of selected node/poly ids.
 		items: [],
 		path: [],
@@ -101,7 +99,7 @@ function( _, Backbone ) {
 		
 		// Triggers an update event to refresh the view.
 		update: function() {
-			this.trigger( this.UPDATE );
+			this.trigger('update');
 		}
 	});
 	
