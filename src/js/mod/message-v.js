@@ -11,20 +11,28 @@ function( $, Backbone, gridController, gridModel ) {
 		
 		initialize: function() {
 			this.listenTo(gridController, 'alert', this.onAlert);
-			this.listenTo(gridModel, 'change', this.onEmpty);
+			this.listenTo(gridModel, 'change', this.onTestEmpty);
 			this.$el.hide();
 		},
-		
-		render: function() {
-			
-		},
-		
-		onEmpty: function() {
-			this.$el.text('Double-click to add points...');
+
+		onTestEmpty: function() {
+			if (!gridModel.getNumNodes()) {
+				this.$el
+					.clearQueue()
+					.text('Double-click to add points...')
+					.show();
+			}
 		},
 		
 		onAlert: function(message) {
-			this.$el.text(message).show().delay(2000).fadeOut(500);
+			if (gridModel.getNumNodes() > 0) {
+				this.$el
+					.clearQueue()
+					.text(message)
+					.show()
+					.delay(2500)
+					.fadeOut(500);
+			}
 		}
 	});
 	

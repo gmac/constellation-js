@@ -109,7 +109,7 @@ Takes an array of three or more node ids and creates a new `Polygon` object with
 **grid.getPolygonById** `grid.getPolygonById( id );`  
 Gets a polygon by id reference. Returns a `Polygon` object, or `null` for missing ids.
 
-**grid.getPolygons** `grid.getPolygons( id, ... );` or `grid.getPolygons( [ids, ...] );`  
+**grid.getPolygons** `grid.getPolygons( id, ... );` or `grid.getPolygons( [id, ...] );`  
 Gets one or more polygons by id reference, or maps an array of polygons to an array of ids. Returns an array of `Polygon` objects. Invalid ids return as `null`.
 
 **grid.getNodesForPolygon** `grid.getNodesForPolygon( id );`  
