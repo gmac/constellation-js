@@ -1,3 +1,9 @@
+requirejs.config({
+	paths: {
+		'lib/constellation': '../../constellation'
+	}
+});
+
 define([
 	'mod/grid-v',
 	'mod/toolbar-v',

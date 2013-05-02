@@ -21,7 +21,7 @@ function( $, gridController ) {
 					case 74: gridController.joinNodes(); return false; // "j"
 					case 80: gridController.makePolygon(); return false; // "p"
 					case 70: gridController.findPath(); return false; // "f"
-					case 83: evt.ctrlKey ? gridController.saveGrid() : gridController.snapNodeToGrid(); return false; // "s"
+					case 83: gridController.snapNodeToGrid(); return false; // "s"
 					case 78: evt.ctrlKey ? gridController.newGrid() : gridController.selectNearestGridNode(); return false; // "n"
 					case 72: gridController.hitTestNodeInPolygons(); return false; // "h"
 				}

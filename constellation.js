@@ -18,14 +18,18 @@
 	// Top-level namespace:
 	// all public Constellation classes and modules will attach to this.
 	var Const = {};
-	
-	// Type-assessment utils:
+
+	// Type-assessment & argument utils:
 	function isArray(obj) {
 		return obj instanceof Array;
 	}
 	
 	function isFunction(obj) {
 		return typeof obj === 'function';
+	}
+	
+	function getArgsArray(args) {
+		return Array.prototype.slice.call(args);
 	}
 	
 	// Const._c / Underscore shim
@@ -357,7 +361,7 @@
 		},
 		
 		// Clears all existing node and polygon references from the grid.
-		reset: function( data ) {
+		reset: function(data) {
 			this.nodes = {};
 			this.polys = {};
 			this._i = 0;
@@ -376,26 +380,27 @@
 		},
 		
 		// Adds a new node to the grid at the specified X and Y coordinates.
-		addNode: function( x, y, data ) {
+		addNode: function(x, y, data) {
 			if (typeof x === 'object') data = x;
 			var node = new Node(('n'+ this._i++), x||0, y||0, data);
 			this.nodes[ node.id ] = node;
 			return node.id;
 		},
 		
-		// Gets a node or array of nodes by id reference.
-		getNode: function( id ) {
-			if (isArray(id)) {
-				return _c.map( id.slice(), function( i ) {
-					return this.nodes[ i ];
-				}, this);
+		// Gets a node by id reference.
+		getNodeById: function(id) {
+			return this.nodes.hasOwnProperty(id) ? this.nodes[id] : null;
+		},
+		
+		// Gets a collection of nodes by id references.
+		getNodes: function(ids, rest) {
+			if (!isArray(ids) || rest) {
+				ids = getArgsArray(arguments);
 			}
 			
-			if ( this.nodes.hasOwnProperty(id) ) {
-				return this.nodes[id];
-			}
-			
-			return null;
+			return _c.map(ids.slice(), function(id) {
+				return this.getNodeById(id);
+			}, this);
 		},
 		
 		// Counts the number of nodes defined within the grid.
@@ -404,34 +409,38 @@
 		},
 		
 		// Tests if a node id or array of node ids are defined.
-		hasNodes: function( id ) {
-			if (isArray(id)) {
-				return _c.all(id, function(i) {
-					return this.nodes.hasOwnProperty(i);
-				}, this);
+		hasNodes: function(ids, rest) {
+			if (!isArray(ids) || rest) {
+				ids = getArgsArray(arguments);
 			}
 			
-			return this.nodes.hasOwnProperty(id);
+			return _c.all(ids, function(id) {
+				return this.nodes.hasOwnProperty(id);
+			}, this);
 		},
 
 		// Joins nodes within a selection group.
 		// Selection group may be an array of node ids, or an object of id keys.
-		joinNodes: function( group ) {
+		joinNodes: function(ids, rest) {
+			if (!isArray(ids) || rest) {
+				ids = getArgsArray(arguments);
+			}
+			
 			var change = false;
 			
 			// Group must contain two or more nodes to join...
-			if ( group.length > 1 && this.hasNodes(group) ) {
-				
+			if (ids.length > 1 && this.hasNodes(ids)) {
+
 				// Loop through selection group of nodes...
-				_c.each(group, function(id) {
+				_c.each(ids, function(id) {
 					var node = this.nodes[id];
-					var len = group.length;
-					var i = 0;
+					var len = ids.length;
+					var j = 0;
 						
-					while ( i < len ) {
-						id = group[i++];
+					while ( j < len ) {
+						id = ids[j++];
 						if (id !== node.id) {
-							node.to[ id ] = 1;
+							node.to[id] = 1;
 							change = true;
 						}
 					}
@@ -443,22 +452,26 @@
 		
 		// Splits apart nodes within a selection group.
 		// Selection group may be an array of node ids, or an object of id keys.
-		splitNodes: function( group ) {
-			var change = false;
+		splitNodes: function(ids, rest) {
+			if (!isArray(ids) || rest) {
+				ids = getArgsArray(arguments);
+			}
 			
 			// Alias 'detach' method for a single node reference.
-			if (group.length < 2) {
-				return this.detachNodes( group );
+			if (ids.length < 2) {
+				return this.detachNodes(ids);
 			}
-
+			
+			var change = false;
+			
 			// Decouple group node references.
-			_c.each(group, function(id) {
+			_c.each(ids, function(id) {
 				var node = this.nodes[id];
 				
 				if (node && node.to) {
 					for ( id in node.to ) {
-						if ( _c.contains(group, id) ) {
-							delete node.to[ id ];
+						if ( _c.contains(ids, id) ) {
+							delete node.to[id];
 							change = true;
 						}
 					}
@@ -470,25 +483,29 @@
 		
 		// Detachs a node from the grid.
 		// Each node's connections will be severed from all joining nodes.
-		detachNodes: function( group ) {
+		detachNodes: function(ids, rest) {
+			if (!isArray(ids) || rest) {
+				ids = getArgsArray(arguments);
+			}
+			
 			var change = false;
 			
-			_c.each(group, function(id) {
+			_c.each(ids, function(id) {
 				var local = this.nodes[id];
-				var foreign, i;
+				var foreign, j;
 				
 				if ( local && local.to ) {
 					// Break all connections between target and its neighbors.
-					for ( i in local.to ) {
+					for ( j in local.to ) {
 						// Delete local reference.
-						delete local.to[i];
+						delete local.to[j];
 					
 						// Find foreign node.
-						foreign = this.nodes[i];
+						foreign = this.nodes[j];
 					
 						// Delete foreign key relationship.
 						if ( foreign && foreign.to ) {
-							delete foreign.to[ id ];
+							delete foreign.to[id];
 						}
 					}
 					change = true;
@@ -499,23 +516,26 @@
 		},
 		
 		// Detaches and removes a collection of nodes from the grid.
-		removeNodes: function( group ) {
-			// detach all nodes from the grid.
-			var change = this.detachNodes( group );
+		removeNodes: function(ids, rest) {
+			if (!isArray(ids) || rest) {
+				ids = getArgsArray(arguments);
+			}
+			
+			var change = this.detachNodes(ids);
 
-			_c.each(group, function(id) {
-				var poly, i;
+			_c.each(ids, function(id) {
+				var poly, j;
 					
 				if ( this.nodes.hasOwnProperty(id) ) {
 					// Detach and remove the node.
 					delete this.nodes[id];
 					
 					// Remove any dependent polygons.
-					for (i in this.polys) {
-						poly = this.polys[i];
+					for (j in this.polys) {
+						poly = this.polys[j];
 
 						if ( poly && _c.contains( poly.nodes, id ) ) {
-							delete this.polys[i];
+							delete this.polys[j];
 						}
 					}
 					change = true;
@@ -526,34 +546,33 @@
 		},
 		
 		// Adds a polygon to the grid, formed by a collection of node ids.
-		addPolygon: function( group, data ) {
-			var poly;
-			
-			if ( group.length >= 3 && this.hasNodes(group) ) {
-				poly = new Polygon(('p'+ this._i++), group, data );
+		addPolygon: function(nodes, data) {
+			if ( nodes.length >= 3 && this.hasNodes(nodes) ) {
+				var poly = new Polygon(('p'+ this._i++), nodes, data );
 				this.polys[ poly.id ] = poly;
 				return poly.id;
 			}
-
 			return null;
 		},
 		
-		// Gets a polygon or an array of polygons by id reference.
-		getPolygon: function( id ) {
-			if (isArray(id)) {
-				return _c.map( id.slice(), function( i ) {
-					return this.polys[ i ];
-				}, this);
+		// Gets a polygon by id reference.
+		getPolygonById: function(id) {
+			return this.polys.hasOwnProperty(id) ? this.polys[id] : null;
+		},
+		
+		// Gets a collection of polygons by id references.
+		getPolygons: function(ids, rest) {
+			if (!isArray(ids) || rest) {
+				ids = getArgsArray(arguments);
 			}
 			
-			if ( this.polys.hasOwnProperty(id) ) {
-				return this.polys[ id ];
-			}
-			return null;
+			return _c.map(ids.slice(), function(id) {
+				return this.getPolygonById(id);
+			}, this);
 		},
 		
 		// Gets an array of nodes representing a polygon in the grid.
-		getNodesForPolygon: function( id ) {
+		getNodesForPolygon: function(id) {
 			if ( this.polys.hasOwnProperty(id) ) {
 				return _c.map(this.polys[id].nodes.slice(), function(i) {
 					return this.nodes[i];
@@ -568,24 +587,19 @@
 		},
 		
 		// Removes a collection of polygons from the grid.
-		removePolygons: function( id ) {
-			var change = false;
+		removePolygons: function(ids, rest) {
+			if (!isArray(ids) || rest) {
+				ids = getArgsArray(arguments);
+			}
 			
-			if (isArray(id)) {
-				
-				_c.each(id, function(i) {
-					if (this.polys.hasOwnProperty(i)) {
-						delete this.polys[i];
-						change = true;
-					}
-				}, this);
-				
-			} else {
+			var change = false;
+
+			_c.each(ids, function(id) {
 				if (this.polys.hasOwnProperty(id)) {
 					delete this.polys[id];
 					change = true;
 				}
-			}
+			}, this);
 			
 			return change;
 		},
@@ -613,8 +627,8 @@
 				branchPath, // A new path branch for the search queue.
 				branchWeight, // Current weight of a new branch being explored.
 				branchEstimate, // Estimated best-case weight of new branch reaching goal.
-				startNode = this.getNode( start ),
-				goalNode = this.getNode( goal ),
+				startNode = this.getNodeById( start ),
+				goalNode = this.getNodeById( goal ),
 				cycles = 0,
 				i;
 			
@@ -737,7 +751,7 @@
 		getNearestNodeToNode: function( id ) {
 			var nearest = null;
 			var nodes = [];
-			var target = this.getNode( id );
+			var target = this.getNodeById( id );
 			
 			if ( target ) {
 				_c.each( this.nodes, function( node ) {
@@ -799,7 +813,7 @@
 		// @return  Array of node ids that fall within the specified Polygon.
 		getNodesInPolygon: function( id ) {
 			var hits = [];
-			var poly = this.getPolygon( id );
+			var poly = this.getPolygons( id );
 			var points = this.getNodesForPolygon( id );
 			var rect = Const.getRectForPointRing( points );
 

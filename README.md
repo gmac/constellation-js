@@ -55,10 +55,10 @@ Takes a target point P, and an array of points to search. Returns the nearest po
 
 ## Const.Grid
 
-Constellation Grid is a discrete component which must be instanced to use its API. After constructing a grid instance, all subsequent grid operations will be performed on the grid instance where they're invoked.
+Constellation Grid is a discrete component which must be instanced.
 
-**Grid** `var grid = new Const.Grid( nodes?, polygons? );`  
-Constructor for a new Constellation grid. All grid operations are run through an instance.
+**Const.Grid** `var grid = new Const.Grid( nodes?, polygons? );`  
+Constructor for a new Constellation grid. All grid operations must be invoked on an instance.
 
 **Grid.Node** `use... grid.addNode();`  
 Constellation grid Node object; use a Const.Grid to create and manage node instances. Grid nodes have the following properties:
@@ -76,44 +76,50 @@ Constellation grid Polygon object; use a Const.Grid to create and manage polygon
 - `nodes`: Array of node ids defining the polygon ring.
 - `data`: A data object of user-defined data attached to the polygon.
 
-**grid.addNode** `grid.addNode( x?, y?, data? );`  
-Adds a new Grid.Node object with specified X and Y coordinates, and an optional data object. Returns the new node id.
+**grid.addNode** `grid.addNode( x?, y?, {data}? );` or `grid.addNode( {data} );`
+Adds a new `Node` object with specified X and Y coordinates, and an optional data object. Returns the new node id. A data object may be provided as the sole parameter, if the data object contains an `id` property, that id will be assigned to the new node.
 
-**grid.getNodeById** `grid.getNodeById( id );`  
-Gets a single grid node by id reference, or maps an array of grid nodes. Returns the Grid.Node object, or null if undefined.
+**grid.getNodeById** `grid.getNodeById( id );`
+Gets a node by id reference. Returns a `Node` object, or `null` for missing ids.
+
+**grid.getNodes** `grid.getNodes( id, ... );` or `grid.getNodes( [id, ...] );`
+Gets one or more grid nodes by id reference, or maps an array of grid nodes to an array of ids. Returns an array of `Node` objects. Invalid ids return as `null`.
 
 **grid.getNumNodes** `grid.getNumNodes();`  
 Specifies the number of nodes in the grid.
 
-**grid.hasNode** `grid.hasNode( id );`  
-Tests if a single node id, or an array node ids, exists within the grid.
+**grid.hasNodes** `grid.hasNodes( id, ... );` or `grid.hasNodes( [id, ...] );`
+Tests if one or more node ids, or an array of node ids, exists within the grid.
 
-**grid.joinNodes** `grid.joinNodes( [node ids], silent? );`  
-Takes an array of two or more node ids and joins them with connections. Pass `true` as the optional second argument to perform changes silently without triggering an update event. Returns true if changes are made.
+**grid.joinNodes** `grid.joinNodes( id1, id2, ... );` or `grid.joinNodes( [id1, id2, ...] );`
+Takes two or more node ids, or an array with two or more node ids, and joins them with connections. Returns `true` if changes are made.
 
-**grid.splitNodes** `grid.splitNodes( [node ids], silent? );`  
-Takes an array of node ids and splits apart their common connections. Pass `true` as the optional second argument to perform changes silently without triggering an update event. Returns true if changes are made.
+**grid.splitNodes** `grid.splitNodes( id1, id2, ... );` or `grid.splitNodes( [id1, id2, ...] );`
+Takes two or more node ids, or an array with two or more node ids, and splits apart their common connections. Returns `true` if changes are made.
 
-**grid.detachNodes** `grid.detachNodes( [node ids], silent? );`  
-Takes an array of node ids and splits them each from all their respective connections. Pass `true` as the optional second argument to perform changes silently without triggering an update event. Returns true if changes are made.
+**grid.detachNodes** `grid.detachNodes( id, ... );` or `grid.detachNodes( [id, ...] );`
+Takes one or more node ids, or array of node ids, and splits them from all of their respective connections. Returns `true` if changes are made.
 
-**grid.removeNodes** `grid.removeNodes( [node ids], silent? );`  
-Takes an array of node ids, detaches them from all connections, then removes them each from the grid. Any dependent polygons are also removed. Pass `true` as the optional second argument to perform changes silently without triggering an update event. Returns true if changes are made.
+**grid.removeNodes** `grid.removeNodes( id, ... );` or `grid.removeNodes( [id, ...] );`
+Takes one or more node ids, or array of node ids, detaches them from all connections, then removes them each from the grid. Any dependent polygons are also removed. Returns `true` if changes are made.
 
-**grid.addPolygon** `grid.addPolygon( [node ids], data?, silent? );`  
-Takes an array of three or more node ids and creates a new Grid.Polygon object with the optional data object attached. Returns the new polygon id.
+**grid.addPolygon** `grid.addPolygon( [node ids], data? );`  
+Takes an array of three or more node ids and creates a new `Polygon` object with the optional data object attached. Returns the new polygon id.
 
-**grid.getPolygonById** `grid.getPolygonById( id );`  
-Gets a single grid polygon by id reference. Returns the Grid.Polygon object, or null if undefined.
+**grid.getPolygonById** `grid.getPolygonById( id );`
+Gets a polygon by id reference. Returns a `Polygon` object, or `null` for missing ids.
+
+**grid.getPolygons** `grid.getPolygons( id, ... );` or `grid.getPolygons( [ids, ...] );`
+Gets one or more polygons by id reference, or maps an array of polygons to an array of ids. Returns an array of `Polygon` objects. Invalid ids return as `null`.
 
 **grid.getNodesForPolygon** `grid.getNodesForPolygon( id );`  
-Takes a polygon id and returns an array of Grid.Node objects defining the polygon ring. Returns null if the specified polygon id is undefined.
+Takes a polygon id and returns an array of `Node` objects defining its polygon ring. Returns `null` if the specified polygon id is undefined.
 
 **grid.getNumPolygons** `grid.getNumPolygons();`  
-Gets the number of polygons defined within the grid.
+Specifies the number of polygons in the grid.
 
-**grid.removePolygons** `grid.removePolygons( [polygon ids], silent? );`  
-Takes an array of polygon ids and removes them from the grid. All nodes defining the polygon rings are left intact. Pass `true` as the optional second argument to perform changes silently without triggering an update event. Returns true if changes are made.
+**grid.removePolygons** `grid.removePolygons( id, ... );` or `grid.removePolygons( [id, ...] );`
+Takes an array of polygon ids and removes them from the grid. All nodes defining the polygon rings are left intact. Pass `true` as the optional second argument to perform changes silently without triggering an update event. Returns `true` if changes are made.
 
 **grid.findPath** `grid.findPath( startId, goalId, weightFunction?, estimateFunction? );`  
 Takes two node ids defining start and goal nodes, then finds the shortest path between them. By default, routing favors the shortest path based on coordinate geometry. However, you may customize path routing using the optional weight and estimate functions:

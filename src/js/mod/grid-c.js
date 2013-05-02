@@ -20,23 +20,12 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 		// Resets selection and then creates a new grid.
 		newGrid: function() {
 			selectionModel.deselectAll( true );
-			gridModel.newGrid();
-		},
-		
-		// Resets selection and then loads a grid.
-		loadGrid: function( id ) {
-			selectionModel.deselectAll( true );
-			gridModel.loadGrid( parseInt(id, 10) );
-		},
-		
-		// Saves the existing grid model.
-		saveGrid: function() {
-			gridModel.saveGrid();
-		},
-		
-		// Saves the existing grid model.
-		newGrid: function() {
 			gridModel.reset();
+		},
+		
+		// Saves the current grid.
+		saveGrid: function() {
+			gridModel.save();
 		},
 		
 		// Joins all nodes within the current selection group.
@@ -101,7 +90,7 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 		// Snaps a node onto the nearest grid line.
 		snapNodeToGrid: function() {
 			if ( this.nodeOpsEnabled() && selectionModel.selectionSize() === 1 ) {
-				var node = gridModel.getNodeById( selectionModel.items[0] ),
+				var node = gridModel.getNode( selectionModel.items[0] ),
 					to = gridModel.snapPointToGrid( node );
 				
 				node.x = to.x;
@@ -129,7 +118,7 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 				var select;
 				// Get new selection.
 				if ( this.nodeOpsEnabled() ) {
-					var node = gridModel.getNodeById( selectionModel.items[0] );
+					var node = gridModel.getNode( selectionModel.items[0] );
 					select = gridModel.getPolygonHitsForPoint( node );
 				} else {
 					select = gridModel.getNodesInPolygon( selectionModel.items[0] );

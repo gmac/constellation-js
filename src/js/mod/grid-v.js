@@ -202,7 +202,7 @@ function( $, _, Backbone, gridModel, selectionModel, windowView ) {
 				// Update nodes.
 				nodeView.each(function() {
 					var node = $(this);
-					var model = gridModel.getNode( node.attr('id') );
+					var model = gridModel.getNodeById( node.attr('id') );
 
 					node.css({
 						left: (model.x -= offset.left),
@@ -213,8 +213,8 @@ function( $, _, Backbone, gridModel, selectionModel, windowView ) {
 				// Update lines.
 				lineView.each(function() {
 					var to = this.getAttribute('class').split(' ');
-					var a = gridModel.getNode( to[0] );
-					var b = gridModel.getNode( to[1] );
+					var a = gridModel.getNodeById( to[0] );
+					var b = gridModel.getNodeById( to[1] );
 					
 					this.setAttribute('x1', a.x);
 					this.setAttribute('y1', a.y);
@@ -309,7 +309,7 @@ function( $, _, Backbone, gridModel, selectionModel, windowView ) {
 		touchPoly: function( id, pos, shiftKey, dblclick ) {
 			if ( dblclick ) {
 				// Double-click polygon: select all nodes.
-				var nodeIds = gridModel.getPolygon( id ).nodes;
+				var nodeIds = gridModel.getPolygonById( id ).nodes;
 				selectionModel.setSelection( nodeIds );
 			}
 			else {
@@ -318,7 +318,7 @@ function( $, _, Backbone, gridModel, selectionModel, windowView ) {
 					selectionModel.deselectAll();
 				}
 				if ( selectionModel.toggle(id) ) {
-					this.dragGeom( gridModel.getPolygon( id ).nodes, pos);
+					this.dragGeom( gridModel.getPolygonById( id ).nodes, pos);
 				}
 			}
 		},
