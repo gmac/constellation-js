@@ -183,11 +183,11 @@
 	// @param points: The ring of points to measure bounding on.
 	// @return: a new Rect object of the ring's maximum extent.
 	Const.getRectForPointRing = function( points ) {
-		var first = points[0],
-			minX = first.x,
-			maxX = first.x,
-			minY = first.y,
-			maxY = first.y;
+		var first = points[0];
+		var minX = first.x;
+		var maxX = first.x;
+		var minY = first.y;
+		var maxY = first.y;
 		
 		_c.each( points, function( pt ) {
 			minX = min( minX, pt.x );
@@ -204,10 +204,10 @@
 	// @param rect: The Rect object to test against.
 	// @return: true if point falls within rectangle.
 	Const.hitTestRect = function( p, rect ) {
-		var minX = min( rect.x, rect.x + rect.width ),
-			maxX = max( rect.x, rect.x + rect.width ),
-			minY = min( rect.y, rect.y + rect.height ),
-			maxY = max( rect.y, rect.y + rect.height );
+		var minX = min( rect.x, rect.x + rect.width );
+		var maxX = max( rect.x, rect.x + rect.width );
+		var minY = min( rect.y, rect.y + rect.height );
+		var maxY = max( rect.y, rect.y + rect.height );
 		
 		return p.x >= minX && p.y >= minY && p.x <= maxX && p.y <= maxY;
 	};
@@ -217,12 +217,11 @@
 	// @param points: An array of points forming a polygonal shape.
 	// @return: true if point falls within point ring.
 	Const.hitTestPointRing = function( p, points ) {
-		var sides = points.length,
-			origin = new Point(0, p.y),
-			hits = 0,
-			i = 0,
-			s1,
-			s2;
+		var sides = points.length;
+		var origin = new Point(0, p.y);
+		var hits = 0;
+		var i = 0;
+		var s1, s2;
 	
 		// Test intersection of an external ray against each polygon side.
 		while ( i < sides ) {
@@ -243,13 +242,13 @@
 	// @param b: Point B of line segment AB.
 	// @return: new Point object with snapped coordinates.
 	Const.snapPointToLineSegment = function( p, a, b ) {
-		var ap1 = p.x-a.x,
-			ap2 = p.y-a.y,
-			ab1 = b.x-a.x,
-			ab2 = b.y-a.y,
-			mag = ab1*ab1 + ab2*ab2,
-			dot = ap1*ab1 + ap2*ab2,
-			t = dot/mag;
+		var ap1 = p.x-a.x;
+		var ap2 = p.y-a.y;
+		var ab1 = b.x-a.x;
+		var ab2 = b.y-a.y;
+		var mag = ab1*ab1 + ab2*ab2;
+		var dot = ap1*ab1 + ap2*ab2;
+		var t = dot/mag;
 
 		if (t < 0) {
 			return new Point(a.x, a.y);
@@ -264,11 +263,10 @@
 	// @param points: Array of Points to find the nearest point within.
 	// @return: nearest Point to P, or null if no points were available.
 	Const.getNearestPointToPoint = function( p, points ) {
-		var i = points.length-1,
-			a,
-			dist,
-			bestPt = null,
-			bestDist = NaN;
+		var bestPt = null;
+		var bestDist = NaN;
+		var i = points.length-1;
+		var a, dist;
 
 		// Sort points by horizontal offset from P.
 		points.sort(function(a, b) {
@@ -379,14 +377,15 @@
 		
 		// Adds a new node to the grid at the specified X and Y coordinates.
 		addNode: function( x, y, data ) {
-			var node = new Node(('n'+ this._i++), x, y, data);
+			if (typeof x === 'object') data = x;
+			var node = new Node(('n'+ this._i++), x||0, y||0, data);
 			this.nodes[ node.id ] = node;
 			return node.id;
 		},
 		
-		// Gets a single node by id reference.
-		getNodeById: function( id ) {
-			if ( isArray(id) ) {
+		// Gets a node or array of nodes by id reference.
+		getNode: function( id ) {
+			if (isArray(id)) {
 				return _c.map( id.slice(), function( i ) {
 					return this.nodes[ i ];
 				}, this);
@@ -404,15 +403,15 @@
 			return _c.size( this.nodes );
 		},
 		
-		// Tests if a single node id is defined.
-		hasNode: function( id ) {
-			if ( isArray(id) ) {
+		// Tests if a node id or array of node ids are defined.
+		hasNodes: function( id ) {
+			if (isArray(id)) {
 				return _c.all(id, function(i) {
-					return this.nodes.hasOwnProperty( i );
+					return this.nodes.hasOwnProperty(i);
 				}, this);
 			}
 			
-			return this.nodes.hasOwnProperty( id );
+			return this.nodes.hasOwnProperty(id);
 		},
 
 		// Joins nodes within a selection group.
@@ -421,13 +420,13 @@
 			var change = false;
 			
 			// Group must contain two or more nodes to join...
-			if ( group.length > 1 && this.hasNode(group) ) {
+			if ( group.length > 1 && this.hasNodes(group) ) {
 				
 				// Loop through selection group of nodes...
 				_c.each(group, function(id) {
-					var node = this.nodes[id],
-						len = group.length,
-						i = 0;
+					var node = this.nodes[id];
+					var len = group.length;
+					var i = 0;
 						
 					while ( i < len ) {
 						id = group[i++];
@@ -465,7 +464,7 @@
 					}
 				}
 			}, this);
-
+			
 			return change;
 		},
 		
@@ -522,7 +521,7 @@
 					change = true;
 				}
 			}, this);
-			
+
 			return change;
 		},
 		
@@ -530,16 +529,23 @@
 		addPolygon: function( group, data ) {
 			var poly;
 			
-			if ( group.length >= 3 && this.hasNode(group) ) {
+			if ( group.length >= 3 && this.hasNodes(group) ) {
 				poly = new Polygon(('p'+ this._i++), group, data );
 				this.polys[ poly.id ] = poly;
 				return poly.id;
 			}
+
 			return null;
 		},
 		
-		// Gets a polygon model by id reference.
-		getPolygonById: function( id ) {
+		// Gets a polygon or an array of polygons by id reference.
+		getPolygon: function( id ) {
+			if (isArray(id)) {
+				return _c.map( id.slice(), function( i ) {
+					return this.polys[ i ];
+				}, this);
+			}
+			
 			if ( this.polys.hasOwnProperty(id) ) {
 				return this.polys[ id ];
 			}
@@ -549,8 +555,8 @@
 		// Gets an array of nodes representing a polygon in the grid.
 		getNodesForPolygon: function( id ) {
 			if ( this.polys.hasOwnProperty(id) ) {
-				return _c.map( this.polys[id].nodes.slice(), function( id ) {
-					return this.nodes[ id ];
+				return _c.map(this.polys[id].nodes.slice(), function(i) {
+					return this.nodes[i];
 				}, this);
 			}
 			return null;
@@ -558,19 +564,28 @@
 		
 		// Counts the number of polygons defined in the grid.
 		getNumPolygons: function() {
-			return _c.size( this.polys );
+			return _c.size(this.polys);
 		},
 		
 		// Removes a collection of polygons from the grid.
-		removePolygons: function( group ) {
+		removePolygons: function( id ) {
 			var change = false;
 			
-			_c.each(group, function(id) {
-				if ( this.polys.hasOwnProperty(id) ) {
-					delete this.polys[ id ];
+			if (isArray(id)) {
+				
+				_c.each(id, function(i) {
+					if (this.polys.hasOwnProperty(i)) {
+						delete this.polys[i];
+						change = true;
+					}
+				}, this);
+				
+			} else {
+				if (this.polys.hasOwnProperty(id)) {
+					delete this.polys[id];
 					change = true;
 				}
-			}, this);
+			}
 			
 			return change;
 		},
@@ -598,8 +613,8 @@
 				branchPath, // A new path branch for the search queue.
 				branchWeight, // Current weight of a new branch being explored.
 				branchEstimate, // Estimated best-case weight of new branch reaching goal.
-				startNode = this.getNodeById( start ),
-				goalNode = this.getNodeById( goal ),
+				startNode = this.getNode( start ),
+				goalNode = this.getNode( goal ),
 				cycles = 0,
 				i;
 			
@@ -722,7 +737,7 @@
 		getNearestNodeToNode: function( id ) {
 			var nearest = null;
 			var nodes = [];
-			var target = this.getNodeById( id );
+			var target = this.getNode( id );
 			
 			if ( target ) {
 				_c.each( this.nodes, function( node ) {
@@ -784,7 +799,7 @@
 		// @return  Array of node ids that fall within the specified Polygon.
 		getNodesInPolygon: function( id ) {
 			var hits = [];
-			var poly = this.getPolygonById( id );
+			var poly = this.getPolygon( id );
 			var points = this.getNodesForPolygon( id );
 			var rect = Const.getRectForPointRing( points );
 

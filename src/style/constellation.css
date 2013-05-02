@@ -68,18 +68,34 @@ footer, header, hgroup, menu, nav, section, summary {
   display:block;
 }
 
+@font-face {
+    font-family: 'KellySlabRegular';
+    src: url('KellySlab-Regular-webfont.eot');
+    src: url('KellySlab-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('KellySlab-Regular-webfont.woff') format('woff'),
+         url('KellySlab-Regular-webfont.ttf') format('truetype'),
+         url('KellySlab-Regular-webfont.svg#KellySlabRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
 /* Global
 * ----------------------------- */
 body {
-	font:12px/16px arial,sans-serif;
-	margin:0;
-	position:relative;
+	background: url(background.png) repeat-y;
+	font: 12px/16px 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	margin: 0;
+	position: relative;
 }
 
+a {
+	color: #ccc;
+}
 
 .header {
 	background-color: #000;
 	color: #fff;
+	font-size: 15px;
 	height: 60px;
 	line-height: 60px;
 }
@@ -88,17 +104,24 @@ body {
 .header ul,
 .header li {
 	display: inline;
-	margin: 0 20px;
+	margin: 0 15px;
 }
 
 .header a {
 	display: inline;
 }
 
+h1 {
+	font: 40px/60px 'KellySlabRegular', Helvetica, sans-serif;
+}
+
+h1 span {
+	font-size: 20px;
+}
+
 /* Toolbar
 * ----------------------------- */
 .toolbar {
-	background-color: #ccc;
 	float: left;
 	margin-right: -100%;
 	padding: 0 15px;
@@ -130,6 +153,7 @@ body {
 	border-radius: 5px;
 	display: none;
 	float: left;
+	font-size: 24px;
 	margin: 20px -100% 0 200px;
 	padding: 5px 10px;
 }

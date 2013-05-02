@@ -44,7 +44,7 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 			if ( this.nodeOpsEnabled() && selectionModel.selectionSize() > 1 ) {
 				gridModel.joinNodes( selectionModel.items );
 			} else {
-				this.alert("Select two or more points.");
+				this.alert("Select two or more points");
 			}
 		},
 		
@@ -53,7 +53,7 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 			if ( this.nodeOpsEnabled() && selectionModel.selectionSize() > 1 ) {
 				gridModel.splitNodes( selectionModel.items );
 			} else {
-				this.alert("Select two or more joined points.");
+				this.alert("Select two or more joined points");
 			}
 		},
 		
@@ -62,14 +62,14 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 			if ( this.nodeOpsEnabled() && selectionModel.selectionSize() >= 3 ) {
 				gridModel.addPolygon( selectionModel.items );
 			} else {
-				this.alert("Select three or more points.");
+				this.alert("Select three or more points");
 			}
 		},
 		
 		// Removes all selected geometry (may be nodes or polygons).
 		deleteGeometry: function() {
 			if ( !selectionModel.selectionSize() ) {
-				this.alert("No selected geometry.");
+				this.alert("No selected geometry");
 				return;
 			}
 			else if ( this.nodeOpsEnabled() ) {
@@ -89,9 +89,12 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 				
 				if ( result.valid ) {
 					selectionModel.selectPath( _.pluck(result.nodes, 'id') );
+					this.alert("Shortest route of "+Math.round(result.weight)+"px");
+				} else {
+					this.alert("No valid routes");
 				}
 			} else {
-				this.alert("Select two points.");
+				this.alert("Select two points");
 			}
 		},
 		
@@ -106,7 +109,7 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 				gridModel.update();
 
 			} else {
-				this.alert("Select a single point.");
+				this.alert("Select a single point");
 			}
 		},
 		
@@ -116,7 +119,7 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 				var nearest = gridModel.getNearestNodeToNode( selectionModel.items[0] );
 				selectionModel.select( nearest.id );
 			} else {
-				this.alert("Select a single point.");
+				this.alert("Select a single point");
 			}
 		},
 		
@@ -136,7 +139,7 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 					selectionModel.setSelection( select );
 				}
 			} else {
-				this.alert("Select a single point or polygon.");
+				this.alert("Select a single point or polygon");
 			}
 		},
 		

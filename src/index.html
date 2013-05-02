@@ -3,12 +3,12 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Constellation.js</title>
-	<link href="css/constellation.css" rel="stylesheet" media="screen"/>
+	<link href="style/constellation.css" rel="stylesheet" media="screen"/>
 </head>
 <body>
 	
 <div class="header">
-	<h1>Constellation.js</h1>
+	<h1>Constellation<span>.js</span></h1>
 	<ul>
 		<li><a href="#">About</a></li>
 		<li><a href="#">Documentation</a></li>
@@ -67,9 +67,9 @@
 </script>
 
 <script>
-var require = {
-    urlArgs: "bust="+(new Date()).getTime()
-};
+if (location.href.match(/localhost/g)) {
+	require = {urlArgs: "bust="+(new Date()).getTime()};
+}
 </script>
 <script src="js/lib/require.js" data-main="js/main"></script>
 </body>
