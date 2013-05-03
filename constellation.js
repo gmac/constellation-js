@@ -48,9 +48,7 @@
 			// Object.
 			var num = 0;
 			for ( var i in obj ) {
-				if ( obj.hasOwnProperty(i) ) {
-					num++;
-				}
+				if (obj.hasOwnProperty(i)) num++;
 			}
 			return num;
 		},
@@ -69,9 +67,7 @@
 				var i = 0;
 			
 				while ( i < len ) {
-					if ( obj[i++] === item ) {
-						return true;
-					}
+					if (obj[i++] === item) return true;
 				}
 			}
 			
@@ -139,7 +135,7 @@
 	
 	// Const.Point
 	// -----------
-	var Point = Const.Point = function( x, y ) {
+	var Point = Const.Point = function( x, y, z ) {
 		this.x = x || 0;
 		this.y = y || 0;
 	};
@@ -160,6 +156,13 @@
 		var x = b.x-a.x;
 		var y = b.y-a.y;
 		return sqrt(x*x + y*y);
+	};
+	
+	Const.distance3d = function( a, b ) {
+		var x = b.x-a.x;
+		var y = b.y-a.y;
+		var z = b.z-a.z;
+		return sqrt(x*x + y*y + z*z);
 	};
 	
 	// Tests for counter-clockwise winding among three points.
@@ -381,8 +384,11 @@
 		
 		// Adds a new node to the grid at the specified X and Y coordinates.
 		addNode: function(x, y, data) {
-			if (typeof x === 'object') data = x;
-			var node = new Node(('n'+ this._i++), x||0, y||0, data);
+			if (typeof x === 'object') {
+				data = x;
+				x = 0;
+			}
+			var node = new Node(('n'+ this._i++), x, y, data);
 			this.nodes[ node.id ] = node;
 			return node.id;
 		},
