@@ -76,7 +76,7 @@ Constellation grid Polygon object; use a Const.Grid to create and manage polygon
 - `nodes`: Array of node ids defining the polygon ring.
 - `data`: A data object of user-defined data attached to the polygon.
 
-**grid.addNode** `grid.addNode( x?, y?, {data}? );` or `grid.addNode( {data} );`  
+**grid.addNode** `grid.addNode( x, y, {data}? );` or `grid.addNode( {data}? );`  
 Adds a new `Node` object with specified X and Y coordinates, and an optional data object. Returns the new node id. A data object may be provided as the sole parameter, if the data object contains an `id` property, that id will be assigned to the new node.
 
 **grid.getNodeById** `grid.getNodeById( id );`  
@@ -98,10 +98,10 @@ Takes two or more node ids, or an array with two or more node ids, and joins the
 Takes two or more node ids, or an array with two or more node ids, and splits apart their common connections. Returns `true` if changes are made.
 
 **grid.detachNodes** `grid.detachNodes( id, ... );` or `grid.detachNodes( [id, ...] );`  
-Takes one or more node ids, or array of node ids, and splits them from all of their respective connections. Returns `true` if changes are made.
+Takes one or more node ids, or an array of node ids, and splits them from all of their respective connections. Returns `true` if changes are made.
 
 **grid.removeNodes** `grid.removeNodes( id, ... );` or `grid.removeNodes( [id, ...] );`  
-Takes one or more node ids, or array of node ids, detaches them from all connections, then removes them each from the grid. Any dependent polygons are also removed. Returns `true` if changes are made.
+Takes one or more node ids, or an array of node ids, detaches them from all connections, then removes them each from the grid. Any dependent polygons are also removed. Returns `true` if changes are made.
 
 **grid.addPolygon** `grid.addPolygon( [node ids], data? );`  
 Takes an array of three or more node ids and creates a new `Polygon` object with the optional data object attached. Returns the new polygon id.

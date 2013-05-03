@@ -3,13 +3,14 @@
 <head>
 	<meta charset="utf-8" />
 	<title>Constellation.js</title>
+	<link href="style/reset.css" rel="stylesheet" media="screen"/>
 	<link href="style/constellation.css" rel="stylesheet" media="screen"/>
 </head>
 <body>
 	
 <div class="header">
 	<h1>Constellation<span>.js</span></h1>
-	<span class="tagline">(a point-based geometry tool)</span>
+	<span class="tagline">Point-based grid geometry</span>
 	<ul class="nav">
 		<li><a href="https://github.com/gmac/constellation.js">GitHub Source</a></li>
 		<li><a href="https://github.com/gmac/constellation.js#constellationjs">Documentation</a></li>
@@ -51,8 +52,20 @@
 	<button>Reload</button-->
 </div>
 
-<div class="message" id="message">Hello World</div>
+<div class="message" id="message"></div>
 <div class="canvas" id="grid"></div>
+<div class="info" id="info">
+	<div class="view js-view">
+		<b>Getting Started</b>
+		<p>Build a grid, then start running searches and grid ops.</p>
+		<ul>
+			<li>Double-Click within canvas to add grid nodes.</li>
+			<li>Click+Drag within canvas for selection marquee.</li>
+			<li>SHIFT+Click to add and remove geometry selections.</li>
+		</ul>
+	</div>
+	<button>help</button>
+</div>
 
 <script type="text/template" id="grid-view">
 	<svg>

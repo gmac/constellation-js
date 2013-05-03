@@ -1,73 +1,3 @@
-/* Reset
-* ----------------------------- */
-html, body, div, span, applet, object, iframe,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-a, abbr, acronym, address, big, cite, code, del,
-dfn, em, font, img, ins, kbd, q, s, samp, small,
-strike, strong, sub, sup, tt, var, b, u, i, center,
-dl, dt, dd, ol, ul, li,
-fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead, tr, th, td {
-  background: transparent;
-  border: 0;
-  font-size: 100%;
-  margin: 0;
-  outline: 0;
-  padding: 0;
-  vertical-align: baseline;
-}
-
-body { line-height: 1; }
-
-nav ol,
-nav ul,
-.nav ol,
-.nav ul {
-  list-style: none;
-}
-
-blockquote,
-q { quotes: none; }
-
-blockquote:before,
-blockquote:after,
-q:before,
-q:after {
-  content: '';
-  content: none;
-}
-
-button,
-input,
-label,
-select,
-textarea { vertical-align: middle; }
-
-a img { border: 0; }
-:focus { outline: 0; }
-ins { text-decoration: none; }
-del { text-decoration: line-through; }
-
-address, caption, cite, code,
-dfn, em, th, var {
-  font-style: normal;
-  font-weight: normal;
-}
-
-table {
-  border-collapse: collapse;
-  border-spacing: 0;
-}
-caption,
-th {
-  text-align: left;
-}
-
-article, aside, canvas, details, figcaption, figure,
-footer, header, hgroup, menu, nav, section, summary {
-  display:block;
-}
-
 @font-face {
     font-family: 'KellySlabRegular';
     src: url('KellySlab-Regular-webfont.eot');
@@ -90,6 +20,11 @@ body {
 
 a {
 	color: #ccc;
+}
+
+h1, h2, b {
+	font-family: 'KellySlabRegular', Helvetica, sans-serif;
+	font-size: 18px;
 }
 
 .header {
@@ -261,4 +196,43 @@ a {
 	border: 1px solid #ccc;
 	display: none;
 	position: absolute;
+}
+
+/* Info
+* -------------------------- */
+.info {
+	bottom: 10px;
+	position: fixed;
+	right: 10px;
+	z-index: 2;
+}
+
+.info .view {
+	background-color: rgba(225,225,225,0.9);
+	border-radius: 10px;
+	bottom: 0;
+	display: none;
+	padding: 20px 25px 25px;
+	position: absolute;
+	right: 0;
+	width: 325px;
+}
+
+.info button {
+	bottom: 10px;
+	position: absolute;
+	right: 10px;
+}
+
+.info b {
+	display: block;
+	margin: 0 0 10px;
+}
+
+.info ul {
+	padding-left: 15px;
+}
+
+.info li {
+	margin: 10px 0;
 }
