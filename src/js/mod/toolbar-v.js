@@ -49,9 +49,10 @@ function( $, _, Backbone, cacheModel, gridModel, gridController, windowView ) {
 				case 'polygon': gridController.makePolygon(); return;
 				case 'remove': gridController.deleteGeometry(); return;
 				case 'path': gridController.findPath(); return;
-				case 'nearest': gridController.snapNodeToGrid(); return;
 				case 'snap': gridController.snapNodeToGrid(); return;
-				case 'hittest': gridController.hitTestNodeInPolygons(); return;
+				case 'nearest': gridController.selectNearestGridNode(); return;
+				case 'hittest': gridController.hitTestGeometry(); return;
+				case 'print': gridController.print(); return;
 			}
 		},
 		

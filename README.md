@@ -57,7 +57,7 @@ Takes a target point P, and an array of points to search. Returns the nearest po
 
 Constellation Grid is a discrete component which must be instanced.
 
-**Const.Grid** `var grid = new Const.Grid( nodes?, polygons? );`  
+**Const.Grid** `var grid = new Const.Grid( data? );`  
 Constructor for a new Constellation grid. All grid operations must be invoked on an instance.
 
 **Grid.Node** `use... grid.addNode();`  
@@ -157,12 +157,6 @@ Tests a Rect for intersections with all nodes in the grid, and returns their ids
 ## Const.utils
 
 Constellation includes implementations of several common collection management functions for working with arrays and objects. These are very similar to Underscore.js methods, although their implementations may vary.
-
-**Const.utils.keys** `Const.utils.keys( object );`  
-Gets the provided object's property keys as an array.
-
-**Const.utils.empty** `Const.utils.empty( object );`  
-Removes all items from an array, or all keyed properties from an object.
 
 **Const.utils.size** `Const.utils.size( object );`  
 Counts the number of items in an array, or the number of properties on an object.

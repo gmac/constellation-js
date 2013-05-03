@@ -75,7 +75,7 @@
 				}
 			}
 			
-			return obj.hasOwnProperty( item );
+			return obj && obj.hasOwnProperty( item );
 		},
 		
 		// Runs an iterator function over each item in an array or object.
@@ -125,9 +125,9 @@
 		// Runs a test function on each item in the array,
 		// then returns true if all items pass the test.
 		all: function( array, testFunct, context ) {
-			var i = 0;
 			var len = array.length;
-				
+			var i = 0;
+			
 			while ( i < len ) {
 				if ( !testFunct.call( context, array[i], i++ ) ) {
 					return false;
@@ -749,21 +749,19 @@
 		// @param origin: The origin node to search from.
 		// @return: The nearest other grid node to the specified target.
 		getNearestNodeToNode: function( id ) {
-			var nearest = null;
 			var nodes = [];
 			var target = this.getNodeById( id );
 			
 			if ( target ) {
-				_c.each( this.nodes, function( node ) {
+				_c.each(this.nodes, function( node ) {
 					if ( node.id !== target.id ) {
 						nodes.push( node );
 					}
 				}, this);
 
-				nearest = Const.getNearestPointToPoint( target, nodes );
-				nodes.length = 0;
+				return Const.getNearestPointToPoint( target, nodes );
 			}
-			return nearest;
+			return null;
 		},
 		
 		// Finds the nearest node to a specified point within the grid.
@@ -772,13 +770,11 @@
 		getNearestNodeToPoint: function( pt ) {
 			var nodes = [];
 			
-			_c.each( this.nodes, function( node ) {
+			_c.each(this.nodes, function( node ) {
 				nodes.push( node );
 			}, this);
 			
-			pt = Const.getNearestPointToPoint( pt, nodes );
-			nodes.length = 0;
-			return pt;
+			return Const.getNearestPointToPoint( pt, nodes );
 		},
 		
 		// Tests if a Point intersects any Polygon in the grid.
@@ -786,7 +782,7 @@
 		// @return: True if the point intersects any polygon.
 		hitTestPointInPolygons: function( pt ) {
 			for ( var i in this.polys ) {
-				if ( this.polys.hasOwnProperty(i) && Const.hitTestPointRing( pt, this.getNodesForPolygon(i) ) ) {
+				if ( this.polys.hasOwnProperty(i) && Const.hitTestPointRing(pt, this.getNodesForPolygon(i)) ) {
 					return true;
 				}
 			}
@@ -811,19 +807,19 @@
 		// Tests a Polygon for intersections with all nodes in the grid, and returns their ids.
 		// @param id  The polygon id to test.
 		// @return  Array of node ids that fall within the specified Polygon.
-		getNodesInPolygon: function( id ) {
+		getNodesInPolygon: function(id) {
 			var hits = [];
-			var poly = this.getPolygons( id );
+			var poly = this.getPolygonById( id );
 			var points = this.getNodesForPolygon( id );
 			var rect = Const.getRectForPointRing( points );
 
 			if (poly) {
-				_c.each( this.nodes, function( node ) {
+				_c.each(this.nodes, function( node ) {
 					// Run incrementally costly tests:
-					// 1) node in rect?
-					// 2) node not in ring?
-					// 3) node in polygon?
-					if ( Const.hitTestRect( node, rect ) && !_c.contains( poly.nodes, node.id ) && Const.hitTestPointRing( node, points ) ) {
+					// - node in shape?
+					// - OR...
+					// node in rect AND node within ring?
+					if (_c.contains(poly.nodes, node.id) || (Const.hitTestRect(node, rect) && Const.hitTestPointRing(node, points))) {
 						hits.push( node.id );
 					}
 				}, this);
@@ -835,12 +831,12 @@
 		// Tests a Rect for intersections with all nodes in the grid, and returns their ids.
 		// @param id  The polygon id to test.
 		// @return  Array of node ids that fall within the specified Rect.
-		getNodesInRect: function( rect ) {
+		getNodesInRect: function(rect) {
 			var hits = [];
 			
-			_c.each( this.nodes, function( node ) {
-				if ( Const.hitTestRect( node, rect ) ) {
-					hits.push( node.id );
+			_c.each(this.nodes, function(node) {
+				if (Const.hitTestRect(node, rect)) {
+					hits.push(node.id);
 				}
 			}, this);
 

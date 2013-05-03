@@ -111,12 +111,21 @@ a {
 	display: inline;
 }
 
-h1 {
-	font: 40px/60px 'KellySlabRegular', Helvetica, sans-serif;
+.header .nav {
+	float: right;
 }
 
-h1 span {
+.header h1 {
+	font: 40px/60px 'KellySlabRegular', Helvetica, sans-serif;
+	margin-right: 25px;
+}
+
+.header h1 span {
 	font-size: 20px;
+}
+
+.header .tagline {
+	font-style: italic;
 }
 
 /* Toolbar
@@ -142,7 +151,23 @@ h1 span {
 
 .toolbar button {
 	display: block;
+	text-align: left;
 	width: 100%;
+}
+
+.toolbar button span {
+	float: right;
+	font-family: Monaco, Consolas, 'Lucida Console', monospace;
+	font-size: 10px;
+	text-transform: uppercase;
+}
+
+.toolbar button span:before {
+	content: '(';
+}
+
+.toolbar button span:after {
+	content: ')';
 }
 
 /* Message
@@ -156,6 +181,12 @@ h1 span {
 	font: 20px/1em 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	margin: 20px -100% 0 200px;
 	padding: 10px 15px;
+}
+
+.message span {
+	display: block;
+	font-size: 14px;
+	margin-top: 10px;
 }
 
 /* Canvas Display

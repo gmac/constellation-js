@@ -28,12 +28,22 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 			gridModel.save();
 		},
 		
+		// Prints data out to the console.
+		print: function() {
+			if (typeof console !== 'undefined' && console.log) {
+				console.log( JSON.stringify(gridModel.toJSON()) );
+				this.alert("Grid data printed to your console");
+			} else {
+				this.alert("No console available");
+			}
+		},
+		
 		// Joins all nodes within the current selection group.
 		joinNodes: function() {
 			if ( this.nodeOpsEnabled() && selectionModel.selectionSize() > 1 ) {
 				gridModel.joinNodes( selectionModel.items );
 			} else {
-				this.alert("Select two or more points");
+				this.alert("Select two or more nodes", selectionModel.selectionSize());
 			}
 		},
 		
@@ -42,7 +52,7 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 			if ( this.nodeOpsEnabled() && selectionModel.selectionSize() > 1 ) {
 				gridModel.splitNodes( selectionModel.items );
 			} else {
-				this.alert("Select two or more joined points");
+				this.alert("Select two or more joined nodes", selectionModel.selectionSize());
 			}
 		},
 		
@@ -51,7 +61,7 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 			if ( this.nodeOpsEnabled() && selectionModel.selectionSize() >= 3 ) {
 				gridModel.addPolygon( selectionModel.items );
 			} else {
-				this.alert("Select three or more points");
+				this.alert("Select three or more nodes", selectionModel.selectionSize());
 			}
 		},
 		
@@ -71,7 +81,7 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 			selectionModel.deselectAll();
 		},
 		
-		// Finds the shortest grid path between two selected points.
+		// Finds the shortest grid path between two selected nodes.
 		findPath: function() {
 			if ( this.nodeOpsEnabled() && selectionModel.selectionSize() === 2 ) {
 				var result = gridModel.findPath( selectionModel.items[0], selectionModel.items[1] );
@@ -83,42 +93,47 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 					this.alert("No valid routes");
 				}
 			} else {
-				this.alert("Select two points");
+				this.alert("Select two nodes", selectionModel.selectionSize());
 			}
 		},
 		
 		// Snaps a node onto the nearest grid line.
 		snapNodeToGrid: function() {
 			if ( this.nodeOpsEnabled() && selectionModel.selectionSize() === 1 ) {
-				var node = gridModel.getNode( selectionModel.items[0] ),
-					to = gridModel.snapPointToGrid( node );
+				var node = gridModel.getNodeById( selectionModel.items[0] );
+				var to = gridModel.snapPointToGrid( node );
 				
-				node.x = to.x;
-				node.y = to.y;
-				gridModel.update();
+				if (!_.size(node.to)) {
+					node.x = to.x;
+					node.y = to.y;
+					gridModel.update();
+				} else {
+					this.alert("Node must be unconnected");
+				}
 
 			} else {
-				this.alert("Select a single point");
+				this.alert("Select a single node");
 			}
 		},
 		
-		// Finds and selects the nearest point to the current selection.
+		// Finds and selects the nearest node to the current selection.
 		selectNearestGridNode: function() {
 			if ( this.nodeOpsEnabled() && selectionModel.selectionSize() === 1 ) {
 				var nearest = gridModel.getNearestNodeToNode( selectionModel.items[0] );
 				selectionModel.select( nearest.id );
 			} else {
-				this.alert("Select a single point");
+				this.alert("Select a single node");
 			}
 		},
 		
 		// Hit tests a node among all polygon definitions.
-		hitTestNodeInPolygons: function() {
+		hitTestGeometry: function() {
 			if ( selectionModel.selectionSize() === 1 ) {
 				var select;
+				
 				// Get new selection.
 				if ( this.nodeOpsEnabled() ) {
-					var node = gridModel.getNode( selectionModel.items[0] );
+					var node = gridModel.getNodeById( selectionModel.items[0] );
 					select = gridModel.getPolygonHitsForPoint( node );
 				} else {
 					select = gridModel.getNodesInPolygon( selectionModel.items[0] );
@@ -126,14 +141,17 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 				
 				if (select && select.length) {
 					selectionModel.setSelection( select );
+				} else {
+					this.alert("No intersections");
 				}
+				
 			} else {
-				this.alert("Select a single point or polygon");
+				this.alert("Select a single node or polygon");
 			}
 		},
 		
-		alert: function(mssg) {
-			this.trigger( 'alert', mssg );
+		alert: function(mssg, multiselect) {
+			this.trigger( 'alert', mssg, multiselect );
 		}
 	});
 	

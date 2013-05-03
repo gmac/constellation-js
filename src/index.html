@@ -9,10 +9,10 @@
 	
 <div class="header">
 	<h1>Constellation<span>.js</span></h1>
-	<ul>
-		<li><a href="#">About</a></li>
-		<li><a href="#">Documentation</a></li>
-		<li><a href="#">Source</a></li>
+	<span class="tagline">(a point-based geometry tool)</span>
+	<ul class="nav">
+		<li><a href="https://github.com/gmac/constellation.js">GitHub Source</a></li>
+		<li><a href="https://github.com/gmac/constellation.js#constellationjs">Documentation</a></li>
 	</ul>
 </div>
 
@@ -27,18 +27,23 @@
 	
 	<h2>Actions</h2>
 	<ul>
-		<li><button class="action" data-action="join">Join Points (j)</button></li>
-		<li><button class="action" data-action="split">Break Points (b)</button></li>
-		<li><button class="action" data-action="polygon">Make Polygon (p)</button></li>
-		<li><button class="action" data-action="remove">Remove Geometry (DEL)</button></li>
+		<li><button class="action" data-action="join">Join Nodes <span>j</span></button></li>
+		<li><button class="action" data-action="split">Break Nodes <span>b</span></button></li>
+		<li><button class="action" data-action="polygon">Make Polygon <span>p</span></button></li>
+		<li><button class="action" data-action="remove">Remove Geometry <span>DEL</span></button></li>
 	</ul>
 
 	<h2>Functions</h2>
 	<ul>
-		<li><button class="action" data-action="path">Find Path</button></li>
-		<li><button class="action" data-action="nearest">Nearest Point</button></li>
-		<li><button class="action" data-action="snap">Snap to Grid</button></li>
-		<li><button class="action" data-action="hittest">Hittest Polygons</button></li>
+		<li><button class="action" data-action="path">Find Path <span>f</span></button></li>
+		<li><button class="action" data-action="nearest">Nearest Node <span>n</span></button></li>
+		<li><button class="action" data-action="snap">Snap to Grid <span>s</span></button></li>
+		<li><button class="action" data-action="hittest">Hittest Geometry <span>h</span></button></li>
+	</ul>
+	
+	<h2>Export</h2>
+	<ul>
+		<li><button class="action" data-action="print">Print to Console <span>c</span></button></li>
 	</ul>
 	
 	<!--h2>Background URL</h2>
