@@ -10,7 +10,6 @@
 	
 <div class="header">
 	<h1>Constellation<span>.js</span></h1>
-	<span class="tagline">Point-based grid geometry</span>
 	<ul class="nav">
 		<li><a href="https://github.com/gmac/constellation.js">GitHub Source</a></li>
 		<li><a href="https://github.com/gmac/constellation.js#constellationjs">Documentation</a></li>
@@ -28,23 +27,23 @@
 	
 	<h2>Actions</h2>
 	<ul>
-		<li><button class="action" data-action="join">Join Nodes <span>j</span></button></li>
-		<li><button class="action" data-action="split">Break Nodes <span>b</span></button></li>
-		<li><button class="action" data-action="polygon">Make Polygon <span>p</span></button></li>
+		<li><button class="action" data-action="join">Join Nodes <span>(j)</span></button></li>
+		<li><button class="action" data-action="split">Break Nodes <span>(b)</span></button></li>
+		<li><button class="action" data-action="polygon">Make Polygon <span>(p)</span></button></li>
 		<li><button class="action" data-action="remove">Remove Geometry <span>DEL</span></button></li>
 	</ul>
 
 	<h2>Functions</h2>
 	<ul>
-		<li><button class="action" data-action="path">Find Path <span>f</span></button></li>
-		<li><button class="action" data-action="nearest">Nearest Node <span>n</span></button></li>
-		<li><button class="action" data-action="snap">Snap to Grid <span>s</span></button></li>
-		<li><button class="action" data-action="hittest">Hittest Geometry <span>h</span></button></li>
+		<li><button class="action" data-action="path">Find Path <span>(f)</span></button></li>
+		<li><button class="action" data-action="nearest">Nearest Node <span>(n)</span></button></li>
+		<li><button class="action" data-action="snap">Snap to Grid <span>(s)</span></button></li>
+		<li><button class="action" data-action="hittest">Hittest Geometry <span>(h)</span></button></li>
 	</ul>
 	
 	<h2>Export</h2>
 	<ul>
-		<li><button class="action" data-action="print">Print to Console <span>c</span></button></li>
+		<li><button class="action" data-action="print">Print to Console <span>(c)</span></button></li>
 	</ul>
 	
 	<!--h2>Background URL</h2>
@@ -54,8 +53,8 @@
 
 <div class="message" id="message"></div>
 <div class="canvas" id="grid"></div>
-<div class="info" id="info">
-	<div class="view js-view">
+<div class="info closed" id="info">
+	<div class="view">
 		<b>Getting Started</b>
 		<p>Build a grid, then start running searches and grid ops.</p>
 		<ul>
@@ -64,7 +63,7 @@
 			<li>SHIFT+Click to add and remove geometry selections.</li>
 		</ul>
 	</div>
-	<button>help</button>
+	<button class="toggle">?</button>
 </div>
 
 <script type="text/template" id="grid-view">

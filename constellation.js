@@ -130,6 +130,16 @@
 				}
 			}
 			return true;
+		},
+		
+		// Formats a collection of object values into an array.
+		toArray: function(obj) {
+			var array = [];
+			
+			for (var i in obj) {
+				if (obj.hasOwnProperty(i)) array.push(obj[i]);
+			}
+			return array;
 		}
 	};
 	
@@ -728,21 +738,20 @@
 			var bestDistance = NaN;
 			var tested = {};
 
-			_c.each( this.nodes, function( local, id ) {
-				if ( pt.id !== id ) {
+			_c.each(this.nodes, function( local, id ) {
+				if (pt.id === id) return;
 
-					// Loop through each node's connections.
-					for ( var i in local.to ) {
-						if ( local.to.hasOwnProperty(i) && !tested.hasOwnProperty(i+' '+local.id) ) {
-							var foreign = this.nodes[i];
-							var snapped = Const.snapPointToLineSegment(pt, local, foreign);
-							var offset = Const.distance(pt, snapped);
-							tested[local.id+' '+foreign.id] = true;
+				// Loop through each node's connections.
+				for (var i in local.to) {
+					if (local.to.hasOwnProperty(i) && !tested.hasOwnProperty(i+' '+local.id)) {
+						var foreign = this.nodes[i];
+						var snapped = Const.snapPointToLineSegment(pt, local, foreign);
+						var offset = Const.distance(pt, snapped);
+						tested[local.id+' '+foreign.id] = true;
 
-							if (!bestPoint || offset < bestDistance) {
-								bestPoint = snapped;
-								bestDistance = offset;
-							}
+						if (!bestPoint || offset < bestDistance) {
+							bestPoint = snapped;
+							bestDistance = offset;
 						}
 					}
 				}
@@ -774,13 +783,7 @@
 		// @param pt: Point to test.
 		// @return: Nearest Node to target Point.
 		getNearestNodeToPoint: function( pt ) {
-			var nodes = [];
-			
-			_c.each(this.nodes, function( node ) {
-				nodes.push( node );
-			}, this);
-			
-			return Const.getNearestPointToPoint( pt, nodes );
+			return Const.getNearestPointToPoint(pt, _c.toArray(this.nodes));
 		},
 		
 		// Tests if a Point intersects any Polygon in the grid.
@@ -802,7 +805,7 @@
 			var hits = [];
 			
 			_c.each( this.polys, function( poly, id ) {
-				if ( Const.hitTestPointRing( pt, this.getNodesForPolygon(id) ) ) {
+				if ( Const.hitTestPointRing(pt, this.getNodesForPolygon(id)) ) {
 					hits.push( poly.id );
 				}
 			}, this);
@@ -847,6 +850,57 @@
 			}, this);
 
 			return hits;
+		},
+		
+		bridgePoints: function(a, b, confineToGrid) {
+			// 1) Connect through common polygon:
+			// Get polygon intersections for each point:
+			var polyA = this.getPolygonHitsForPoint(a);
+			var polyB = this.getPolygonHitsForPoint(b);
+			
+			// If both have polygon intersections:
+			if (polyA.length && polyB.length) {
+				var polys = [];
+				var i = polyA.length-1;
+			
+				// Collect overlapping union:
+				while (i >= 0) {
+					if (_c.contains(polyB, polyA[i])) polys.push(polyA[i]);
+					i--; 
+				}
+			
+				// Return direct route if within a common polygon area:
+				if (polys.length) {
+					return [a, b];
+				}
+			
+				// 2) Connect through adjacent polygons with a shared side:
+			
+				
+			}
+			
+			// 3) Select point anchors:
+			// original point is used when in a polygon, otherwise snap to grid.
+			var anchorA = (!polyA.length) ? this.snapPointToGrid(a) : a;
+			var anchorB = (!polyB.length) ? this.snapPointToGrid(b) : b;
+			var tempA = this.addNode(anchorA.x, anchorA.y);
+			var tempB = this.addNode(anchorB.x, anchorB.y);
+			
+			function connectNodeToPoly(id, polys) {
+				if (!polyA.length) return;
+				
+				for (var j in polys) {
+					var nodes = this.getPolygonById(polys[j]).nodes;
+					
+					for (var k in nodes) {
+						this.joinNodes(id, nodes[k]);
+					}
+				}
+			}
+			
+			// Connect temporary anchors to the node grid via polygons:
+			connectNodeToPoly.call(this, tempA, polyA);
+			connectNodeToPoly.call(this, tempB, polyB);
 		}
 	};
 	

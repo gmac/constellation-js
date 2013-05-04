@@ -19,7 +19,11 @@ body {
 }
 
 a {
-	color: #ccc;
+	color: #a4e271;
+}
+
+a:hover {
+	color: #d9fcbb;
 }
 
 h1, h2, b {
@@ -28,7 +32,14 @@ h1, h2, b {
 }
 
 .header {
-	background-color: #000;
+	background: #151723; /* Old browsers */
+	background: -moz-linear-gradient(top, #151723 0%, #272d42 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#151723), color-stop(100%,#272d42)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #151723 0%,#272d42 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #151723 0%,#272d42 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #151723 0%,#272d42 100%); /* IE10+ */
+	background: linear-gradient(to bottom, #151723 0%,#272d42 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#151723', endColorstr='#272d42',GradientType=0 ); /* IE6-9 */
 	color: #fff;
 	font-size: 15px;
 	height: 60px;
@@ -97,25 +108,58 @@ h1, h2, b {
 	text-transform: uppercase;
 }
 
-.toolbar button span:before {
-	content: '(';
+.action {
+	-moz-box-shadow:inset 0px 1px 0px 0px #a4e271;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #a4e271;
+	box-shadow:inset 0px 1px 0px 0px #a4e271;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #89c403), color-stop(1, #77a809) );
+	background:-moz-linear-gradient( center top, #89c403 5%, #77a809 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#89c403', endColorstr='#77a809');
+	background-color:#89c403;
+	-moz-border-radius:4px;
+	-webkit-border-radius:4px;
+	border-radius:4px;
+	border:1px solid #74b807;
+	display:inline-block;
+	color:#ffffff;
+	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-size:12px;
+	font-weight:bold;
+	padding:2px 6px;
+	text-decoration:none;
+	text-shadow:1px 1px 0px #528009;
 }
 
-.toolbar button span:after {
-	content: ')';
+.action:hover {
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #77a809), color-stop(1, #89c403) );
+	background:-moz-linear-gradient( center top, #77a809 5%, #89c403 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#77a809', endColorstr='#89c403');
+	background-color:#77a809;
 }
+
+.action:active {
+	position:relative;
+	top:1px;
+}
+
 
 /* Message
 * ----------------------------- */
 
 .message {
-	background-color: rgba(0,0,0,0.25);
-	border-radius: 5px;
+	background-color: rgba(0,0,0,0.75);
+	border: 2px solid #fff;
+	border-radius: 6px;
+	box-shadow: 0 0 8px rgba(0,0,0,0.5);
+	color: #fff;
 	display: none;
-	float: left;
-	font: 20px/1em 'Helvetica Neue', Helvetica, Arial, sans-serif;
-	margin: 20px -100% 0 200px;
+	font-size: 20px;
+	left: 50%;
+	margin-left: -150px;
 	padding: 10px 15px;
+	position: fixed;
+	top: 10px;
+	width: 300px;
 }
 
 .message span {
@@ -156,11 +200,12 @@ h1, h2, b {
 
 .canvas path {
 	fill: #000;
-	opacity:0.25;
+	opacity:0.1;
 }
 
 .canvas path.select {
-	fill: #f00;
+	fill: #77a809;
+	opacity:0.3;
 }
 
 .canvas ul {
@@ -207,21 +252,46 @@ h1, h2, b {
 	z-index: 2;
 }
 
+.info .toggle {
+	background: #7abcff; /* Old browsers */
+	background: -moz-linear-gradient(top, #7abcff 0%, #60abf8 44%, #4096ee 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#7abcff), color-stop(44%,#60abf8), color-stop(100%,#4096ee)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, #7abcff 0%,#60abf8 44%,#4096ee 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, #7abcff 0%,#60abf8 44%,#4096ee 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, #7abcff 0%,#60abf8 44%,#4096ee 100%); /* IE10+ */
+	background: linear-gradient(to bottom, #7abcff 0%,#60abf8 44%,#4096ee 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#7abcff', endColorstr='#4096ee',GradientType=0 ); /* IE6-9 */
+	
+	border: 2px solid #fff;
+	border-radius: 50%;
+	bottom: 5px;
+	color: #fff;
+	font-family: 'Helvetica Neue', Helvetica, sans-serif;
+	font-size: 16px;
+	font-weight: bold;
+	height: 26px;
+	line-height: 16px;
+	padding: 0;
+	position: absolute;
+	right: 5px;
+	text-align: center;
+	width: 26px;
+}
+
 .info .view {
-	background-color: rgba(225,225,225,0.9);
-	border-radius: 10px;
+	background-color: rgba(0,0,0,0.75);
+	border: 2px solid #fff;
+	border-radius: 17px;
 	bottom: 0;
-	display: none;
+	color: #fff;
 	padding: 20px 25px 25px;
 	position: absolute;
 	right: 0;
 	width: 325px;
 }
 
-.info button {
-	bottom: 10px;
-	position: absolute;
-	right: 10px;
+.info.closed .view {
+	display: none;
 }
 
 .info b {
