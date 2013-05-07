@@ -1,12 +1,15 @@
 #Constellation.js
 
-Constellation manages 2D point grids and path navigation. The library is designed to control dynamic sprite motion. Constellation expands upon the motion system used in the [What Makes You Tick?](http://lassiegames.com/games/wmyt "What Makes You Tick?") adventure game series. Features include:
+Constellation manages 2D point grids and pathfinding navigation. The library is designed to control dynamic sprite motion within a 2D environment. Constellation expands upon the motion system used in the [What Makes You Tick?](http://lassiegames.com/games/wmyt "What Makes You Tick?") adventure game series. Features include:
 
  - Point and polygon grid management.
  - Pathfinding with A-star.
  - Polygon hit testing with ray-scan.
  - Snapping points to line segments.
- - Optimized nearest point searching.
+ - Optimized nearest-point searching.
+ - Dynamic point-to-point bridges via grid geometry.
+
+For a small grid builder demo, see [lassiegames.com/constellation](http://www.lassiegames.com/constellation "Constellation.js")
 
 ## Const
 
