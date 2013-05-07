@@ -400,7 +400,7 @@
 			}
 			var node = new Node(('n'+ this._i++), x, y, data);
 			this.nodes[ node.id ] = node;
-			return node.id;
+			return node;
 		},
 		
 		// Gets a node by id reference.
@@ -566,7 +566,7 @@
 			if ( nodes.length >= 3 && this.hasNodes(nodes) ) {
 				var poly = new Polygon(('p'+ this._i++), nodes, data );
 				this.polys[ poly.id ] = poly;
-				return poly.id;
+				return poly;
 			}
 			return null;
 		},
@@ -732,10 +732,12 @@
 		
 		// Snaps the provided point to the nearest position within the node grid.
 		// @param pt  The point to snap into the grid.
+		// @param meta  Specify true to return full meta data on the snapped point/segment.
 		// @return  A new point with the snapped position, or the original point if no grid was searched.
-		snapPointToGrid: function( pt ) {
+		snapPointToGrid: function(pt, meta) {
 			var bestPoint = null;
 			var bestDistance = NaN;
+			var bestSegment = [];
 			var tested = {};
 
 			_c.each(this.nodes, function( local, id ) {
@@ -752,10 +754,20 @@
 						if (!bestPoint || offset < bestDistance) {
 							bestPoint = snapped;
 							bestDistance = offset;
+							bestSegment[0] = local.id;
+							bestSegment[1] = foreign.id;
 						}
 					}
 				}
 			}, this);
+			
+			if (meta) {
+				return {
+					point: bestPoint,
+					offset: bestDistance,
+					segment: bestSegment
+				};
+			}
 			
 			return bestPoint || pt;
 		},
@@ -852,55 +864,89 @@
 			return hits;
 		},
 		
+		// Creates a path between two external (non-grid) points, using the grid to navigate between them.
+		// Start and goal points will be integrated as best as possible into the grid, then route between.
+		// @param a  Starting Point object to path from.
+		// @param b  Goal Point object to bridge to.
+		// @param confineToGrid  Specify TRUE to lock final route point to within the grid.
+		// @return  an array of Point objects specifying a path to follow.
 		bridgePoints: function(a, b, confineToGrid) {
-			// 1) Connect through common polygon:
+			
+			// Method 1: Connect points through a common polygon.
 			// Get polygon intersections for each point:
 			var polyA = this.getPolygonHitsForPoint(a);
 			var polyB = this.getPolygonHitsForPoint(b);
 			
-			// If both have polygon intersections:
+			// If both points have polygon intersections:
 			if (polyA.length && polyB.length) {
-				var polys = [];
+				
+				// Find overlapping polygon union:
+				var union = [];
 				var i = polyA.length-1;
-			
-				// Collect overlapping union:
+				
 				while (i >= 0) {
-					if (_c.contains(polyB, polyA[i])) polys.push(polyA[i]);
+					if (_c.contains(polyB, polyA[i])) union.push(polyA[i]);
 					i--; 
 				}
 			
 				// Return direct route if within a common polygon area:
-				if (polys.length) {
-					return [a, b];
+				if (union.length) {
+					return [a, confineToGrid ? this.snapPointToGrid(b) : b];
 				}
 			
-				// 2) Connect through adjacent polygons with a shared side:
-			
-				
+				// Method 2: Connect through adjacent polygons with a shared side.
+				// TODO: implement this method...
 			}
 			
-			// 3) Select point anchors:
-			// original point is used when in a polygon, otherwise snap to grid.
-			var anchorA = (!polyA.length) ? this.snapPointToGrid(a) : a;
-			var anchorB = (!polyB.length) ? this.snapPointToGrid(b) : b;
-			var tempA = this.addNode(anchorA.x, anchorA.y);
-			var tempB = this.addNode(anchorB.x, anchorB.y);
-			
-			function connectNodeToPoly(id, polys) {
-				if (!polyA.length) return;
+			// Method 3: create bridge nodes within the grid to tether start and goal points into grid geometry.
+			function createBridgeNode(pt, polys) {
+				var node = this.addNode(pt.x, pt.y);
+				var i;
 				
-				for (var j in polys) {
-					var nodes = this.getPolygonById(polys[j]).nodes;
+				if (polys.length) {
+					// Connect node to all encompassing polygon geometry:
+					for (i in polys) {
+						var nodes = this.getPolygonById(polys[i]).nodes;
+
+						for (var j in nodes) {
+							this.joinNodes(node.id, nodes[j]);
+						}
+					}
 					
-					for (var k in nodes) {
-						this.joinNodes(id, nodes[k]);
+				} else {
+					// Connect node into its snapped line segment:
+					var snapped = this.snapPointToGrid(pt, true);
+					
+					if (snapped.point) {
+						node.x = snapped.point.x;
+						node.y = snapped.point.y;
+						
+						for (i in snapped.segment) {
+							this.joinNodes(node.id, snapped.segment[i]);
+						}
 					}
 				}
+				
+				return node.id;
 			}
 			
 			// Connect temporary anchors to the node grid via polygons:
-			connectNodeToPoly.call(this, tempA, polyA);
-			connectNodeToPoly.call(this, tempB, polyB);
+			var anchorA = createBridgeNode.call(this, a, polyA);
+			var anchorB = createBridgeNode.call(this, b, polyB);
+			var path = this.findPath(anchorA, anchorB);
+			this.removeNodes(anchorA, anchorB);
+			
+			if (path.valid) {
+				path = path.nodes;
+				path.unshift(a);
+				path.push(b);
+				
+				// TODO: eliminate redundancy...
+				return path;
+			}
+			
+			// Return empty array if errors were encountered:
+			return [];
 		}
 	};
 	

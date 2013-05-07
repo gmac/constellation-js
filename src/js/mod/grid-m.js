@@ -22,6 +22,8 @@ function( Backbone, _, Const, store, cacheModel ) {
 	
 	var gridModel = _.extend(new Const.Grid(), Backbone.Events, {
 		
+		bg: '',
+		
 		init: function() {
 			this.listenTo(this, 'change', this.save);
 
@@ -38,15 +40,24 @@ function( Backbone, _, Const, store, cacheModel ) {
 			return this;
 		},
 		
+		setBackground: function(url) {
+			this.bg = url;
+			this.save();
+			this.update();
+		},
+		
 		// Loads current cache selection into the model:
 		load: function() {
 			var data = store.get('constellation');
+			this.bg = data.bg || '';
 			this.reset(data);
 		},
 		
 		// Saves current model data into the cache:
 		save: function(id) {
-			store.set('constellation', this.toJSON());
+			var data = this.toJSON();
+			data.bg = this.bg;
+			store.set('constellation', data);
 		},
 		
 		update: function() {

@@ -1,15 +1,12 @@
 #Constellation.js
 
-A point-based grid layout and geometry search application.
+Constellation manages 2D point grids and path navigation. The library is designed to control dynamic sprite motion. Constellation expands upon the motion system used in the [What Makes You Tick?](http://lassiegames.com/games/wmyt "What Makes You Tick?") adventure game series. Features include:
 
-This application explores geometry management for a 2D motion grid, inspired by the geometry system built for Lassie Adventure Studio. The Lassie engine never matured beyond a point grid with rectangle-based point trapping and free motion regions. Constellation intends to reproduce these features using a polygon-based grid. Current application features include:
-
- - Point and polygon grid creation.
- - Pathfinding using A-star.
- - Polygon hit test with ray scanning.
- - Point snapping for line segments.
- - Nearest-neighbor search.
- - Saved layouts via local storage.
+ - Point and polygon grid management.
+ - Pathfinding with A-star.
+ - Polygon hit testing with ray-scan.
+ - Snapping points to line segments.
+ - Optimized nearest point searching.
 
 ## Const
 
@@ -55,13 +52,13 @@ Takes a target point P, and an array of points to search. Returns the nearest po
 
 ## Const.Grid
 
-Constellation Grid is a discrete component which must be instanced.
+Constellation Grid must be instanced.
 
 **Const.Grid** `var grid = new Const.Grid( data? );`  
 Constructor for a new Constellation grid. All grid operations must be invoked on an instance.
 
 **Grid.Node** `use... grid.addNode();`  
-Constellation grid Node object; use a Const.Grid to create and manage node instances. Grid nodes have the following properties:
+Constellation grid `Node` object; use a `Grid` instance to create and manage nodes. Grid nodes have the following properties:
 
 - `id`: unique identifier for the node. Don't touch this.
 - `x`: horizontal coordinate of the node.
@@ -70,14 +67,14 @@ Constellation grid Node object; use a Const.Grid to create and manage node insta
 - `data`: A data object of user-defined data attached to the node.
 
 **Grid.Polygon** `use... grid.addPolygon();`  
-Constellation grid Polygon object; use a Const.Grid to create and manage polygon instances. Grid polygons have the following properties:
+Constellation grid `Polygon` object; use a `Grid` instance to create and manage polygons. Grid polygons have the following properties:
 
 - `id`: unique identifier for the node. Don't touch this.
 - `nodes`: Array of node ids defining the polygon ring.
 - `data`: A data object of user-defined data attached to the polygon.
 
 **grid.addNode** `grid.addNode( x, y, {data}? );` or `grid.addNode( {data}? );`  
-Adds a new `Node` object with specified X and Y coordinates, and an optional data object. Returns the new node id. A data object may be provided as the sole parameter, if the data object contains an `id` property, that id will be assigned to the new node.
+Adds a new `Node` object with specified X and Y coordinates, and an optional data object. Returns a reference to the new `Node` object. A data object may be provided as the sole parameter, if the data object contains an `id` property, that id will be assigned to the new node.
 
 **grid.getNodeById** `grid.getNodeById( id );`  
 Gets a node by id reference. Returns a `Node` object, or `null` for missing ids.
@@ -104,7 +101,7 @@ Takes one or more node ids, or an array of node ids, and splits them from all of
 Takes one or more node ids, or an array of node ids, detaches them from all connections, then removes them each from the grid. Any dependent polygons are also removed. Returns `true` if changes are made.
 
 **grid.addPolygon** `grid.addPolygon( [node ids], data? );`  
-Takes an array of three or more node ids and creates a new `Polygon` object with the optional data object attached. Returns the new polygon id.
+Takes an array of three or more node ids and creates a new `Polygon` object with the optional data object attached. Returns a reference to the new `Polygon` object.
 
 **grid.getPolygonById** `grid.getPolygonById( id );`  
 Gets a polygon by id reference. Returns a `Polygon` object, or `null` for missing ids.
@@ -133,26 +130,45 @@ This function optimizes search performance by providing a best-case scenario est
 **grid.findPathWithFewestNodes** `grid.findPathWithFewestNodes( startId, goalId );`  
 Convenience method for running `grid.findPath` configured to find a path to goal using the fewest node connections rather than the shortest distance.
 
-**grid.snapPointToGrid**  
-Snaps the provided point P to the nearest position among all line connections within the node grid.
+**grid.snapPointToGrid** `grid.snapPointToGrid( point );`  
+Snaps the provided point to the nearest position among all joined line segments within the node grid. The snapped point will be plotted at the nearest available line segment, or the nearest grid point if no line segments are defined. Returns a meta object with the following attributes:
 
-**grid.getNearestNodeToPoint**
-Finds the closest grid node to the specified point position.
+ - `point`: the snapped `Point` object.
+ - `offset`: the snapped offset distance from the original point.
+ - `segment`: an array of node ids defining the line segment on which the point was snapped.
 
-**grid.getNearestNodeToNode**  
-Finds the next closest grid node to the specified node id.
+**grid.bridgePoints** `grid.bridgePoints( startPt, goalPt, confineToGrid? );`  
+Creates a grid path bridging between two `Point` objects that are not connected to the grid. This is a composite operation intended to take two dynamic input locations, and intelligently connect them through the existing grid structure. The steps of this algorithm operate as follows:
 
-**grid.hitTestPointInPolygons**
-Returns true if the provided point P intersects any Polygons within the grid.
+ 1. Test if start and goal are contained within a common polygon; if so, return a direction-connection array specifying: [start, goal].
 
-**grid.getPolygonHitsForPoint**
-Tests a Point for intersections with all Polygons in the grid, and returns their ids.
+ 2. (...not yet implemented...) Test if points fall within adjacent polygons, and if they may be connected directly through the common side.
 
-**grid.getNodesInPolygon**
-Tests a Polygon for intersections with all nodes in the grid, and returns their ids.
+ 3. Dynamically join start and goal points into the motion grid, then run pathfinder. Dynamic point inclusion works as follows:
 
-**grid.getNodesInRect**
-Tests a Rect for intersections with all nodes in the grid, and returns their ids.
+  - If start or goal points fall within a polygon, then they'll be connected to their encompassing polygons' node rings.
+
+  - Otherwise, start and goal points will create tether nodes that snap and join to the grid.
+
+The `bridgePoints` method will always return an array of point objects starting with the originally specified `startPt`. The array will also contain additional path positions, and finally the `goalPt`. Optionally, you may specify `confineToGrid` as `true`, at which time the `goalPt` will be adjusted to either fall within a polygon area or snap to a grid line.
+
+**grid.getNearestNodeToPoint** `grid.getNearestNodeToPoint( point );`  
+Finds and returns the closest grid `Node` object to the specified `Point` position. Performs an optimized sorted search rather than brute-force distance comparisons.
+
+**grid.getNearestNodeToNode** `grid.getNearestNodeToNode( id );`  
+Finds the next closest grid node to the specified node id. Similar to `getNearestNodeToPoint`, except that the input is a node id rather than a point object.
+
+**grid.hitTestPointInPolygons** `grid.hitTestPointInPolygons( point );`  
+Returns `true` if the provided point intersects any `Polygon` objects within the grid.
+
+**grid.getPolygonHitsForPoint** `grid.getPolygonHitsForPoint( point );`  
+Tests a `Point` object for intersections with all `Polygon` objects in the grid, then returns an array of polygon ids that encompass the point.
+
+**grid.getNodesInPolygon** `grid.getNodesInPolygon( id );`  
+Takes a polygon id and tests it for intersections with all nodes in the grid, then returns an array of the contained node ids. Nodes that compose the polygon's ring will be included in the returned array, even though their edge positions may fail a mathematical hit test.
+
+**grid.getNodesInRect** `grid.getNodesInRect( rect );`  
+Tests a `Rect` object for intersections with all nodes in the grid, and returns an array of the contained node ids.
 
 ## Const.utils
 

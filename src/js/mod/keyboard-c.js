@@ -30,11 +30,11 @@ function( $, gridController ) {
 				}
 			}
 			//console.log(evt.which);
-		})
+		});
+		
+	$('input')
 		.on('focus', function(evt) {
-			if (evt.target.tagName) {
-				_enabled = !(evt.target.tagName.toLowerCase() === 'input');
-			}
+			_enabled = false;
 		})
 		.on('blur', function(evt) {
 			_enabled = true;

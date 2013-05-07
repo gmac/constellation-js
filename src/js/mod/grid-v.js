@@ -13,6 +13,7 @@ function( $, _, Backbone, gridModel, selectionModel, windowView ) {
 		model: gridModel,
 		selectedViews: [],
 		lastTouch: 0,
+		lastBg: '',
 		
 		// Define view event patterns.
 		events: {
@@ -91,6 +92,12 @@ function( $, _, Backbone, gridModel, selectionModel, windowView ) {
 			// Refresh view selection.
 			this.selectedViews.length = 0;
 			this.setSelection();
+			
+			// Set background image:
+			if (this.lastBg !== gridModel.bg) {
+				this.$el.css('background', gridModel.bg ? 'url('+gridModel.bg+') no-repeat' : '');
+				this.lastBg = gridModel.bg;
+			}
 		},
 		
 		// Resets the work area frame dimensions and background image.

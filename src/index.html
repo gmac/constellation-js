@@ -7,7 +7,9 @@
 	<link href="style/constellation.css" rel="stylesheet" media="screen"/>
 </head>
 <body>
-	
+
+<div class="sidebar"></div>
+
 <div class="header">
 	<h1>Constellation<span>.js</span></h1>
 	<ul class="nav">
@@ -24,7 +26,7 @@
 	<input type="text" value="Untitled">
 	<button class="save">Save</button>
 	<button class="new">New</button-->
-	
+			
 	<h2>Actions</h2>
 	<ul>
 		<li><button class="action" data-action="join">Join Nodes <span>(j)</span></button></li>
@@ -39,28 +41,30 @@
 		<li><button class="action" data-action="nearest">Nearest Node <span>(n)</span></button></li>
 		<li><button class="action" data-action="snap">Snap to Grid <span>(s)</span></button></li>
 		<li><button class="action" data-action="hittest">Hittest Geometry <span>(h)</span></button></li>
-	</ul>
-	
-	<h2>Export</h2>
-	<ul>
 		<li><button class="action" data-action="print">Print to Console <span>(c)</span></button></li>
 	</ul>
 	
-	<!--h2>Background URL</h2>
-	<input type="text"/>
-	<button>Reload</button-->
+	<h2>Background</h2>
+	<fieldset>
+		<input type="text" class="bg-url" placeholder="Enter image url..."/>
+		<button class="bg-load">Reload</button> 
+		<a href="#" class="bg-clear">clear</a> | 
+		<a href="demo-bg.jpg" class="bg-demo">demo</a>
+	</fieldset>
 </div>
 
 <div class="message" id="message"></div>
 <div class="canvas" id="grid"></div>
 <div class="info closed" id="info">
 	<div class="view">
-		<b>Getting Started</b>
-		<p>Build a grid, then start running searches and grid ops.</p>
+		<b>About</b>
+		<p>Constellation manages 2D point grids and path navigation; it's designed to control dynamic sprite motions. Constellation expands upon the motion system used in the <a href="http://www.lassiegames.com/games/wmyt">What Makes You Tick?</a> games.</p>
+		
+		<b>Controls</b>
 		<ul>
-			<li>Double-Click within canvas to add grid nodes.</li>
-			<li>Click+Drag within canvas for selection marquee.</li>
-			<li>SHIFT+Click to add and remove geometry selections.</li>
+			<li>Double-click on canvas to add grid nodes.</li>
+			<li>Click+drag on canvas for selection marquee.</li>
+			<li>SHIFT+click to add and remove selections.</li>
 		</ul>
 	</div>
 	<button class="toggle">?</button>
