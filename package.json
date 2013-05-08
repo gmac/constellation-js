@@ -6,7 +6,7 @@
   "keywords": [
     "geometry",
     "grid",
-    "a*",
+    "astar",
     "a-star",
     "pathfinding",
     "animation"
