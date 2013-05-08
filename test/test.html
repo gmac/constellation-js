@@ -4,10 +4,11 @@
 <head>
   <title>Constellation.js - Jasmine Test Suite</title>
 
-  <link rel="shortcut icon" type="image/png" href="lib/jasmine-1.2.0/jasmine_favicon.png">
-  <link rel="stylesheet" type="text/css" href="lib/jasmine-1.2.0/jasmine.css">
-  <script type="text/javascript" src="lib/jasmine-1.2.0/jasmine.js"></script>
-  <script type="text/javascript" src="lib/jasmine-1.2.0/jasmine-html.js"></script>
+  <link rel="shortcut icon" type="image/png" href="jasmine-1.2.0/jasmine_favicon.png">
+  <link rel="stylesheet" type="text/css" href="jasmine-1.2.0/jasmine.css">
+
+  <script type="text/javascript" src="jasmine-1.2.0/jasmine.js"></script>
+  <script type="text/javascript" src="jasmine-1.2.0/jasmine-html.js"></script>
 
   <script type="text/javascript">
     (function() {
@@ -25,11 +26,11 @@
     })();
 
 	var require = {
-	        urlArgs : "bust="+new Date().getTime()
-	    };
+	    urlArgs : "bust="+new Date().getTime()
+	};
   </script>
 
-<script type="text/javascript" src="src/js/lib/require.js" data-main="src/js/test-spec"></script>
+<script type="text/javascript" src="../src/js/lib/require.js" data-main="test/main"></script>
 
 </head>
 <body>
