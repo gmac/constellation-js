@@ -650,5 +650,39 @@ function( Const, _ ) {
 			expect( hits.length ).toBe( 2 );
 			expect( hits.sort().join() ).toBe( [a, b].sort().join() );
 		});
+		
+		it("bridgePoints: should directly conntect two points that fall within a common polygon.", function() {
+			// TODO.
+		});
+		
+		it("bridgePoints: should directly conntect two points in adjacent polygons who's ray intersects their common side.", function() {
+			// TODO.
+		});
+		
+		it("bridgePoints: should connect two points via the grid using polygon container bridge.", function() {
+			// TODO.
+		});
+		
+		it("bridgePoints: should connect two points via the grid using snapped-point bridge.", function() {
+			var a = gridModel.addNode(0, 0).id;
+			var b = gridModel.addNode(100, 100).id;
+			var c = gridModel.addNode(200, 100).id;
+			var d = gridModel.addNode(300, 0).id;
+			gridModel.joinNodes(a, b);
+			gridModel.joinNodes(b, c);
+			gridModel.joinNodes(c, d);
+			
+			var path = gridModel.bridgePoints({x:50, y:40}, {x:240, y:40});
+
+			// Test that we got a path back:
+			expect( path.length ).toBe( 6 );
+			
+			// Test that the grid has been cleaned up:
+			expect( gridModel.getNumNodes() ).toBe( 4 );
+		});
+		
+		it("bridgePoints: should eliminate redundant points in returned path.", function() {
+			// TODO.
+		});
 	});
 });

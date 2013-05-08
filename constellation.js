@@ -32,6 +32,16 @@
 		return Array.prototype.slice.call(args);
 	}
 	
+	function mapIds(list, rewrite) {
+		if (!rewrite) list = list.slice();
+		
+		for (var i=0, len=list.length; i < len; i++) {
+			var id = list[i].id;
+			if (id) list[i] = id;
+		}
+		return list;
+	}
+	
 	// Const._c / Underscore shim
 	// --------------------------
 	// Based on methods of Underscore.js
@@ -166,13 +176,6 @@
 		var x = b.x-a.x;
 		var y = b.y-a.y;
 		return sqrt(x*x + y*y);
-	};
-	
-	Const.distance3d = function( a, b ) {
-		var x = b.x-a.x;
-		var y = b.y-a.y;
-		var z = b.z-a.z;
-		return sqrt(x*x + y*y + z*z);
 	};
 	
 	// Tests for counter-clockwise winding among three points.
@@ -369,7 +372,7 @@
 			return {
 				nodes: this.nodes,
 				polys: this.polys,
-				_i: this._i
+				i: this._i
 			};
 		},
 		
@@ -380,7 +383,7 @@
 			this._i = 0;
 			
 			if (data) {
-				if (data._i) this._i = data._i;
+				if (data.i) this._i = data.i;
 				
 				_c.each( data.nodes || {}, function( node ) {
 					this.nodes[ node.id ] = node;
@@ -633,7 +636,7 @@
 		//  @attr length: length of completed path.
 		//  @attr cycles: number of cycles required to complete the search.
 		//  @attr nodes: an array of path nodes, formatted as [startNode, ...connections, goalNode].
-		findPath: function( start, goal, weightFunction, estimateFunction ) {
+		findPath: function(start, goal, weightFunction, estimateFunction) {
 			
 			var queue = [], // Queue of paths to search, sorted by estimated weight (highest to lowest).
 				weights = {}, // Table of shortest weights found to each node id.
@@ -775,18 +778,18 @@
 		// Finds the nearest node to the specified node.
 		// @param origin: The origin node to search from.
 		// @return: The nearest other grid node to the specified target.
-		getNearestNodeToNode: function( id ) {
+		getNearestNodeToNode: function(id) {
 			var nodes = [];
-			var target = this.getNodeById( id );
+			var target = this.getNodeById(id);
 			
-			if ( target ) {
-				_c.each(this.nodes, function( node ) {
+			if (target) {
+				_c.each(this.nodes, function(node) {
 					if ( node.id !== target.id ) {
 						nodes.push( node );
 					}
 				}, this);
 
-				return Const.getNearestPointToPoint( target, nodes );
+				return Const.getNearestPointToPoint(target, nodes);
 			}
 			return null;
 		},
@@ -794,16 +797,16 @@
 		// Finds the nearest node to a specified point within the grid.
 		// @param pt: Point to test.
 		// @return: Nearest Node to target Point.
-		getNearestNodeToPoint: function( pt ) {
+		getNearestNodeToPoint: function(pt) {
 			return Const.getNearestPointToPoint(pt, _c.toArray(this.nodes));
 		},
 		
 		// Tests if a Point intersects any Polygon in the grid.
 		// @param pt: Point to test.
 		// @return: True if the point intersects any polygon.
-		hitTestPointInPolygons: function( pt ) {
-			for ( var i in this.polys ) {
-				if ( this.polys.hasOwnProperty(i) && Const.hitTestPointRing(pt, this.getNodesForPolygon(i)) ) {
+		hitTestPointInPolygons: function(pt) {
+			for (var i in this.polys) {
+				if (this.polys.hasOwnProperty(i) && Const.hitTestPointRing(pt, this.getNodesForPolygon(i))) {
 					return true;
 				}
 			}
@@ -816,7 +819,7 @@
 		getPolygonHitsForPoint: function( pt ) {
 			var hits = [];
 			
-			_c.each( this.polys, function( poly, id ) {
+			_c.each(this.polys, function( poly, id ) {
 				if ( Const.hitTestPointRing(pt, this.getNodesForPolygon(id)) ) {
 					hits.push( poly.id );
 				}
