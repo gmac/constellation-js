@@ -2,8 +2,7 @@
 
 // (c) 2011-2013 Greg MacWilliam
 // Constellation may be freely distributed under the MIT license
-// For details and documentation:
-// http://constellationjs.org
+// Docs: https://github.com/gmac/constellation.js
 
 (function( context, factory ) {
 	
@@ -401,7 +400,7 @@
 				data = x;
 				x = 0;
 			}
-			var node = new Node(('n'+ this._i++), x, y, data);
+			var node = new Node((data && data.id) || ('n'+ this._i++), x, y, data);
 			this.nodes[ node.id ] = node;
 			return node;
 		},

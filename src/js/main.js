@@ -1,6 +1,6 @@
 requirejs.config({
 	paths: {
-		'lib/constellation': '../../constellation'
+		//'lib/constellation': '../../constellation'
 	}
 });
 
