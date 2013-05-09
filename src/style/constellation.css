@@ -49,19 +49,11 @@ h1, h2, b {
 	z-index: 2;
 }
 
-.header h1,
-.header ul,
-.header li {
-	display: inline;
-	margin: 0 15px;
-}
-
-.header a {
-	display: inline;
-}
-
 .header .nav {
-	float: right;
+	height: 100%;
+	position: absolute;
+	right: 0;
+	top: 0;
 }
 
 .header h1 {
@@ -73,8 +65,19 @@ h1, h2, b {
 	font-size: 20px;
 }
 
-.header .tagline {
-	font-style: italic;
+.header h1,
+.header ul,
+.header li {
+	margin: 0 15px;
+}
+
+.header ul {
+	list-style: none;
+}
+
+.header a,
+.header li {
+	display: inline;
 }
 
 /* Toolbar
