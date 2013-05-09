@@ -49,7 +49,7 @@ function( Backbone, _, Const, store, cacheModel ) {
 		// Loads current cache selection into the model:
 		load: function() {
 			var data = store.get('constellation');
-			this.bg = data.bg || '';
+			this.bg = (data && data.bg) || '';
 			this.reset(data);
 		},
 		
