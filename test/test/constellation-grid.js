@@ -652,7 +652,22 @@ function( Const, _ ) {
 		});
 		
 		it("bridgePoints: should directly conntect two points that fall within a common polygon.", function() {
-			// TODO.
+			var a = gridModel.addNode(0, 0).id;
+			var b = gridModel.addNode(100, 0).id;
+			var c = gridModel.addNode(0, 100).id;
+			var p = gridModel.addPolygon( [a, b, c] ).id;
+			
+			// Connect two points within the same polygon:
+			var start = {x:50, y:1};
+			var goal = {x:75, y:1};
+			var path = gridModel.bridgePoints(start, goal);
+			
+			// Expect direct connection (start >> goal).
+			expect( path.length ).toBe( 2 );
+			expect( path[0].x ).toBe( start.x );
+			expect( path[0].y ).toBe( start.y );
+			expect( path[1].x ).toBe( goal.x );
+			expect( path[1].y ).toBe( goal.y );
 		});
 		
 		it("bridgePoints: should directly conntect two points in adjacent polygons who's ray intersects their common side.", function() {
