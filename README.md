@@ -6,7 +6,7 @@ Constellation manages 2D point grids and pathfinding navigation. The library is 
 
  - Point and polygon grid management.
  - Pathfinding with [A-star](http://en.wikipedia.org/wiki/A*_search_algorithm "A-star").
- - Polygon hit testing with [ray casting](http://en.wikipedia.org/wiki/Point_in_polygon "Ray casting").
+ - Polygon hit tests with [ray casting](http://en.wikipedia.org/wiki/Point_in_polygon "Ray casting").
  - Snapping points to line segments.
  - Optimized nearest-point searching.
  - Dynamic point-to-point bridges via grid geometry.
@@ -15,26 +15,46 @@ For a grid builder demo, see [lassiegames.com/constellation](http://www.lassiega
 
 #API Documentation
 
-## Const
+## Const - Primitives
 
-Constellation root scope provides basic geometry operations and geometric primitives. All of these methods may be called directly on the `Const` namespace, and are passed simple arrays and/or Constellation primitives (Point & Rect).
+Constellation root namespace provides a collection of geometric primitives. Geometry primitives have no methods, therefore may be substituted by any object with common attributes.
 
 **Const.Point** `var point = new Const.Point( x, y );`  
-Constellation point primitive. Const.Point objects have the following properties:
+Constellation point primitive. `Point` objects have the following properties:
 
 - `x`: horizontal coordinate of the point.
 - `y`: vertical coordinate of the point.
 
 **Const.Rect** `var rect = new Const.Rect( x, y, width, height );`  
-Constellation rectangle primitive. Const.Rect objects have the following properties:
+Constellation rectangle primitive. `Rect` objects have the following properties:
 
 - `x`: horizontal coordinate of the rectangle origin.
 - `y`: vertical coordinate of the rectangle origin.
 - `width`: rectangle width.
 - `height`: rectangle height.
 
+**Const.Node** `use... grid.addNode();`  
+Constellation grid `Node` object; use a `Grid` instance to create and manage nodes. Grid nodes have the following properties:
+
+- `id`: unique identifier for the node. Don't touch this.
+- `x`: horizontal coordinate of the node.
+- `y`: vertical coordinate of the node.
+- `to`: Table of connections to other nodes. Seriously, don't touch this.
+- `data`: A data object of user-defined data attached to the node.
+
+**Const.Polygon** `use... grid.addPolygon();`  
+Constellation grid `Polygon` object; use a `Grid` instance to create and manage polygons. Grid polygons have the following properties:
+
+- `id`: unique identifier for the node. Don't touch this.
+- `nodes`: Array of node ids defining the polygon ring.
+- `data`: A data object of user-defined data attached to the polygon.
+
+##Const - Static Methods
+
+Constellation root namespace also provides a collection of static geometry functions. All of these methods may be called directly on the `Const` namespace, and are passed simple arrays and/or Constellation primitives (`Point` & `Rect`).
+
 **Const.distance** `var result = Const.distance( point1, point2 );`  
-Calculates the distance between two provided Const.Point objects.
+Calculates the distance between two provided `Point` objects.
 
 **Const.ccw** `var result = Const.ccw( pointA, pointB, pointC, exclusive? );`  
 Tests for counter-clockwise winding among three `Point` objects. Returns true if the three points trend in a counter-clockwise arc. Useful for intersection tests. Passing `true` for the optional `exclusive` param will pass balanced arcs.
@@ -46,39 +66,23 @@ Tests for intersection between line segments AB and CD. Returns true if the line
 Takes an array of `Point` objects; returns a `Rect` object of their bounding box.
 
 **Const.hitTestRect** `var result = Const.getRectForPointRing( pointP, rect );`  
-Takes a target point P and a `Rect` object; returns `true` if the point falls within the rectangle.
+Takes target point P and a `Rect` object; returns `true` if the point falls within the rectangle.
 
 **Const.hitTestPointRing** `var result = Const.hitTestPointRing( pointP, [points, ...] );`  
-Takes a target point P and an array of points defining a ring. Returns true if P falls within the ring of points. Hit test is performed using the ray-casting method.
+Takes a target point P and an array of points defining a ring. Returns true if P falls within the ring of points. Hit test is performed using [ray casting](http://en.wikipedia.org/wiki/Point_in_polygon "ray casting") method.
 
 **Const.snapPointToLineSegment** `var result = Const.snapPointToLineSegment( pointP, pointA, pointB );`  
-Takes a target point P, and snaps it to the nearest point along line segment AB.
+Takes target point P, and snaps it to the nearest point along line segment AB.
 
-**Const.getNearestPointToPoint** `var result = Const.getNearestPointToPoint( pointP, [points] );`  
-Takes a target point P, and an array of points to search. Returns the nearest point to P within the point collection.
+**Const.getNearestPointToPoint** `var result = Const.getNearestPointToPoint( pointP, [points, ...] );`  
+Takes target point P and an array of points to search. Returns the nearest point to P within the array of points, using a simplified [nearest neighbor](http://en.wikipedia.org/wiki/Closest_pair_of_points_problem "Nearest neighbor") search.
 
 ## Const.Grid
 
-Constellation Grid must be instanced.
+Constellation `Grid` is a constructor function that must be instanced. A `Grid` object manages a collection of `Node` and `Polygon` primitives.
 
 **Const.Grid** `var grid = new Const.Grid( data? );`  
-Constructor for a new Constellation grid. All grid operations must be invoked on an instance.
-
-**Grid.Node** `use... grid.addNode();`  
-Constellation grid `Node` object; use a `Grid` instance to create and manage nodes. Grid nodes have the following properties:
-
-- `id`: unique identifier for the node. Don't touch this.
-- `x`: horizontal coordinate of the node.
-- `y`: vertical coordinate of the node.
-- `to`: Table of connections to other nodes. Seriously, don't touch this.
-- `data`: A data object of user-defined data attached to the node.
-
-**Grid.Polygon** `use... grid.addPolygon();`  
-Constellation grid `Polygon` object; use a `Grid` instance to create and manage polygons. Grid polygons have the following properties:
-
-- `id`: unique identifier for the node. Don't touch this.
-- `nodes`: Array of node ids defining the polygon ring.
-- `data`: A data object of user-defined data attached to the polygon.
+Constructor for a new Constellation grid. All grid operations must be invoked on a `Grid` instance.
 
 **grid.addNode** `grid.addNode( x, y, {data}? );` or `grid.addNode( {data}? );`  
 Adds a new `Node` object with specified X and Y coordinates, and an optional data object. Returns a reference to the new `Node` object. A data object may be provided as the sole parameter, if the data object contains an `id` property, that id will be assigned to the new node.
