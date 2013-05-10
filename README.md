@@ -15,7 +15,7 @@ For a grid builder demo, see [lassiegames.com/constellation](http://www.lassiega
 
 #API Documentation
 
-## Const - Primitives
+## Const - Primitive objects
 
 Constellation root namespace provides a collection of geometry primitives. Geometry primitives have no methods, therefore may be substituted by any object with common attributes.
 
@@ -66,10 +66,10 @@ Takes target point P and an array of points to search. Returns the nearest point
 Constellation `Grid` is a constructor function that must be instanced. A `Grid` object manages a collection of `Node` and `Polygon` objects.
 
 **Const.Grid** `var grid = new Const.Grid( data? );`  
-Constructor for a new Constellation grid. All grid operations must be invoked on a `Grid` instance.
+Constructor for a new Constellation `Grid`. All grid operations must be invoked on a `Grid` instance.
 
-**Const.Node** `use... grid.addNode();`  
-Constellation grid `Node` object; use a `Grid` instance to create and manage nodes. Nodes are basically just `Point` objects with additional attributes. `Node` objects have the following properties:
+**Const.Node** use... `grid.addNode();`  
+Constellation grid `Node` object; use a `Grid` instance to create and manage nodes. Nodes are essentially just `Point` objects with additional attributes. `Node` objects have the following properties:
 
 - `id`: unique identifier for the node. Don't touch this.
 - `x`: horizontal coordinate of the node.
@@ -77,7 +77,7 @@ Constellation grid `Node` object; use a `Grid` instance to create and manage nod
 - `to`: Table of connections to other nodes. Seriously, don't touch this.
 - `data`: A data object of user-defined data attached to the node.
 
-**Const.Polygon** `use... grid.addPolygon();`  
+**Const.Polygon** use... `grid.addPolygon();`  
 Constellation grid `Polygon` object; use a `Grid` instance to create and manage polygons. Grid polygons have the following properties:
 
 - `id`: unique identifier for the node. Don't touch this.
