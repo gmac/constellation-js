@@ -17,7 +17,7 @@ For a grid builder demo, see [lassiegames.com/constellation](http://www.lassiega
 
 ## Const - Primitives
 
-Constellation root namespace provides a collection of geometric primitives. Geometry primitives have no methods, therefore may be substituted by any object with common attributes.
+Constellation root namespace provides a collection of geometry primitives. Geometry primitives have no methods, therefore may be substituted by any object with common attributes.
 
 **Const.Point** `var point = new Const.Point( x, y );`  
 Constellation point primitive. `Point` objects have the following properties:
@@ -33,7 +33,7 @@ Constellation rectangle primitive. `Rect` objects have the following properties:
 - `width`: rectangle width.
 - `height`: rectangle height.
 
-##Const - Static Methods
+##Const - Static methods
 
 Constellation root namespace also provides a collection of static geometry functions. All of these methods may be called directly on the `Const` namespace, and are passed simple arrays and/or Constellation primitives (`Point` & `Rect`).
 
@@ -61,7 +61,7 @@ Takes target point P, and snaps it to the nearest point along line segment AB.
 **Const.getNearestPointToPoint** `var result = Const.getNearestPointToPoint( pointP, [points, ...] );`  
 Takes target point P and an array of points to search. Returns the nearest point to P within the array of points, using a simplified [nearest neighbor](http://en.wikipedia.org/wiki/Closest_pair_of_points_problem "Nearest neighbor") search.
 
-## Const.Grid
+## Const - Grid objects
 
 Constellation `Grid` is a constructor function that must be instanced. A `Grid` object manages a collection of `Node` and `Polygon` objects.
 
@@ -84,7 +84,7 @@ Constellation grid `Polygon` object; use a `Grid` instance to create and manage 
 - `nodes`: Array of node ids defining the polygon ring.
 - `data`: A data object of user-defined data attached to the polygon.
 
-### Const.Grid - Instance Methods
+### Const - Grid methods
 
 **grid.addNode** `grid.addNode( x, y, {data}? );` or `grid.addNode( {data}? );`  
 Adds a new `Node` object with specified X and Y coordinates, and an optional data object. Returns a reference to the new `Node` object. A data object may be provided as the sole parameter, if the data object contains an `id` property, that id will be assigned to the new node.
