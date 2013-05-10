@@ -213,7 +213,7 @@ While Constellation is designed to manage 2D coordinate geometry, it also provid
 	grid.joinNodes('mom', 'sister', 'brother');
 	grid.joinNodes('mom', 'brother', 'friend');
 	
-In the above example we have a node graph defined by data attributes, but no coordinates. However, using the *weight* and *estimate* functions of a Constellation grid's A-star pathfinder, we can still configure an intelligent search to navigate the graph via data attributes. For example, let's map a path between `"sister"` and `"friend"` nodes while adhering to a route with the lowest net age:
+In the above example, we have a node graph defined by data attributes with no coordinates. Then using the *weight* and *estimate* functions provided by the Constellation grid's A-star pathfinder, we can configure an intelligent search to navigate the graph via data attributes. For example, let's map a path between `"sister"` and `"friend"` nodes while adhering to a route with the lowest net age:
 
 	var weightFunct = function(last, current) {
 		return last.data.age + current.data.age;
