@@ -159,16 +159,16 @@ Creates a grid path bridging between two `Point` objects that are not connected 
     * If `start` or `goal` points fall within a polygon, then that point connects through their encompassing polygon node ring.
     * Otherwise, `start` and `goal` points will connect through tether nodes snapped into to the grid.
 
-The `bridgePoints` method will always return an array of point objects starting with the originally specified `startPt`. The array will also contain additional path positions, and finally the `goalPt`. Optionally, you may specify `confineToGrid` as `true`, at which time the `goalPt` will be adjusted to either fall within a polygon area or snap to a grid line.
+The `bridgePoints` method will always return an array of point objects starting with the originally specified `startPt`. The array will also contain additional path positions, and finally the `goalPt`. Optionally, you may specify `confineToGrid`, at which time the `goalPt` will be adjusted to either fall within a polygon area or snap to a grid line.
 
 **grid.getNearestNodeToPoint** `grid.getNearestNodeToPoint( point );`  
-Finds and returns the closest grid `Node` object to the specified `Point` position. Performs an optimized sorted search rather than brute-force distance comparisons.
+Finds and returns the closest grid `Node` object to the specified `Point` position. Performs an optimized (sorted) search.
 
 **grid.getNearestNodeToNode** `grid.getNearestNodeToNode( id );`  
-Finds the next closest grid node to the specified node id. Similar to `getNearestNodeToPoint`, except that the input is a node id rather than a point object.
+Finds the next closest grid node to the specified node id. Similar to `getNearestNodeToPoint`, except that the input is a node id rather than a `Point` object.
 
 **grid.hitTestPointInPolygons** `grid.hitTestPointInPolygons( point );`  
-Returns `true` if the provided point intersects any `Polygon` objects within the grid.
+Returns true if the provided `Point` intersects any `Polygon` objects within the grid.
 
 **grid.getPolygonHitsForPoint** `grid.getPolygonHitsForPoint( point );`  
 Tests a `Point` object for intersections with all `Polygon` objects in the grid, then returns an array of polygon ids that encompass the point.
@@ -181,7 +181,7 @@ Tests a `Rect` object for intersections with all nodes in the grid, and returns 
 
 ## Const.utils
 
-Constellation includes implementations of several common collection management functions for working with arrays and objects. These are very similar to Underscore.js methods, although their implementations may vary.
+Constellation includes implementations of several common collection management functions for working with arrays and objects. These are very similar to [Underscore.js](http://underscorejs.org/ "Underscore.js") methods, although their implementations may vary.
 
 **Const.utils.size** `Const.utils.size( object );`  
 Counts the number of items in an array, or the number of properties on an object.
