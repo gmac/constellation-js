@@ -13,6 +13,8 @@ Constellation manages 2D point grids and pathfinding navigation. The library is 
 
 For a grid builder demo, see [lassiegames.com/constellation](http://www.lassiegames.com/constellation "Constellation.js")
 
+#API Documentation
+
 ## Const
 
 Constellation root scope provides basic geometry operations and geometric primitives. All of these methods may be called directly on the `Const` namespace, and are passed simple arrays and/or Constellation primitives (Point & Rect).
@@ -193,3 +195,33 @@ Iterates an array or object with the provided mutator function. Mutator is passe
 
 **Const.utils.all** `Const.utils.all( array, testFunction, context? );`  
 Iterates through the provided array and performs a test function on each value. Returns true if all values pass the test.
+
+#Data Graphs
+
+While Constellation is designed to manage 2D coordinate geometry, it also provides support for managing node-based data graphs that can be searched using a-star. For example, let's set up a simple social graph using Constellation's node data API:
+	
+	// Create a social graph with mom, sister, brother, and a friend:
+	var grid = new Const.Grid();
+	grid.addNode({id:'mom', age:50});
+	grid.addNode({id:'sister', age:16});
+	grid.addNode({id:'brother', age:14});
+	grid.addNode({id:'friend', age:14});
+	
+	// Create two social rings:
+	grid.joinNodes('mom', 'sister', 'brother');
+	grid.joinNodes('mom', 'brother', 'friend');
+	
+In the above example, we have a node graph with data attributes but no coordinates. However, using the weight and estimate functions of the Constellation grid's a-star pathfinder, we can still configure an intelligent search to navigate the graph via data attributes. For example, let's map a path between "sister" and "friend" nodes, while adhering to a path through the youngest members (lowest net age):
+
+	var weightFunct = function(last, current) {
+		return last.data.age + current.data.age;
+	};
+
+	var estimateFunct = function(current, goal) {
+		return goal.data.age;
+	};
+
+	var path = grid.findPath('sister', 'friend', weightFunct, estimateFunct);
+	// result array: [sister > brother > friend]
+	
+In the above process works by replacing Constellation's default weight and estimate functions. The weight function measures the accrued cost of each new grid segment, while the estimate functions measures the best-case cost for reaching the goal. By default, Constellation uses a geometric distance function to measure the cost of grid segments. However, you're welcome to override this process and measure against node data attributes to customize the pathfinding behavior.
