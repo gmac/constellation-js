@@ -33,22 +33,6 @@ Constellation rectangle primitive. `Rect` objects have the following properties:
 - `width`: rectangle width.
 - `height`: rectangle height.
 
-**Const.Node** `use... grid.addNode();`  
-Constellation grid `Node` object; use a `Grid` instance to create and manage nodes. Grid nodes have the following properties:
-
-- `id`: unique identifier for the node. Don't touch this.
-- `x`: horizontal coordinate of the node.
-- `y`: vertical coordinate of the node.
-- `to`: Table of connections to other nodes. Seriously, don't touch this.
-- `data`: A data object of user-defined data attached to the node.
-
-**Const.Polygon** `use... grid.addPolygon();`  
-Constellation grid `Polygon` object; use a `Grid` instance to create and manage polygons. Grid polygons have the following properties:
-
-- `id`: unique identifier for the node. Don't touch this.
-- `nodes`: Array of node ids defining the polygon ring.
-- `data`: A data object of user-defined data attached to the polygon.
-
 ##Const - Static Methods
 
 Constellation root namespace also provides a collection of static geometry functions. All of these methods may be called directly on the `Const` namespace, and are passed simple arrays and/or Constellation primitives (`Point` & `Rect`).
@@ -79,10 +63,28 @@ Takes target point P and an array of points to search. Returns the nearest point
 
 ## Const.Grid
 
-Constellation `Grid` is a constructor function that must be instanced. A `Grid` object manages a collection of `Node` and `Polygon` primitives.
+Constellation `Grid` is a constructor function that must be instanced. A `Grid` object manages a collection of `Node` and `Polygon` objects.
 
 **Const.Grid** `var grid = new Const.Grid( data? );`  
 Constructor for a new Constellation grid. All grid operations must be invoked on a `Grid` instance.
+
+**Const.Node** `use... grid.addNode();`  
+Constellation grid `Node` object; use a `Grid` instance to create and manage nodes. Nodes are basically just `Point` objects with additional attributes. `Node` objects have the following properties:
+
+- `id`: unique identifier for the node. Don't touch this.
+- `x`: horizontal coordinate of the node.
+- `y`: vertical coordinate of the node.
+- `to`: Table of connections to other nodes. Seriously, don't touch this.
+- `data`: A data object of user-defined data attached to the node.
+
+**Const.Polygon** `use... grid.addPolygon();`  
+Constellation grid `Polygon` object; use a `Grid` instance to create and manage polygons. Grid polygons have the following properties:
+
+- `id`: unique identifier for the node. Don't touch this.
+- `nodes`: Array of node ids defining the polygon ring.
+- `data`: A data object of user-defined data attached to the polygon.
+
+### Const.Grid - Instance Methods
 
 **grid.addNode** `grid.addNode( x, y, {data}? );` or `grid.addNode( {data}? );`  
 Adds a new `Node` object with specified X and Y coordinates, and an optional data object. Returns a reference to the new `Node` object. A data object may be provided as the sole parameter, if the data object contains an `id` property, that id will be assigned to the new node.
