@@ -154,14 +154,14 @@
 	
 	// Const.Point
 	// -----------
-	var Point = Const.Point = function( x, y, z ) {
+	var Point = Const.Point = function(x, y, z) {
 		this.x = x || 0;
 		this.y = y || 0;
 	};
 	
 	// Const.Rect
 	// ----------
-	var Rect = Const.Rect = function( x, y, w, h ) {
+	var Rect = Const.Rect = function(x, y, w, h) {
 		this.x = x || 0;
 		this.y = y || 0;
 		this.width = w || 0;
@@ -171,7 +171,7 @@
 	// Const Geom Methods
 	// ------------------
 	// Tests the distance between two points.
-	Const.distance = function( a, b ) {
+	Const.distance = function(a, b) {
 		var x = b.x-a.x;
 		var y = b.y-a.y;
 		return sqrt(x*x + y*y);
@@ -182,7 +182,7 @@
 	// @param y: Point Y of triangle XYZ.
 	// @param z: Point Z of triangle XYZ.
 	// @param exclusive boolean: when true, equal points will be excluded from the test.
-	Const.ccw = function( x, y, z, exclusive ) {
+	Const.ccw = function(x, y, z, exclusive) {
 		return exclusive ?
 		 	(z.y-x.y) * (y.x-x.x) > (y.y-x.y) * (z.x-x.x) :
 			(z.y-x.y) * (y.x-x.x) >= (y.y-x.y) * (z.x-x.x);
@@ -194,21 +194,53 @@
 	// @param c: Point C of line CD.
 	// @param d: Point D of line CD.
 	// @return: true if AB intersects CD.
-	Const.intersect = function( a, b, c, d ) {
+	Const.intersect = function(a, b, c, d) {
 		return Const.ccw(a, c, d) !== Const.ccw(b, c, d) && Const.ccw(a, b, c) !== Const.ccw(a, b, d);
+	};
+	
+	// Convert degrees to radians.
+	// @param degrees value.
+	// @return radians equivalent.
+	Const.degreesToRadians = function(degrees) {
+		return degrees * Math.PI / 180;
+	};
+	
+	// Convert radians to degrees.
+	// @param radians value.
+	// @return degrees equivalent.
+	Const.radiansToDegrees = function(radians) {
+		return radians * 180 / Math.PI;
+	};
+	
+	// Calulates the angle (in radians) between line segment AB and the positive X-origin.
+	// @param a: Point A of line AB.
+	// @param b: Point B of line AB.
+	// @return angle (in radians).
+	Const.angleRadians = function(a, b) {
+		return Math.atan2(b.y-a.y, b.x-a.x);
+	};
+	
+	// Calulates the angle (in degrees) between line segment AB and the positive X-origin.
+	// Degree value is adjusted to fall within a 0-360 range.
+	// @param a: Point A of line AB.
+	// @param b: Point B of line AB.
+	// @return: angle degrees (0-360 range)
+	Const.angleDegrees = function(a, b) {
+		var degrees = Const.radiansToDegrees(Const.angleRadians(a, b));
+		return degrees < 0 ? degrees+360 : degrees;
 	};
 	
 	// Gets the rectangular bounds of a point ring.
 	// @param points: The ring of points to measure bounding on.
 	// @return: a new Rect object of the ring's maximum extent.
-	Const.getRectForPointRing = function( points ) {
+	Const.getRectForPointRing = function(points) {
 		var first = points[0];
 		var minX = first.x;
 		var maxX = first.x;
 		var minY = first.y;
 		var maxY = first.y;
 		
-		_c.each( points, function( pt ) {
+		_c.each(points, function(pt) {
 			minX = min( minX, pt.x );
 			maxX = max( maxX, pt.x );
 			minY = min( minY, pt.y );
