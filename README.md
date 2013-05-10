@@ -87,7 +87,7 @@ Constellation grid `Polygon` object; use a `Grid` instance to create and manage 
 ### Const - Grid methods
 
 **grid.addNode** `grid.addNode( x, y, {data}? );` or `grid.addNode( {data}? );`  
-Adds a new `Node` object with specified X and Y coordinates, and an optional data object. Returns a reference to the new `Node` object. A data object may be provided as the sole parameter, if the data object contains an `id` property, that id will be assigned to the new node.
+Adds a new `Node` object with specified X and Y coordinates, and an optional data object. Returns a reference to the new `Node` object. A data object may be provided as the sole parameter; if the data object contains an `id` property, that id will be assigned to the new node.
 
 **grid.getNodeById** `grid.getNodeById( id );`  
 Gets a node by id reference. Returns a `Node` object, or `null` for missing ids.
@@ -135,10 +135,10 @@ Takes an array of polygon ids and removes them from the grid. All nodes defining
 Takes two node ids defining start and goal nodes, then finds the shortest path between them. By default, routing favors the shortest path based on coordinate geometry. However, you may customize path routing using the optional weight and estimate functions:
 
  - `weightFunction`: `function( startNode, currentNode ) { return numericCost; }`  
-This function is used to calculate the weight (or cost) of each new grid segment added to a path. The function is provided two Grid.Nodes as arguments, and expects a numeric segment weight to be returned. The pathfinder returns a path that accrues the lowest total weight. By default, `Const.distance` is used to measure the weight of each segment.
+This function is used to calculate the weight (or cost) of each new grid segment added to a path. The function is provided two `Node` objects as arguments, and expects a numeric segment weight to be returned. The pathfinder returns a path that accrues the lowest total weight. By default, `Const.distance` is used to measure the weight of each segment.
 
  - `estimateFunction`: `function( currentNode, goalNode ) { return numericEstimate; }`  
-This function optimizes search performance by providing a best-case scenario estimate for each node's cost to reach the goal. This function is provided two Grid.Node objects as arguments: the current search node, and the goal node. An estimated cost-to-goal value should be returned. By default, `Const.distance` is used to estimate the best-case distance from a working path to the goal.
+This function optimizes search performance by providing a best-case scenario estimate for each node's cost to reach the goal. This function is provided two `Node` objects as arguments: the current search node, and the goal node. An estimated cost-to-goal value should be returned. By default, `Const.distance` is used to estimate the best-case distance from a working path to the goal.
 
 **grid.findPathWithFewestNodes** `grid.findPathWithFewestNodes( startId, goalId );`  
 Convenience method for running `grid.findPath` configured to find a path to goal using the fewest node connections rather than the shortest distance.
@@ -153,15 +153,11 @@ Snaps the provided point to the nearest position among all joined line segments 
 **grid.bridgePoints** `grid.bridgePoints( startPt, goalPt, confineToGrid? );`  
 Creates a grid path bridging between two `Point` objects that are not connected to the grid. This is a composite operation intended to take two dynamic input locations, and intelligently connect them through the existing grid structure. The steps of this algorithm operate as follows:
 
- 1. Test if start and goal are contained within a common polygon; if so, return a direction-connection array specifying: [start, goal].
-
- 2. (...not yet implemented...) Test if points fall within adjacent polygons, and if they may be connected directly through the common side.
-
- 3. Dynamically join start and goal points into the motion grid, then run pathfinder. Dynamic point inclusion works as follows:
-
-  - If start or goal points fall within a polygon, then they'll be connected to their encompassing polygons' node rings.
-
-  - Otherwise, start and goal points will create tether nodes that snap and join to the grid.
+* Test if start and goal are contained within a common polygon; if so, return a direction-connection array specifying: [start, goal].
+* (...not yet implemented...) Test if points fall within adjacent polygons, and if they may be connected directly through the common side.
+* Dynamically join start and goal points into the motion grid, then run pathfinder. Dynamic point inclusion works as follows:
+    * If start or goal points fall within a polygon, then they'll be connected to their encompassing polygons' node rings.
+    * Otherwise, start and goal points will create tether nodes that snap and join to the grid.
 
 The `bridgePoints` method will always return an array of point objects starting with the originally specified `startPt`. The array will also contain additional path positions, and finally the `goalPt`. Optionally, you may specify `confineToGrid` as `true`, at which time the `goalPt` will be adjusted to either fall within a polygon area or snap to a grid line.
 
