@@ -5,8 +5,8 @@ A grid geometry toolkit for controlling 2D sprite motion.
 Constellation manages 2D point grids and pathfinding navigation. The library is designed to control dynamic sprite motion within a 2D environment. Constellation expands upon the motion system used in the [What Makes You Tick?](http://lassiegames.com/games/wmyt "What Makes You Tick?") adventure game series. Features include:
 
  - Point and polygon grid management.
- - Pathfinding with A-star.
- - Polygon hit testing with ray-scan.
+ - Pathfinding with [A-star](http://en.wikipedia.org/wiki/A*_search_algorithm "A-star").
+ - Polygon hit testing with [ray casting](http://en.wikipedia.org/wiki/Point_in_polygon "Ray casting").
  - Snapping points to line segments.
  - Optimized nearest-point searching.
  - Dynamic point-to-point bridges via grid geometry.
@@ -36,19 +36,19 @@ Constellation rectangle primitive. Const.Rect objects have the following propert
 **Const.distance** `var result = Const.distance( point1, point2 );`  
 Calculates the distance between two provided Const.Point objects.
 
-**Const.ccw** `var result = Const.ccw( point1, point2, point3, exclusive? );`  
-Tests for counter-clockwise winding among three Const.Point objects. Returns true if the three points trend in a counter-clockwise arc. Useful for intersection tests. Passing `true` for the optional `exclusive` param will pass balanced arcs.
+**Const.ccw** `var result = Const.ccw( pointA, pointB, pointC, exclusive? );`  
+Tests for counter-clockwise winding among three `Point` objects. Returns true if the three points trend in a counter-clockwise arc. Useful for intersection tests. Passing `true` for the optional `exclusive` param will pass balanced arcs.
 
 **Const.intersect** `var result = Const.intersect( pointA, pointB, pointC, pointD );`  
 Tests for intersection between line segments AB and CD. Returns true if the line segments intersect.
 
 **Const.getRectForPointRing** `var result = Const.getRectForPointRing( [points] );`  
-Takes an array of Const.Point objects; returns a Const.Rect object of their bounding box.
+Takes an array of `Point` objects; returns a `Rect` object of their bounding box.
 
 **Const.hitTestRect** `var result = Const.getRectForPointRing( pointP, rect );`  
-Takes a target point P and a rectangle object; returns true if the point falls within the rectangle.
+Takes a target point P and a `Rect` object; returns `true` if the point falls within the rectangle.
 
-**Const.hitTestPointRing** `var result = Const.hitTestPointRing( pointP, [points] );`  
+**Const.hitTestPointRing** `var result = Const.hitTestPointRing( pointP, [points, ...] );`  
 Takes a target point P and an array of points defining a ring. Returns true if P falls within the ring of points. Hit test is performed using the ray-casting method.
 
 **Const.snapPointToLineSegment** `var result = Const.snapPointToLineSegment( pointP, pointA, pointB );`  
