@@ -15,7 +15,7 @@ For a grid builder demo, see [lassiegames.com/constellation](http://www.lassiega
 
 #API Documentation
 
-## Const - Primitive objects
+##Const - Primitive objects
 
 Constellation root namespace provides a collection of geometry primitives. Geometry primitives have no methods, therefore may be substituted by any object with common attributes.
 
@@ -61,7 +61,7 @@ Takes target point P, and snaps it to the nearest point along line segment AB.
 **Const.getNearestPointToPoint** `var result = Const.getNearestPointToPoint( pointP, [points, ...] );`  
 Takes target point P and an array of points to search. Returns the nearest point to P within the array of points, using a simplified [nearest neighbor](http://en.wikipedia.org/wiki/Closest_pair_of_points_problem "Nearest neighbor") search.
 
-## Const - Grid objects
+##Const - Grid objects
 
 Constellation `Grid` is a constructor function that must be instanced. A `Grid` object manages a collection of `Node` and `Polygon` objects.
 
@@ -84,7 +84,7 @@ Constellation grid `Polygon` object; use a `Grid` instance to create and manage 
 - `nodes`: Array of node ids defining the polygon ring.
 - `data`: A data object of user-defined data attached to the polygon.
 
-### Const - Grid methods
+##Const - Grid methods
 
 **grid.addNode** `grid.addNode( x, y, {data}? );` or `grid.addNode( {data}? );`  
 Adds a new `Node` object with specified X and Y coordinates, and an optional data object. Returns a reference to the new `Node` object. A data object may be provided as the sole parameter; if the data object contains an `id` property, that id will be assigned to the new node.
@@ -179,7 +179,7 @@ Takes a polygon id and tests it for intersections with all nodes in the grid, th
 **grid.getNodesInRect** `grid.getNodesInRect( rect );`  
 Tests a `Rect` object for intersections with all nodes in the grid, and returns an array of the contained node ids.
 
-## Const.utils
+##Const.utils
 
 Constellation includes implementations of several common collection management functions for working with arrays and objects. These are very similar to [Underscore.js](http://underscorejs.org/ "Underscore.js") methods, although their implementations may vary.
 
@@ -202,7 +202,7 @@ Iterates through the provided array and performs a test function on each value. 
 
 While Constellation is designed to manage 2D coordinate geometry, it also provides support for managing node-based data graphs that can be searched using a-star. For example, let's set up a simple social graph using Constellation's node data API:
 	
-	// Create a social graph with mom, sister, brother, and a friend:
+	// Create a social graph with "mom", "sister", "brother", and a "friend":
 	var grid = new Const.Grid();
 	grid.addNode({id:'mom', age:50});
 	grid.addNode({id:'sister', age:16});
@@ -213,7 +213,7 @@ While Constellation is designed to manage 2D coordinate geometry, it also provid
 	grid.joinNodes('mom', 'sister', 'brother');
 	grid.joinNodes('mom', 'brother', 'friend');
 	
-In the above example, we have a node graph with data attributes but no coordinates. However, using the weight and estimate functions of the Constellation grid's a-star pathfinder, we can still configure an intelligent search to navigate the graph via data attributes. For example, let's map a path between "sister" and "friend" nodes, while adhering to a path through the youngest members (lowest net age):
+In the above example we have a node graph defined by data attributes, but no coordinates. However, using the *weight* and *estimate* functions of a Constellation grid's A-star pathfinder, we can still configure an intelligent search to navigate the graph via data attributes. For example, let's map a path between `"sister"` and `"friend"` nodes while adhering to a route with the lowest net age:
 
 	var weightFunct = function(last, current) {
 		return last.data.age + current.data.age;
@@ -226,4 +226,4 @@ In the above example, we have a node graph with data attributes but no coordinat
 	var path = grid.findPath('sister', 'friend', weightFunct, estimateFunct);
 	// result array: [sister > brother > friend]
 	
-In the above process works by replacing Constellation's default weight and estimate functions. The weight function measures the accrued cost of each new grid segment, while the estimate functions measures the best-case cost for reaching the goal. By default, Constellation uses a geometric distance function to measure the cost of grid segments. However, you're welcome to override this process and measure against node data attributes to customize the pathfinding behavior.
+The above process works by replacing Constellation's default *weight* and *estimate* functions. A weight function measures the accrued cost of each new grid segment, while the estimate function measures a best-case cost for reaching the goal. By default, Constellation uses its geometry `distance` function to measure the cost of grid segments. However, you're welcome to override this process to measure grid searches against custom meta data as needed.
