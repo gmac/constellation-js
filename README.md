@@ -213,7 +213,7 @@ While Constellation is designed to manage 2D coordinate geometry, it also provid
 	grid.joinNodes('mom', 'sister', 'brother');
 	grid.joinNodes('mom', 'brother', 'friend');
 	
-In the above example, we have a node graph defined by data attributes with no coordinates. Then using the *weight* and *estimate* functions provided by the Constellation grid's A-star pathfinder, we can configure an intelligent search to navigate the graph via data attributes. For example, let's map a path between `"sister"` and `"friend"` nodes while adhering to a route with the lowest net age:
+In the above example, we have a node graph defined by data attributes with no coordinates. Then using the *weight* and *estimate* functions provided by the Constellation grid's A-star pathfinder, we can configure an intelligent search to navigate the graph via data attributes. For example, let's map a path between `"sister"` and `"friend"` nodes while adhering to the lowest net age:
 
 	var weightFunct = function(last, current) {
 		return last.data.age + current.data.age;
@@ -224,6 +224,6 @@ In the above example, we have a node graph defined by data attributes with no co
 	};
 
 	var path = grid.findPath('sister', 'friend', weightFunct, estimateFunct);
-	// result array: [sister > brother > friend]
+	// result array: ["sister" > "brother" > "friend"]
 	
 The above process works by replacing Constellation's default *weight* and *estimate* functions. A weight function measures the accrued cost of each new grid segment, while the estimate function measures a best-case cost for reaching the goal. By default, Constellation uses its geometry `distance` function to measure the cost of grid segments. However, you're welcome to override this process to measure grid searches against custom meta data as needed.
