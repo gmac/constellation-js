@@ -153,11 +153,11 @@ Snaps the provided point to the nearest position among all joined line segments 
 **grid.bridgePoints** `grid.bridgePoints( startPt, goalPt, confineToGrid? );`  
 Creates a grid path bridging between two `Point` objects that are not connected to the grid. This is a composite operation intended to take two dynamic input locations, and intelligently connect them through the existing grid structure. The steps of this algorithm operate as follows:
 
-* Test if start and goal are contained within a common polygon; if so, return a direction-connection array specifying: [start, goal].
-* (...not yet implemented...) Test if points fall within adjacent polygons, and if they may be connected directly through the common side.
-* Dynamically join start and goal points into the motion grid, then run pathfinder. Dynamic point inclusion works as follows:
-    * If start or goal points fall within a polygon, then they'll be connected to their encompassing polygons' node rings.
-    * Otherwise, start and goal points will create tether nodes that snap and join to the grid.
+* Test if start and goal are contained within a common polygon; if so, return a direction-connection array between them.
+* (...not yet implemented...) Test if points fall within adjacent polygons.
+* Dynamically join `start` and `goal` points into the grid, then run pathfinder. Dynamic point inclusion uses:
+    * If `start` or `goal` points fall within a polygon, then that point connects through their encompassing polygon node ring.
+    * Otherwise, `start` and `goal` points will connect through tether nodes snapped into to the grid.
 
 The `bridgePoints` method will always return an array of point objects starting with the originally specified `startPt`. The array will also contain additional path positions, and finally the `goalPt`. Optionally, you may specify `confineToGrid` as `true`, at which time the `goalPt` will be adjusted to either fall within a polygon area or snap to a grid line.
 
