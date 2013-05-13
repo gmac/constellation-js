@@ -9,6 +9,7 @@
 	
 	var Pilot = Const.Pilot = function(id, grid) {
 		this.id = id || '';
+		this._h = {};
 		this.setGrid(grid);
 	};
 	
@@ -25,6 +26,34 @@
 		path: null,
 		pathIndex: 0,
 		action: null,
+
+        // Add a listener:
+        on: function(eventName, handler, context) {
+            (this._h[eventName] = this._h[eventName] || []).push({
+				h: handler,
+				c: context
+			});
+            return this;
+        },
+		
+        // Remove a listener:
+        off: function(eventName, handler, context) {
+			for (var list = this._h[eventName], i = 0, sub; list && handler && (sub = list[i]); i++) {
+				if (sub.h === handler && (!context || sub.c === context)) list.splice(i--, 1);
+			}
+			
+			if (list && !i) list.length = 0;
+			if (!list) this._h = {};
+			return this;
+        },
+		
+		// Trigger an event:
+        trigger: function(eventName) {
+            for (var list = this._h[eventName], i = 0, sub; list && (sub = list[i++]);) {
+                sub.h.apply(sub.c, list.slice.call(arguments, 1));
+            }
+            return this;
+        },
 		
 		// Sets the pilot's Constellation Grid to follow:
 		setGrid: function(grid) {
