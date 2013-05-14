@@ -101,7 +101,7 @@ function( _, Backbone, constellation, gridModel, selectionModel ) {
 		snapNodeToGrid: function() {
 			if ( this.nodeOpsEnabled() && selectionModel.selectionSize() === 1 ) {
 				var node = gridModel.getNodeById( selectionModel.items[0] );
-				var to = gridModel.snapPointToGrid( node );
+				var to = gridModel.snapPoint( node );
 				
 				if (!_.size(node.to)) {
 					node.x = to.x;

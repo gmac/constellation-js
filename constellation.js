@@ -785,7 +785,7 @@
 		// @param pt  The point to snap into the grid.
 		// @param meta  Specify true to return full meta data on the snapped point/segment.
 		// @return  A new point with the snapped position, or the original point if no grid was searched.
-		snapPointToGrid: function(pt, meta) {
+		snapPointToGrid: function(pt) {
 			var bestPoint = null;
 			var bestDistance = NaN;
 			var bestSegment = [];
@@ -812,15 +812,16 @@
 				}
 			}, this);
 			
-			if (meta) {
-				return {
-					point: bestPoint,
-					offset: bestDistance,
-					segment: bestSegment
-				};
-			}
-			
-			return bestPoint || pt;
+			return {
+				point: bestPoint,
+				offset: bestDistance,
+				segment: bestSegment
+			};
+		},
+		
+		snapPoint: function(pt) {
+			var snapped = this.snapPointToGrid(pt);
+			return snapped.point || pt;
 		},
 		
 		// Finds the nearest node to the specified node.
@@ -942,7 +943,7 @@
 			
 				// Return direct route if within a common polygon area:
 				if (union.length) {
-					return [a, confineToGrid ? this.snapPointToGrid(b) : b];
+					return [a, confineToGrid ? this.snapPoint(b) : b];
 				}
 			
 				// Method 2: Connect through adjacent polygons with a shared side.
@@ -966,7 +967,7 @@
 					
 				} else {
 					// Connect node into its snapped line segment:
-					var snapped = this.snapPointToGrid(pt, true);
+					var snapped = this.snapPointToGrid(pt);
 					
 					if (snapped.point) {
 						node.x = snapped.point.x;

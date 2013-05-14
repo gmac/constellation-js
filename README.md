@@ -13,6 +13,35 @@ Constellation manages 2D point grids and pathfinding navigation. The library is 
 
 For a grid builder demo, see [lassiegames.com/constellation](http://www.lassiegames.com/constellation "Constellation.js")
 
+##Creating Animations
+
+While Constellation is not an animation library itself, it's designed to work hand-in-hand with animation tools such as [jQuery](http://api.jquery.com/animate/ "jQuery Animation"), [TweenLite](http://www.greensock.com/gsap-js/ "TweenLite"), or [TweenJS](http://www.createjs.com/#!/TweenJS "TweenJS") (to name a few). Use Constellation to manage and search across grid geometry, then feed its points into your preferred animation library.
+
+For example, here's jQuery used to animate a view from its current position to a mouse click, while bridging the start and end points through intervening grid geometry: 
+
+	// Setup a pilot view and a Constellation Grid:
+	var $pilot = $("#pilot");
+	var grid = ...Const.Grid...;
+
+	$(document).click(function(evt) {
+		// Parse out pilot's current coordinates:
+		var px = parseInt($pilot.css('left').match(/\d+/g), 10);
+		var py = parseInt($pilot.css('top').match(/\d+/g), 10);
+		
+		// Bridge a path across the grid between pilot view and mouse click:
+		var path = grid.bridgePoints({x:px, y:py}, {x:evt.pageX, y:evt.pageY});
+		
+		// Queue all path motions:
+		$.each(path, function(i, pt) {
+			$pilot.animate({
+				left: pt.x,
+				top: pt.y
+			});
+		});
+	});
+
+Also, try using Constellation's angle methods to apply custom sprite graphics/animations to specific movement angles.
+
 #API Documentation
 
 ##Const - Primitive objects
@@ -61,7 +90,7 @@ Calculates the angle (in degrees) between line segment AB and the [positive X-or
 **Const.angleSector** `var degrees = Const.angleSector( radians, sectors?, offsetRadians? );`  
 Gets the [circular sector](http://en.wikipedia.org/wiki/Circular_sector "Circular Sector") index that an angle falls into. You may specify how many sectors to divide the circle into, and then plot an angle among those breaks. This is useful for applying orientation view states to a sprite while moving it around a grid; for example: given a sprite with 4 walk cycles for different orientations (left, front, right, back), use this method to select one of the four views based on the sprite's next angle of motion.
 
-Requires an angle to be provided in radians. You may optionally specify the number of sectors to divide the circle into, the default is 8. Also accepts an optional offset (in radians) used to shift sector divisions off the [positive X-origin axis](http://en.wikipedia.org/wiki/Origin_%28mathematics%29 "Origin axis"). By default, offset is configured as one-half of the sector size, which centers the X-origin axis within the first sector. Returns an index between 0 and x-1, where x is the number of sectors.
+Requires an angle to be provided in radians. You may optionally specify the number of sectors to divide the circle into, the default is 8. Also accepts an optional offset (in radians) used to shift sector divisions off the [positive X-origin axis](http://en.wikipedia.org/wiki/Origin_%28mathematics%29 "Origin axis"). By default, offset is configured as one-half of the sector size, which centers the X-origin axis within the first sector. Returns an index between `0` and `x-1`, where x is the number of sectors.
 
 **Const.getRectForPointRing** `var result = Const.getRectForPointRing( [points] );`  
 Takes an array of `Point` objects; returns a `Rect` object of their bounding box.
@@ -86,7 +115,7 @@ Constellation `Grid` is a constructor function that must be instanced. A `Grid` 
 Constructor for a new Constellation `Grid`. All grid operations must be invoked on a `Grid` instance.
 
 **Const.Node** use... `grid.addNode();`  
-Constellation grid `Node` object; use a `Grid` instance to create and manage nodes. Nodes are essentially just `Point` objects with additional attributes. `Node` objects have the following properties:
+Constellation grid `Node` object; use a `Grid` instance to create and manage nodes. Nodes are just `Point` objects with additional attributes, therefore they may be used directly with any Constellation method that performs `Point` operations. `Node` objects have the following properties:
 
 - `id`: unique identifier for the node. Don't touch this.
 - `x`: horizontal coordinate of the node.
@@ -168,6 +197,8 @@ Snaps the provided point to the nearest position among all joined line segments 
  - `segment`: an array of node ids defining the line segment on which the point was snapped.
 
 **grid.bridgePoints** `grid.bridgePoints( startPt, goalPt, confineToGrid? );`  
+*This algorithm is in progress. Current pathing results may be erratic.*
+
 Creates a grid path bridging between two `Point` objects that are not connected to the grid. This is a composite operation intended to take two dynamic input locations, and intelligently connect them through the existing grid structure. The steps of this algorithm operate as follows:
 
 * Test if start and goal are contained within a common polygon; if so, return a direction-connection array between them.
@@ -243,4 +274,4 @@ In the above example, we have a node graph defined by data attributes with no co
 	var path = grid.findPath('sister', 'friend', weightFunct, estimateFunct);
 	// result array: ["sister" > "brother" > "friend"]
 	
-The above process works by replacing Constellation's default *weight* and *estimate* functions. A weight function measures the accrued cost of each new grid segment, while the estimate function measures a best-case cost for reaching the goal. By default, Constellation uses its geometry `distance` function to measure the cost of grid segments. However, you're welcome to override this process to measure grid searches against custom meta data as needed.
+The above process works by replacing Constellation's default *weight* and *estimate* functions. A weight function measures the accrued cost of each new grid segment, while the estimate function measures a best-case cost for reaching the goal. By default, Constellation uses its geometry `distance` function to measure the cost of grid segments. However, you're welcome to override this process and measure grid searches against custom meta data.
