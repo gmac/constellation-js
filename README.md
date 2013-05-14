@@ -47,21 +47,21 @@ Tests for counter-clockwise winding among three `Point` objects. Returns true if
 Tests for intersection between line segments AB and CD. Returns true if the line segments intersect.
 
 **Const.degreesToRadians** `var radians = Const.degreesToRadians( degrees );`  
-Utility method for converting [degrees](http://en.wikipedia.org/wiki/Degree_(angle) "Degrees") to [radians](http://en.wikipedia.org/wiki/Radian "Radians").
+Utility method for converting [degrees](http://en.wikipedia.org/wiki/Degree_%28angle%29 "Degrees") to [radians](http://en.wikipedia.org/wiki/Radian "Radians").
 
 **Const.radiansToDegrees** `var degrees = Const.radiansToDegrees( radians );`  
-Utility method for converting [radians](http://en.wikipedia.org/wiki/Radian "Radians") to [degrees](http://en.wikipedia.org/wiki/Degree_(angle) "Degrees").
+Utility method for converting [radians](http://en.wikipedia.org/wiki/Radian "Radians") to [degrees](http://en.wikipedia.org/wiki/Degree_%28angle%29 "Degrees").
 
 **Const.angleRadians** `var radians = Const.angleRadians( pointA, pointB );`  
 Calculates the angle (in radians) between line segment AB and the [positive X-origin axis](http://en.wikipedia.org/wiki/Origin_(mathematics) "Origin axis"). Accepts two `Point` objects and returns the angle in [radians](http://en.wikipedia.org/wiki/Radian "Radians").
 
 **Const.angleDegrees** `var degrees = Const.angleDegrees( pointA, pointB );`  
-Calculates the angle (in degrees) between line segment AB and the [positive X-origin axis](http://en.wikipedia.org/wiki/Origin_(mathematics) "Origin axis"). Accepts two `Point` objects and returns the angle in [degrees](http://en.wikipedia.org/wiki/Degree_(angle) "Degrees").
+Calculates the angle (in degrees) between line segment AB and the [positive X-origin axis](http://en.wikipedia.org/wiki/Origin_(mathematics) "Origin axis"). Accepts two `Point` objects and returns the angle in [degrees](http://en.wikipedia.org/wiki/Degree_%28angle%29 "Degrees").
 
 **Const.angleSector** `var degrees = Const.angleSector( radians, sectors?, offsetRadians? );`  
 Gets the [circular sector](http://en.wikipedia.org/wiki/Circular_sector "Circular Sector") index that an angle falls into. You may specify how many sectors to divide the circle into, and then plot an angle among those breaks. This is useful for applying orientation view states to a sprite while moving it around a grid; for example: given a sprite with 4 walk cycles for different orientations (left, front, right, back), use this method to select one of the four views based on the sprite's next angle of motion.
 
-Requires an angle to be provided in radians. You may optionally specify the number of sectors to divide the circle into, the default is 8. Also accepts an optional offset (in radians) used to shift sector divisions off the [positive X-origin axis](http://en.wikipedia.org/wiki/Origin_(mathematics) "Origin axis"). By default, offset is configured as one-half of the sector size, which centers the X-origin axis within the first sector. Returns an index between 0 and x-1, where x is the number of sectors.
+Requires an angle to be provided in radians. You may optionally specify the number of sectors to divide the circle into, the default is 8. Also accepts an optional offset (in radians) used to shift sector divisions off the [positive X-origin axis](http://en.wikipedia.org/wiki/Origin_%28mathematics%29 "Origin axis"). By default, offset is configured as one-half of the sector size, which centers the X-origin axis within the first sector. Returns an index between 0 and x-1, where x is the number of sectors.
 
 **Const.getRectForPointRing** `var result = Const.getRectForPointRing( [points] );`  
 Takes an array of `Point` objects; returns a `Rect` object of their bounding box.
