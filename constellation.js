@@ -212,7 +212,7 @@
 		return radians * 180 / Math.PI;
 	};
 	
-	// Calulates the angle (in radians) between line segment AB and the positive X-origin.
+	// Calculates the angle (in radians) between line segment AB and the positive X-origin.
 	// @param a: Point A of line AB.
 	// @param b: Point B of line AB.
 	// @return angle (in radians).
@@ -220,7 +220,7 @@
 		return Math.atan2(b.y-a.y, b.x-a.x);
 	};
 	
-	// Calulates the angle (in degrees) between line segment AB and the positive X-origin.
+	// Calculates the angle (in degrees) between line segment AB and the positive X-origin.
 	// Degree value is adjusted to fall within a 0-360 range.
 	// @param a: Point A of line AB.
 	// @param b: Point B of line AB.
@@ -228,6 +228,23 @@
 	Const.angleDegrees = function(a, b) {
 		var degrees = Const.radiansToDegrees(Const.angleRadians(a, b));
 		return degrees < 0 ? degrees+360 : degrees;
+	};
+	
+	// Gets the index of the circle sector that an angle falls into.
+	// This is useful for applying view states to a graphic while moving it around the grid.
+	// Ex: create 8 walk cycles
+	// @param radians: angle radians to test.
+	// @param sectors: number of sectors to divide the circle into. Default is 8.
+	// @param offset: offsets the origin of the sector divides within the circle. Default is PI*2/16.
+	// @return sector index (a number between 0 and X-1, where X is number of sectors).
+	Const.angleSector = function(radians, sectors, offset) {
+		var circ = Math.PI * 2;
+		sectors = sectors || 8;
+		offset = offset || circ / (sectors * 2);
+		if (radians < 0) radians = circ + radians;
+		radians += offset;
+		if (radians > circ) radians -= circ;
+		return Math.floor(radians / (circ / sectors));
 	};
 	
 	// Gets the rectangular bounds of a point ring.

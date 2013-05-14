@@ -3,7 +3,9 @@ define([
 	'../../src/js/lib/underscore'
 ],
 function( Const, _ ) {
-
+	
+	window.Const = Const;
+	
 	describe("Constellation Grid", function() {
 		
 		// Environment config...
