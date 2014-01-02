@@ -9,7 +9,9 @@ module.exports = function( grunt ) {
 			},
 			root: {
 				src: '<%= pkg.name %>.js',
-				dest: '<%= pkg.name %>.min.js'
+				dest: '<%= pkg.name %>.min.js',
+				sourceMapUrl: '<%= pkg.name %>.min.map',
+				sourceMapRoot: './'
 			},
 			lib: {
 				src: '<%= pkg.name %>.js',

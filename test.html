@@ -1,0 +1,25 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <title>Constellation.js Test Suite</title>
+
+  	<link rel="stylesheet" href="node_modules/mocha/mocha.css">
+	<script src="node_modules/mocha/mocha.js"></script>
+	<script src="node_modules/chai/chai.js"></script>
+	<script src="node_modules/underscore/underscore.js"></script>
+	<script src="constellation.js"></script>
+</head>
+<body>
+	<div id="mocha"></div>
+  	<script>
+	expect = chai.expect;
+	mocha.setup('bdd');
+	</script>
+	<script src="test.js"></script>
+	
+	<script>
+	mocha.run();
+	</script>
+</body>
+</html>

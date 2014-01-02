@@ -4,7 +4,7 @@
 // Constellation may be freely distributed under the MIT license
 // Docs: https://github.com/gmac/constellation.js
 
-(function( context, factory ) {
+(function(context, factory) {
 	
 	var C = factory(Math.sqrt, Math.min, Math.max, Math.abs);
 	
@@ -12,7 +12,7 @@
 	else if (typeof define === "function" && define.amd) define(C);
 	else context.Const = C;
 
-}(this, function( sqrt, min, max, abs ) {
+}(this, function(sqrt, min, max, abs) {
 
 	// Top-level namespace:
 	// all public Constellation classes and modules will attach to this.
@@ -48,57 +48,57 @@
 	var _c = Const.utils = {
 		
 		// Gets the number of items in an array, or number of properties on an object.
-		size: function( obj ) {
+		size: function(obj) {
 			// Array.
-			if ( isArray(obj) ) {
+			if (isArray(obj)) {
 				return obj.length;
 			}
 
 			// Object.
 			var num = 0;
-			for ( var i in obj ) {
+			for (var i in obj) {
 				if (obj.hasOwnProperty(i)) num++;
 			}
 			return num;
 		},
 		
 		// Tests if an array contains a value.
-		contains: function( obj, item ) {
-			if ( isArray(obj) ) {
+		contains: function(obj, item) {
+			if (isArray(obj)) {
 				
 				// Test with native indexOf method.	
-				if ( isFunction(Array.prototype.indexOf) ) {
-					return obj.indexOf( item ) >= 0;
+				if (isFunction(Array.prototype.indexOf)) {
+					return obj.indexOf(item) >= 0;
 				}
 			
 				// Brute-force search method.
 				var len = obj.length;
 				var i = 0;
 			
-				while ( i < len ) {
+				while (i < len) {
 					if (obj[i++] === item) return true;
 				}
 			}
 			
-			return obj && obj.hasOwnProperty( item );
+			return obj && obj.hasOwnProperty(item);
 		},
 		
 		// Runs an iterator function over each item in an array or object.
-		each: function( obj, iteratorFunct, context ) {
+		each: function(obj, iteratorFunct, context) {
 			var i = 0;
 			
-			if ( isArray(obj) ) {
+			if (isArray(obj)) {
 				// Array.
 				var len = obj.length;
-				while ( i < len ) {
-					iteratorFunct.call( context, obj[i], i++ );
+				while (i < len) {
+					iteratorFunct.call(context, obj[i], i++);
 				}
 
 			} else {
 				// Object.
-				for ( i in obj ) {
-					if ( obj.hasOwnProperty(i) ) {
-						iteratorFunct.call( context, obj[i], i );
+				for (i in obj) {
+					if (obj.hasOwnProperty(i)) {
+						iteratorFunct.call(context, obj[i], i);
 					}
 				}
 			}
@@ -106,21 +106,21 @@
 		},
 		
 		// Runs a mutator function over each item in an array or object, setting the result as the new value.
-		map: function( obj, mutatorFunct, context ) {
+		map: function(obj, mutatorFunct, context) {
 			var i = 0;
 			
-			if ( isArray(obj) ) {
+			if (isArray(obj)) {
 				// Array.
 				var len = obj.length;
-				while ( i < len ) {
-					obj[i] = mutatorFunct.call( context, obj[i], i++ );
+				while (i < len) {
+					obj[i] = mutatorFunct.call(context, obj[i], i++);
 				}
 
 			} else {
 				// Object.
-				for ( i in obj ) {
-					if ( obj.hasOwnProperty(i) ) {
-						obj[i] = mutatorFunct.call( context, obj[i], i );
+				for (i in obj) {
+					if (obj.hasOwnProperty(i)) {
+						obj[i] = mutatorFunct.call(context, obj[i], i);
 					}
 				}
 			}
@@ -129,12 +129,12 @@
 		
 		// Runs a test function on each item in the array,
 		// then returns true if all items pass the test.
-		all: function( array, testFunct, context ) {
+		all: function(array, testFunct, context) {
 			var len = array.length;
 			var i = 0;
 			
-			while ( i < len ) {
-				if ( !testFunct.call( context, array[i], i++ ) ) {
+			while (i < len) {
+				if (!testFunct.call(context, array[i], i++)) {
 					return false;
 				}
 			}
@@ -258,10 +258,10 @@
 		var maxY = first.y;
 		
 		_c.each(points, function(pt) {
-			minX = min( minX, pt.x );
-			maxX = max( maxX, pt.x );
-			minY = min( minY, pt.y );
-			maxY = max( maxY, pt.y );
+			minX = min(minX, pt.x);
+			maxX = max(maxX, pt.x);
+			minY = min(minY, pt.y);
+			maxY = max(maxY, pt.y);
 		});
 		
 		return new Rect(minX, minY, maxX-minX, maxY-minY);
@@ -271,11 +271,11 @@
 	// @param p: The point to test.
 	// @param rect: The Rect object to test against.
 	// @return: true if point falls within rectangle.
-	Const.hitTestRect = function( p, rect ) {
-		var minX = min( rect.x, rect.x + rect.width );
-		var maxX = max( rect.x, rect.x + rect.width );
-		var minY = min( rect.y, rect.y + rect.height );
-		var maxY = max( rect.y, rect.y + rect.height );
+	Const.hitTestRect = function(p, rect) {
+		var minX = min(rect.x, rect.x + rect.width);
+		var maxX = max(rect.x, rect.x + rect.width);
+		var minY = min(rect.y, rect.y + rect.height);
+		var maxY = max(rect.y, rect.y + rect.height);
 		
 		return p.x >= minX && p.y >= minY && p.x <= maxX && p.y <= maxY;
 	};
@@ -284,7 +284,7 @@
 	// @param p: The point to test.
 	// @param points: An array of points forming a polygonal shape.
 	// @return: true if point falls within point ring.
-	Const.hitTestPointRing = function( p, points ) {
+	Const.hitTestPointRing = function(p, points) {
 		var sides = points.length;
 		var origin = new Point(0, p.y);
 		var hits = 0;
@@ -292,7 +292,7 @@
 		var s1, s2;
 	
 		// Test intersection of an external ray against each polygon side.
-		while ( i < sides ) {
+		while (i < sides) {
 			s1 = points[i];
 			s2 = points[(i+1) % sides];
 			origin.x = min(origin.x, min(s1.x, s2.x)-1);
@@ -309,7 +309,7 @@
 	// @param a: Point A of line segment AB.
 	// @param b: Point B of line segment AB.
 	// @return: new Point object with snapped coordinates.
-	Const.snapPointToLineSegment = function( p, a, b ) {
+	Const.snapPointToLineSegment = function(p, a, b) {
 		var ap1 = p.x-a.x;
 		var ap2 = p.y-a.y;
 		var ab1 = b.x-a.x;
@@ -323,16 +323,16 @@
 		} else if (t > 1) {
 			return new Point(b.x, b.y);
 		}
-		return new Point( a.x + ab1*t, a.y + ab2*t );
+		return new Point(a.x + ab1*t, a.y + ab2*t);
 	};
 
 	// Finds the nearest point within an array of points to target P.
 	// @param p: Point P to test against.
 	// @param points: Array of Points to find the nearest point within.
 	// @return: nearest Point to P, or null if no points were available.
-	Const.getNearestPointToPoint = function( p, points ) {
+	Const.getNearestPointToPoint = function(p, points) {
 		var bestPt = null;
-		var bestDist = NaN;
+		var bestDist = Infinity;
 		var i = points.length-1;
 		var a, dist;
 
@@ -343,11 +343,11 @@
 			return b-a;
 		});
 	
-		while ( i >= 0 ) {
+		while (i >= 0) {
 			a = points[i--];
-			if (abs(p.x-a.x) < bestDist || isNaN(bestDist)) {
+			if (abs(p.x-a.x) < bestDist) {
 				dist = Const.distance(p, a);
-				if (dist < bestDist || isNaN(bestDist)) {
+				if (dist < bestDist) {
 					bestPt = a;
 					bestDist = dist;
 				}
@@ -361,7 +361,7 @@
 	
 	// Const.Node
 	// ----------
-	var Node = Const.Node = function( id, x, y, data, to ) {
+	var Node = Const.Node = function(id, x, y, data, to) {
 		this.id = id;
 		this.x = x || 0;
 		this.y = y || 0;
@@ -371,7 +371,7 @@
 	
 	// Const.Polygon
 	// -------------
-	var Polygon = Const.Polygon = function( id, nodes, data ) {
+	var Polygon = Const.Polygon = function(id, nodes, data) {
 		this.id = id;
 		this.nodes = nodes.slice();
 		this.data = data || null;
@@ -406,8 +406,8 @@
 	
 	// Const.Grid
 	// ----------
-	var Grid = Const.Grid = function( data ) {
-		this.reset( data );
+	var Grid = Const.Grid = function(data) {
+		this.reset(data);
 	};
 	
 	Grid.prototype = {
@@ -433,11 +433,11 @@
 			if (data) {
 				if (data.i) this._i = data.i;
 				
-				_c.each( data.nodes || {}, function( node ) {
+				_c.each(data.nodes || {}, function(node) {
 					this.nodes[ node.id ] = node;
 				}, this);
 				
-				_c.each( data.polys || {}, function( poly ) {
+				_c.each(data.polys || {}, function(poly) {
 					this.polys[ poly.id ] = poly;
 				}, this);
 			}
@@ -472,7 +472,7 @@
 		
 		// Counts the number of nodes defined within the grid.
 		getNumNodes: function() {
-			return _c.size( this.nodes );
+			return _c.size(this.nodes);
 		},
 		
 		// Tests if a node id or array of node ids are defined.
@@ -504,7 +504,7 @@
 					var len = ids.length;
 					var j = 0;
 						
-					while ( j < len ) {
+					while (j < len) {
 						id = ids[j++];
 						if (id !== node.id) {
 							node.to[id] = 1;
@@ -536,8 +536,8 @@
 				var node = this.nodes[id];
 				
 				if (node && node.to) {
-					for ( id in node.to ) {
-						if ( _c.contains(ids, id) ) {
+					for (id in node.to) {
+						if (_c.contains(ids, id)) {
 							delete node.to[id];
 							change = true;
 						}
@@ -561,9 +561,9 @@
 				var local = this.nodes[id];
 				var foreign, j;
 				
-				if ( local && local.to ) {
+				if (local && local.to) {
 					// Break all connections between target and its neighbors.
-					for ( j in local.to ) {
+					for (j in local.to) {
 						// Delete local reference.
 						delete local.to[j];
 					
@@ -571,7 +571,7 @@
 						foreign = this.nodes[j];
 					
 						// Delete foreign key relationship.
-						if ( foreign && foreign.to ) {
+						if (foreign && foreign.to) {
 							delete foreign.to[id];
 						}
 					}
@@ -593,7 +593,7 @@
 			_c.each(ids, function(id) {
 				var poly, j;
 					
-				if ( this.nodes.hasOwnProperty(id) ) {
+				if (this.nodes.hasOwnProperty(id)) {
 					// Detach and remove the node.
 					delete this.nodes[id];
 					
@@ -601,7 +601,7 @@
 					for (j in this.polys) {
 						poly = this.polys[j];
 
-						if ( poly && _c.contains( poly.nodes, id ) ) {
+						if (poly && _c.contains(poly.nodes, id)) {
 							delete this.polys[j];
 						}
 					}
@@ -614,8 +614,8 @@
 		
 		// Adds a polygon to the grid, formed by a collection of node ids.
 		addPolygon: function(nodes, data) {
-			if ( nodes.length >= 3 && this.hasNodes(nodes) ) {
-				var poly = new Polygon(('p'+ this._i++), nodes, data );
+			if (nodes.length >= 3 && this.hasNodes(nodes)) {
+				var poly = new Polygon(('p'+ this._i++), nodes, data);
 				this.polys[ poly.id ] = poly;
 				return poly;
 			}
@@ -640,7 +640,7 @@
 		
 		// Gets an array of nodes representing a polygon in the grid.
 		getNodesForPolygon: function(id) {
-			if ( this.polys.hasOwnProperty(id) ) {
+			if (this.polys.hasOwnProperty(id)) {
 				return _c.map(this.polys[id].nodes.slice(), function(i) {
 					return this.nodes[i];
 				}, this);
@@ -694,8 +694,8 @@
 				branchPath, // A new path branch for the search queue.
 				branchWeight, // Current weight of a new branch being explored.
 				branchEstimate, // Estimated best-case weight of new branch reaching goal.
-				startNode = this.getNodeById( start ),
-				goalNode = this.getNodeById( goal ),
+				startNode = this.getNodeById(start),
+				goalNode = this.getNodeById(goal),
 				cycles = 0,
 				i;
 			
@@ -704,7 +704,7 @@
 			if (!isFunction(estimateFunction)) estimateFunction = Const.distance;
 
 			// Create initial search path with default weight from/to self.
-			queue.push( new Path([startNode], weightFunction(startNode, startNode)) );
+			queue.push(new Path([startNode], weightFunction(startNode, startNode)));
 
 			// While the queue contains paths:
 			while (queue.length > 0) {
@@ -717,20 +717,20 @@
 						searchNode = this.nodes[ i ];
 
 						// Reject loops.
-						if (!!searchNode && !searchPath.contains( searchNode )) {
-							branchWeight = searchPath.weight + weightFunction( startNode, searchNode );
+						if (!!searchNode && !searchPath.contains(searchNode)) {
+							branchWeight = searchPath.weight + weightFunction(startNode, searchNode);
 
 							// Test branch fitness.
 							if (branchWeight <= (weights[searchNode.id] || branchWeight)) {
 								weights[searchNode.id] = branchWeight;
-								branchEstimate = branchWeight + estimateFunction( searchNode, goalNode );
+								branchEstimate = branchWeight + estimateFunction(searchNode, goalNode);
 
 								// Test for viable path to goal.
 								if (!bestPath || branchEstimate < bestPath.weight) {
 
 									// Create a new branch path extended to search node.
 									branchPath = searchPath.copy(branchWeight, branchEstimate);
-									branchPath.nodes.push( searchNode );
+									branchPath.nodes.push(searchNode);
 
 									// Test if goal has been reached.
 									if (searchNode.id === goalNode.id) {
@@ -740,7 +740,7 @@
 										}
 										bestPath = branchPath; // Retain best completed path.
 									} else {
-										queue.push( branchPath ); // Queue additional search path.
+										queue.push(branchPath); // Queue additional search path.
 									}
 
 									branchPath = null;
@@ -757,7 +757,7 @@
 				searchPath = startNode = null;
 
 				// Sort queue by estimate to complete, highest to lowest.
-				queue.sort( Path.prototype.prioratize );
+				queue.sort(Path.prototype.prioratize);
 
 				// Count search cycle.
 				cycles++;
@@ -776,9 +776,9 @@
 		},
 		
 		// Finds a path between two points with the fewest number of connections.
-		findPathWithFewestNodes: function( start, goal ) {
+		findPathWithFewestNodes: function(start, goal) {
 			var step = function() { return 1; };
-			return this.findPath( start, goal, step, step );
+			return this.findPath(start, goal, step, step);
 		},
 		
 		// Snaps the provided point to the nearest position within the node grid.
@@ -787,11 +787,11 @@
 		// @return  A new point with the snapped position, or the original point if no grid was searched.
 		snapPointToGrid: function(pt) {
 			var bestPoint = null;
-			var bestDistance = NaN;
+			var bestDistance = Infinity;
 			var bestSegment = [];
 			var tested = {};
 
-			_c.each(this.nodes, function( local, id ) {
+			_c.each(this.nodes, function(local, id) {
 				if (pt.id === id) return;
 
 				// Loop through each node's connections.
@@ -813,8 +813,8 @@
 			}, this);
 			
 			return {
-				point: bestPoint,
-				offset: bestDistance,
+			  offset: isFinite(bestDistance) ? bestDistance : 0,
+				point: bestPoint || pt,
 				segment: bestSegment
 			};
 		},
@@ -833,8 +833,8 @@
 			
 			if (target) {
 				_c.each(this.nodes, function(node) {
-					if ( node.id !== target.id ) {
-						nodes.push( node );
+					if (node.id !== target.id) {
+						nodes.push(node);
 					}
 				}, this);
 
@@ -865,12 +865,12 @@
 		// Tests a Point for intersections with all Polygons in the grid, and returns their ids.
 		// @param pt  The point to snap into the grid.
 		// @return  Array of Polygon ids that hit the specified Point.
-		getPolygonHitsForPoint: function( pt ) {
+		getPolygonHitsForPoint: function(pt) {
 			var hits = [];
 			
-			_c.each(this.polys, function( poly, id ) {
-				if ( Const.hitTestPointRing(pt, this.getNodesForPolygon(id)) ) {
-					hits.push( poly.id );
+			_c.each(this.polys, function(poly, id) {
+				if (Const.hitTestPointRing(pt, this.getNodesForPolygon(id))) {
+					hits.push(poly.id);
 				}
 			}, this);
 			
@@ -882,18 +882,18 @@
 		// @return  Array of node ids that fall within the specified Polygon.
 		getNodesInPolygon: function(id) {
 			var hits = [];
-			var poly = this.getPolygonById( id );
-			var points = this.getNodesForPolygon( id );
-			var rect = Const.getRectForPointRing( points );
+			var poly = this.getPolygonById(id);
+			var points = this.getNodesForPolygon(id);
+			var rect = Const.getRectForPointRing(points);
 
 			if (poly) {
-				_c.each(this.nodes, function( node ) {
+				_c.each(this.nodes, function(node) {
 					// Run incrementally costly tests:
 					// - node in shape?
 					// - OR...
 					// node in rect AND node within ring?
 					if (_c.contains(poly.nodes, node.id) || (Const.hitTestRect(node, rect) && Const.hitTestPointRing(node, points))) {
-						hits.push( node.id );
+						hits.push(node.id);
 					}
 				}, this);
 			}

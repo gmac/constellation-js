@@ -132,7 +132,7 @@ Constellation grid `Polygon` object; use a `Grid` instance to create and manage 
 
 ##Const - Grid methods
 
-**grid.addNode** `grid.addNode( x, y, {data}? );` or `grid.addNode( {data}? );`  
+**grid.addNode** `grid.addNode( x, y, data? );` or `grid.addNode( data? );`  
 Adds a new `Node` object with specified X and Y coordinates, and an optional data object. Returns a reference to the new `Node` object. A data object may be provided as the sole parameter; if the data object contains an `id` property, that id will be assigned to the new node.
 
 **grid.getNodeById** `grid.getNodeById( id );`  
