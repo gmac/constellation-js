@@ -633,6 +633,37 @@ describe("Constellation Grid", function() {
 		expect( hits.sort().join() ).to.equal( [a, b, c, d].sort().join() );
 	});
 	
+	it("getAdjacentPolygonSegments: should return an array specifying an adjacent line segment.", function() {
+		var a = gridModel.addNode(0, 0).id;
+		var b = gridModel.addNode(100, 0).id;
+		var c = gridModel.addNode(0, 100).id;
+		var d = gridModel.addNode(100, 100).id;
+		
+		// Create figures ABC and ACD:
+		var p1 = gridModel.addPolygon( [a, b, c] ).id;
+		var p2 = gridModel.addPolygon( [a, c, d] ).id;
+		var segments = gridModel.getAdjacentPolygonSegments(p1, p2);
+		
+		expect( segments ).to.have.length( 1 );
+		expect( segments[0] ).to.contain(a, c);
+	});
+	
+	it("getAdjacentPolygonSegments: should find all adjacent line segments in interlocking polygons.", function() {
+		var a = gridModel.addNode(0, 0).id;
+		var b = gridModel.addNode(50, 50).id;
+		var c = gridModel.addNode(0, 100).id;
+		var d = gridModel.addNode(100, 50).id;
+		
+		// Create figures ABC and ACD:
+		var p1 = gridModel.addPolygon( [a, b, c] ).id;
+		var p2 = gridModel.addPolygon( [a, d, c, b] ).id;
+		var segments = gridModel.getAdjacentPolygonSegments(p1, p2);
+		
+		expect( segments ).to.have.length( 2 );
+		expect( segments[0] ).to.contain(a, b);
+		expect( segments[1] ).to.contain(b, c);
+	});
+	
 	it("getNodesInRect: should return an array of all node ids contained within a rectangle.", function() {
 		var a = gridModel.addNode(0, 0).id;
 		var b = gridModel.addNode(50, 50).id;

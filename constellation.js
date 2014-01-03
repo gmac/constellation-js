@@ -397,10 +397,6 @@
 		},
 		prioratize: function(a, b) {
 			return b.estimate - a.estimate;
-		},
-		dispose: function() {
-			this.nodes.length = 0;
-			this.nodes = null;
 		}
 	};
 	
@@ -431,7 +427,7 @@
 			this._i = 0;
 			
 			if (data) {
-				if (data.i) this._i = data.i;
+				this._i = data.i || 0;
 				
 				_c.each(data.nodes || {}, function(node) {
 					this.nodes[ node.id ] = node;
@@ -676,9 +672,9 @@
 		// @param goal: The node id within the search grid to reach via shortest path.
 		// @attr this.nodes: The grid of nodes to search, formatted as:
 		/* {
-			n1: {id:"n1", x:25, y:25, to:{n2:true, n3:true}},
-			n2: {id:"n2", x:110, y:110, to:{n1:true}},
-			n3: {id:"n3", x:50, y:180, to:{n1:true}},
+			n1: {id:"n1", x:25, y:25, to:{n2:1, n3:1}},
+			n2: {id:"n2", x:110, y:110, to:{n1:1}},
+			n3: {id:"n3", x:50, y:180, to:{n1:1}},
 		};*/
 		// @return: A report on the search, including:
 		//  @attr length: length of completed path.
@@ -686,18 +682,18 @@
 		//  @attr nodes: an array of path nodes, formatted as [startNode, ...connections, goalNode].
 		findPath: function(start, goal, weightFunction, estimateFunction) {
 			
-			var queue = [], // Queue of paths to search, sorted by estimated weight (highest to lowest).
-				weights = {}, // Table of shortest weights found to each node id.
-				bestPath, // The best completed path found to goal.
-				searchPath, // A current path to be extended and searched.
-				searchNode, // A current node to extend outward and searched from.
-				branchPath, // A new path branch for the search queue.
-				branchWeight, // Current weight of a new branch being explored.
-				branchEstimate, // Estimated best-case weight of new branch reaching goal.
-				startNode = this.getNodeById(start),
-				goalNode = this.getNodeById(goal),
-				cycles = 0,
-				i;
+			var queue = []; // Queue of paths to search, sorted by estimated weight (highest to lowest).
+			var weights = {}; // Table of shortest weights found to each node id.
+			var bestPath; // The best completed path found to goal.
+			var searchPath; // A current path to be extended and searched.
+			var searchNode; // A current node to extend outward and searched from.
+			var branchPath; // A new path branch for the search queue.
+			var branchWeight; // Current weight of a new branch being explored.
+			var branchEstimate; // Estimated best-case weight of new branch reaching goal.
+			var startNode = this.getNodeById(start);
+			var goalNode = this.getNodeById(goal);
+			var cycles = 0;
+			var i;
 			
 			// Default weight and estimate functions to use distance calculation.
 			if (!isFunction(weightFunction)) weightFunction = Const.distance;
@@ -734,44 +730,31 @@
 
 									// Test if goal has been reached.
 									if (searchNode.id === goalNode.id) {
-										if (bestPath) {
-											// Dispose of any existing completed path.
-											bestPath.dispose();
-										}
 										bestPath = branchPath; // Retain best completed path.
 									} else {
 										queue.push(branchPath); // Queue additional search path.
 									}
-
-									branchPath = null;
 								}
+								
 							}
 						}
-
-						searchNode = null;
 					}
+					
 				}
-
-				// Dispose of search path.
-				searchPath.dispose();
-				searchPath = startNode = null;
-
+				
 				// Sort queue by estimate to complete, highest to lowest.
 				queue.sort(Path.prototype.prioratize);
 
 				// Count search cycle.
 				cycles++;
 			}
-
-			// Cleanup local references.
-			queue = weights = goalNode = null;
-
+			
 			// Return best discovered path.
 			return {
-				valid: !!bestPath,
-				weight: (bestPath ? bestPath.weight : 0),
 				cycles: cycles,
-				nodes: (bestPath ? bestPath.nodes : [])
+				valid: !!bestPath,
+				nodes: (bestPath ? bestPath.nodes : []),
+				weight: (bestPath ? bestPath.weight : 0)
 			};
 		},
 		
@@ -854,12 +837,7 @@
 		// @param pt: Point to test.
 		// @return: True if the point intersects any polygon.
 		hitTestPointInPolygons: function(pt) {
-			for (var i in this.polys) {
-				if (this.polys.hasOwnProperty(i) && Const.hitTestPointRing(pt, this.getNodesForPolygon(i))) {
-					return true;
-				}
-			}
-			return false;
+			return !!this.getPolygonHitsForPoint(pt).length;
 		},
 		
 		// Tests a Point for intersections with all Polygons in the grid, and returns their ids.
@@ -867,13 +845,11 @@
 		// @return  Array of Polygon ids that hit the specified Point.
 		getPolygonHitsForPoint: function(pt) {
 			var hits = [];
-			
-			_c.each(this.polys, function(poly, id) {
-				if (Const.hitTestPointRing(pt, this.getNodesForPolygon(id))) {
-					hits.push(poly.id);
+			for (var id in this.polys) {
+				if (this.polys.hasOwnProperty(id) && Const.hitTestPointRing(pt, this.getNodesForPolygon(id))) {
+					hits.push(id);
 				}
-			}, this);
-			
+			}
 			return hits;
 		},
 		
@@ -914,6 +890,33 @@
 			}, this);
 
 			return hits;
+		},
+		
+		// Finds all adjacent line segments shared by two polygons.
+		// @param p1  First polygon to compare.
+		// @param p2  Second polygon to compare.
+		// @returns  Array of arrays, each containing two node ids for a line segment.
+		getAdjacentPolygonSegments: function(p1, p2) {
+		  var result = [];
+		  var ring1 = this.getNodesForPolygon(p1);
+		  var ring2 = this.getNodesForPolygon(p2);
+		  var len1 = ring1.length;
+		  var len2 = ring2.length;
+		  
+		  for (var i=0; i < len1; i++) {
+		    var a1 = ring1[i].id;
+		    var b1 = ring1[(i+1) % len1].id;
+		    
+		    for (var j=0; j < len2; j++) {
+		      var a2 = ring2[j].id;
+  		    var b2 = ring2[(j+1) % len2].id;
+  		    
+  		    if ((a1 === a2 && b1 === b2) || (a1 === b2 && b1 === a2)) {
+  		      result.push([a1, a2]);
+		      }
+	      }
+		  }
+		  return result;
 		},
 		
 		// Creates a path between two external (non-grid) points, using the grid to navigate between them.
