@@ -660,8 +660,8 @@ describe("Constellation Grid", function() {
 		var segments = grid.getAdjacentPolygonSegments(p1, p2);
 		
 		expect( segments ).to.have.length( 2 );
-		expect( segments[0] ).to.contain(a, b);
-		expect( segments[1] ).to.contain(b, c);
+		expect( segments[0] ).to.include.members([a, b]);
+		expect( segments[1] ).to.include.members([b, c]);
 	});
 	
 	it("getNodesInRect: should return an array of all node ids contained within a rectangle.", function() {
@@ -696,70 +696,142 @@ describe('bridgePoints', function() {
 	
 	// Environment config...
 	var grid;
-	var n0 = 'n0';
-	var n1 = 'n1';
-	var n2 = 'n2';
 		
 	function numConnections( id ) {
 		return _.size( grid.getNodeById( id ).to );
 	}
-
-	function getConnection( a, b ) {
-		return grid.getNodeById( a ).to[ b ];
-	}
+	
+	chai.Assertion.addMethod('point', function(pt) {
+	  new chai.Assertion(this._obj.x).to.equal(pt.x);
+		new chai.Assertion(this._obj.y).to.equal(pt.y);
+	});
 	
 	beforeEach(function() {
 		grid = new Const.Grid();
+		var a = grid.addNode(25, 25).id;
+		var b = grid.addNode(75, 25).id;
+		var c = grid.addNode(25, 75).id;
+		var d = grid.addNode(75, 75).id;
+		var e = grid.addNode(125, 25).id;
+		
+		grid.joinNodes(a, b, c);
+		grid.joinNodes(b, c, d);
+		grid.joinNodes(b, d, e);
+		grid.addPolygon([a, b, c]);
+		grid.addPolygon([b, c, d]);
 	});
 	
 	afterEach(function() {
 		// do nothing.
 	});
 	
-	
-	it("bridgePoints: should directly conntect two points within a common polygon.", function() {
-		var a = grid.addNode(0, 0).id;
-		var b = grid.addNode(100, 0).id;
-		var c = grid.addNode(0, 100).id;
-		var p = grid.addPolygon( [a, b, c] ).id;
-		
+	it("should directly conntect two points within a common polygon.", function() {
 		// Connect two points within the same polygon:
-		var start = {x:50, y:1};
-		var goal = {x:75, y:1};
+		var start = {x:26, y:26};
+		var goal = {x:28, y:28};
 		var path = grid.bridgePoints(start, goal);
 		
 		// Expect direct connection (start >> goal).
 		expect( path.length ).to.equal( 2 );
-		expect( path[0].x ).to.equal( start.x );
-		expect( path[0].y ).to.equal( start.y );
-		expect( path[1].x ).to.equal( goal.x );
-		expect( path[1].y ).to.equal( goal.y );
+		expect( path[0] ).to.be.point( start );
+		expect( path[1] ).to.be.point( goal );
 	});
 	
-	it("bridgePoints: should directly conntect two points in adjacent polygons who's ray intersects their common side.", function() {
-		var a = grid.addNode(0, 0).id;
-		var b = grid.addNode(100, 0).id;
-		var c = grid.addNode(0, 100).id;
-		var d = grid.addNode(100, 100).id;
-		grid.addPolygon( [a, b, c] ).id;
-		grid.addPolygon( [b, c, d] ).id;
-		
+	it("should directly connect two points in adjacent polygons who's ray intersects their common side.", function() {
 		// Connect two points within the same polygon:
-		var start = {x:25, y:25};
-		var goal = {x:75, y:75};
+		var start = {x:26, y:26};
+		var goal = {x:74, y:74};
 		var path = grid.bridgePoints(start, goal);
 		
 		// Expect direct connection (start >> goal).
 		expect( path.length ).to.equal( 2 );
-		expect( path[0].x ).to.equal( start.x );
-		expect( path[0].y ).to.equal( start.y );
-		expect( path[1].x ).to.equal( goal.x );
-		expect( path[1].y ).to.equal( goal.y );
+		expect( path[0] ).to.be.point( start );
+		expect( path[1] ).to.be.point( goal );
 	});
 	
-	it("bridgePoints: should connect two points via the grid using polygon container bridge.");
+	it('should snap a point to a grid segment, then directly connect it to a point within a related polygon.', function() {
+		var start = {x:20, y:50};
+		var goal = {x:26, y:26};
+		var path = grid.bridgePoints(start, goal);
+		
+		expect( path.length ).to.equal( 3 );
+		expect( path[0] ).to.be.point( start );
+		expect( path[1] ).to.be.point( {x:25, y:50} );
+		expect( path[2] ).to.be.point( goal );
+	});
 	
-	it("bridgePoints: should connect two points via the grid using snapped-point bridge.", function() {
+	it('should snap points to a grid segment, then directly connect them through a common polygon.', function() {
+		var start = {x:20, y:50};
+		var goal = {x:50, y:20};
+		var path = grid.bridgePoints(start, goal);
+		
+		expect( path.length ).to.equal( 4 );
+		expect( path[0] ).to.be.point( start );
+		expect( path[1] ).to.be.point( {x:25, y:50} );
+		expect( path[2] ).to.be.point( {x:50, y:25} );
+		expect( path[3] ).to.be.point( goal );
+	});
+	
+	it('should snap points to a grid segment, then directly connect them along a common line segment.', function() {
+		var start = {x:100, y:20};
+		var goal = {x:110, y:20};
+		var path = grid.bridgePoints(start, goal);
+		
+		expect( path.length ).to.equal( 4 );
+		expect( path[0] ).to.be.point( start );
+		expect( path[1] ).to.be.point( {x:100, y:25} );
+		expect( path[2] ).to.be.point( {x:110, y:25} );
+		expect( path[3] ).to.be.point( goal );
+	});
+	
+	it.only('should connect two points by following only the grid when no polygons are available.', function() {
+		var start = {x:120, y:20};
+		var goal = {x:120, y:50};
+		var path = grid.bridgePoints(start, goal);
+		
+		expect( path.length ).to.equal( 5 );
+		expect( path[0] ).to.be.point( start );
+		expect( path[1] ).to.be.point( {x:120, y:25} );
+		expect( path[2] ).to.be.point( {x:125, y:25} );
+		// expect( path[3] ).to.be.point( some other point along the segment... );
+		expect( path[4] ).to.be.point( goal );
+	});
+	
+	it.only('should connect two points by following the grid using polygons, when available.', function() {
+		var start = {x:20, y:70};
+		var goal = {x:100, y:20};
+		var path = grid.bridgePoints(start, goal);
+		
+		expect( path.length ).to.equal( 5 );
+		expect( path[0] ).to.be.point( start );
+		expect( path[1] ).to.be.point( {x:25, y:70} );
+		expect( path[2] ).to.be.point( {x:75, y:25} );
+		expect( path[3] ).to.be.point( {x:100, y:25} );
+		expect( path[4] ).to.be.point( goal );
+	});
+	
+	it('should exclude start point when already at a valid grid location.', function() {
+		var start = {x:25, y:50};
+		var goal = {x:26, y:26};
+		var path = grid.bridgePoints(start, goal);
+
+		expect( path.length ).to.equal( 2 );
+		expect( path[0] ).to.be.point( {x:25, y:50} );
+		expect( path[1] ).to.be.point( {x:26, y:26} );
+	});
+	
+	it('should exclude out-of-grid goal node when confined to the grid.', function() {
+		var start = {x:100, y:20};
+		var goal = {x:110, y:20};
+		var path = grid.bridgePoints(start, goal, true);
+		
+		expect( path.length ).to.equal( 3 );
+		expect( path[0] ).to.be.point( start );
+		expect( path[1] ).to.be.point( {x:100, y:25} );
+		expect( path[2] ).to.be.point( {x:110, y:25} );
+	});
+	
+	it.skip("bridgePoints: should connect two points via the grid using snapped-point bridge.", function() {
 		var a = grid.addNode(0, 0).id;
 		var b = grid.addNode(100, 100).id;
 		var c = grid.addNode(200, 100).id;

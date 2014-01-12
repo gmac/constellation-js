@@ -369,6 +369,16 @@
 		this.data = data || null;
 	};
 	
+	Node.prototype = {
+		toPoint: function() {
+			return {
+				x: this.x,
+				y: this.y,
+				data: this.data || null
+			};
+		}
+	};
+	
 	// Const.Polygon
 	// -------------
 	var Polygon = Const.Polygon = function(id, nodes, data) {
@@ -908,7 +918,7 @@
   		    var b2 = ring2[(j+1) % len2].id;
   		    
   		    if (isSameSegment(a1, b1, a2, b2)) {
-  		      result.push([a1, a2]);
+  		      result.push([a1, b1]);
 		      }
 	      }
 		  }
@@ -970,44 +980,28 @@
 		// @return  an array of Point objects specifying a path to follow.
 		bridgePoints: function(a, b, confineToGrid) {
 			
+			// 1) Connect points through common polygon.
+			// 2) Connect points through adjacent polygon.
+			// 3) Snap points to grid, connect anchors to segment and related polys.
+			// 4) Direct connect points on common line segment.
+			// 5) Direct connect points in common polygon.
+			
 			// Connect points through a common polygon:
 			// Get polygon intersections for each point.
 			var polysA = this.getPolygonsOverPoint(a);
 			var polysB = this.getPolygonsOverPoint(b);
-			var self = this;
-			var i;
 			
-			function result(a, b) {
-				return [a, confineToGrid ? self.snapPoint(b) : b];
-			}
-			
-			// If both points have polygon intersections,
-			if (polysA.length && polysB.length) {
-				
-				// search for a common polygon:
-				for (i=0; i < polysA.length; i++) {
-					if (_c.contains(polysB, polysA[i])) {
-						return result(a, b);
-					}
-				}
-
-				// Then check polygons for adjacent sides,
-				var adjacent = this.getAdjacentPolygonSegments(polysA, polysB);
-				
-				// search adjacent sides for an intersection with segment AB:
-				for (i=0; i < adjacent.length; i++) {
-					var n = _c.map(adjacent[i], this.getNodeById, this);
-					if (Const.intersect(a, b, n[0], n[1])) {
-						return result(a, b);
-					}
-				}
+			// Test if points can be bridged through the polygon grid:
+			// If so, a direction connection can be made.
+			if (testBridgeViaPolys(this, a, b, polysA, polysB)) {
+				return [a, b];
 			}
 			
 			// Connect temporary anchors to the node grid via polygons:
-			var anchorA = createAnchor(this, a, polysA);
-			var anchorB = createAnchor(this, b, polysB);
-			
-			if (connectAnchors(anchorA, anchorB)) {
+			var anchorA = createBridgeAnchor(this, a, polysA);
+			var anchorB = createBridgeAnchor(this, b, polysB);
+
+			if (testBridgeViaAnchors(anchorA, anchorB)) {
 				this.joinNodes(anchorA.id, anchorB.id);
 			}
 			
@@ -1016,15 +1010,17 @@
 			this.removeNodes(anchorA.id, anchorB.id);
 			
 			if (path.valid) {
-				path = path.nodes;
+				path = _c.map(path.nodes, function(node) {
+					return node.toPoint();
+				});
 				
-				// Add first node:
-				if (Const.distance(a, path[0]) > 1) {
+				// Add start point:
+				if (Const.distance(a, anchorA) > 1) {
 					path.unshift(a);
 				}
 				
-				// Add last node:
-				if (!confineToGrid && Const.distance(b, path[path.length-1]) > 1) {
+				// Add goal point:
+				if (!confineToGrid && Const.distance(b, anchorB) > 1) {
 					path.push(b);
 				}
 				
@@ -1036,21 +1032,46 @@
 		}
 	};
 	
-	function createAnchor(grid, pt, polys) {
+	function testBridgeViaPolys(grid, a, b, polysA, polysB) {
+		// If both points have polygon intersections,
+		if (polysA.length && polysB.length) {
+			
+			// search for a common polygon:
+			for (var i=0; i < polysA.length; i++) {
+				if (_c.contains(polysB, polysA[i])) {
+					return true;
+				}
+			}
+
+			// Then check polygons for adjacent sides,
+			var adjacent = grid.getAdjacentPolygonSegments(polysA, polysB);
+			
+			// search adjacent sides for an intersection with segment AB:
+			for (i=0; i < adjacent.length; i++) {
+				var n = _c.map(adjacent[i], grid.getNodeById, grid);
+				if (Const.intersect(a, b, n[0], n[1])) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	function createBridgeAnchor(grid, pt, polys) {
 		var anchor = grid.addNode(pt.x, pt.y, {});
 
 		// Attach to grid if there are no polygons to hook into:
-		// this may generate some polygons for the point.
+		// this may generate some new polygons for the point.
 		if (!polys.length) {
 			var snap = grid.snapPointToGrid(pt);
 			
 			if (snap.point) {
 				anchor.x = snap.point.x;
 				anchor.y = snap.point.y;
-				anchor.data.snap = snap;
+				anchor.snap = snap;
 				
 				// Attach to snapped segment:
-				for (var i in snap.segment) {
+				for (var i=0, len=snap.segment.length; i < len; i++) {
 					grid.joinNodes(anchor.id, snap.segment[i]);
 				}
 				
@@ -1061,7 +1082,7 @@
 		
 		// Attach node to related polygon geometry:
 		if (polys.length) {
-			anchor.data.poly = polys;
+			anchor.poly = polys;
 			
 			_c.each(polys, function(id) {
 				var nodes = grid.getPolygonById(id).nodes;
@@ -1075,20 +1096,20 @@
 		return anchor;
 	}
 	
-	function connectAnchors(anchor1, anchor2) {
+	function testBridgeViaAnchors(anchor1, anchor2) {
 		// Test for common line segment:
-		if (anchor1.data.snap && anchor2.data.snap) {
-			var s1 = anchor1.data.snap.segment;
-			var s2 = anchor2.data.snap.segment;
+		if (anchor1.snap && anchor2.snap) {
+			var s1 = anchor1.snap.segment;
+			var s2 = anchor2.snap.segment;
 			if (isSameSegment(s1[0], s1[1], s2[0], s2[1])) {
 				return true;
 			}
 		}
 		
 		// Test for common polygon:
-		if (anchor1.data.poly && anchor2.data.poly) {
-			for (var i in anchor1.data.poly) {
-				if (_c.contains(anchor2.data.poly, anchor1.data.poly[i])) {
+		if (anchor1.poly && anchor2.poly) {
+			for (var i in anchor1.poly) {
+				if (_c.contains(anchor2.poly, anchor1.poly[i])) {
 					return true;
 				}
 			}
