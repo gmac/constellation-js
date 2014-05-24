@@ -95,7 +95,7 @@ Requires an angle to be provided in radians. You may optionally specify the numb
 **Const.getRectForPointRing** `var result = Const.getRectForPointRing( [points] );`  
 Takes an array of `Point` objects; returns a `Rect` object of their bounding box.
 
-**Const.hitTestRect** `var result = Const.getRectForPointRing( pointP, rect );`  
+**Const.hitTestRect** `var result = Const.hitTestRect( pointP, rect );`  
 Takes target point P and a `Rect` object; returns `true` if the point falls within the rectangle.
 
 **Const.hitTestPointRing** `var result = Const.hitTestPointRing( pointP, [points, ...] );`  
