@@ -1,0 +1,14 @@
+import Point from './point';
+import Rect from './rect';
+export declare function uuidv4(): string;
+export declare function ccw(x: Point, y: Point, z: Point, exclusive?: boolean): boolean;
+export declare function intersect(a: Point, b: Point, c: Point, d: Point): boolean;
+export declare function degreesToRadians(degrees: number): number;
+export declare function radiansToDegrees(radians: number): number;
+export declare function angleRadians(a: Point, b: Point): number;
+export declare function angleDegrees(a: Point, b: Point): number;
+export declare function angleSector(radians: number, sectors: number, offset: number): number;
+export declare function getRectForPointRing(points: Array<Point>): Rect;
+export declare function hitTestPointRing(p: Point, points: Array<Point>): boolean;
+export declare function snapPointToLineSegment(p: Point, a: Point, b: Point): Point;
+export declare function getNearestPointToPoint(p: Point, points: Array<Point>): Point | null;
