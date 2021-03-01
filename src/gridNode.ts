@@ -10,7 +10,7 @@ export default class Node extends Point {
     this.to = to.reduce((memo: Record<string, boolean>, id: string) => {
       memo[id] = true;
       return memo;
-    }, {});
+    }, Object.create(null));
   }
 
   toConfig() {

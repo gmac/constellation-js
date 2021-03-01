@@ -5,9 +5,9 @@
 // Docs: https://github.com/gmac/constellation.js
 
 (function(context, factory) {
-	
+
 	var C = factory(Math.sqrt, Math.min, Math.max, Math.abs);
-	
+
 	if (typeof exports !== "undefined") module.exports = C;
 	else if (typeof define === "function" && define.amd) define(C);
 	else context.Const = C;
@@ -22,35 +22,35 @@
 	function isArray(obj) {
 		return obj instanceof Array;
 	}
-	
+
 	function isFunction(obj) {
 		return typeof obj === 'function';
 	}
-	
+
 	function getArgsArray(args) {
 		return Array.prototype.slice.call(args);
 	}
-	
+
 	function isSameSegment(a, b, c, d) {
 		return (a === c && b === d) || (a === d && b === c);
 	}
-	
+
 	function mapIds(list, rewrite) {
 		if (!rewrite) list = list.slice();
-		
+
 		for (var i=0, len=list.length; i < len; i++) {
 			var id = list[i].id;
 			if (id) list[i] = id;
 		}
 		return list;
 	}
-	
+
 	// Const._c / Underscore shim
 	// --------------------------
 	// Based on methods of Underscore.js
 	// Implementations are unique to Constellation.
 	var _c = Const.utils = {
-		
+
 		// Gets the number of items in an array, or number of properties on an object.
 		size: function(obj) {
 			// Array.
@@ -65,32 +65,32 @@
 			}
 			return num;
 		},
-		
+
 		// Tests if an array contains a value.
 		contains: function(obj, item) {
 			if (isArray(obj)) {
-				
-				// Test with native indexOf method.	
+
+				// Test with native indexOf method.
 				if (isFunction(Array.prototype.indexOf)) {
 					return obj.indexOf(item) >= 0;
 				}
-			
+
 				// Brute-force search method.
 				var len = obj.length;
 				var i = 0;
-			
+
 				while (i < len) {
 					if (obj[i++] === item) return true;
 				}
 			}
-			
+
 			return obj && obj.hasOwnProperty(item);
 		},
-		
+
 		// Runs an iterator function over each item in an array or object.
 		each: function(obj, iteratorFunct, context) {
 			var i = 0;
-			
+
 			if (isArray(obj)) {
 				// Array.
 				var len = obj.length;
@@ -108,11 +108,11 @@
 			}
 			return obj;
 		},
-		
+
 		// Runs a mutator function over each item in an array or object, setting the result as the new value.
 		map: function(obj, mutatorFunct, context) {
 			var i = 0;
-			
+
 			if (isArray(obj)) {
 				// Array.
 				var len = obj.length;
@@ -130,13 +130,13 @@
 			}
 			return obj;
 		},
-		
+
 		// Runs a test function on each item in the array,
 		// then returns true if all items pass the test.
 		all: function(array, testFunct, context) {
 			var len = array.length;
 			var i = 0;
-			
+
 			while (i < len) {
 				if (!testFunct.call(context, array[i], i++)) {
 					return false;
@@ -144,25 +144,25 @@
 			}
 			return true;
 		},
-		
+
 		// Formats a collection of object values into an array.
 		toArray: function(obj) {
 			var array = [];
-			
+
 			for (var i in obj) {
 				if (obj.hasOwnProperty(i)) array.push(obj[i]);
 			}
 			return array;
 		}
 	};
-	
+
 	// Const.Point
 	// -----------
 	var Point = Const.Point = function(x, y, z) {
 		this.x = x || 0;
 		this.y = y || 0;
 	};
-	
+
 	// Const.Rect
 	// ----------
 	var Rect = Const.Rect = function(x, y, w, h) {
@@ -171,7 +171,7 @@
 		this.width = w || 0;
 		this.height = h || 0;
 	};
-	
+
 	// Const Geom Methods
 	// ------------------
 	// Tests the distance between two points.
@@ -180,7 +180,7 @@
 		var y = b.y-a.y;
 		return sqrt(x*x + y*y);
 	};
-	
+
 	// Tests for counter-clockwise winding among three points.
 	// @param x: Point X of triangle XYZ.
 	// @param y: Point Y of triangle XYZ.
@@ -191,7 +191,7 @@
 		 	(z.y-x.y) * (y.x-x.x) > (y.y-x.y) * (z.x-x.x) :
 			(z.y-x.y) * (y.x-x.x) >= (y.y-x.y) * (z.x-x.x);
 	};
-	
+
 	// Tests for intersection between line segments AB and CD.
 	// @param a: Point A of line AB.
 	// @param b: Point B of line AB.
@@ -201,21 +201,21 @@
 	Const.intersect = function(a, b, c, d) {
 		return Const.ccw(a, c, d) !== Const.ccw(b, c, d) && Const.ccw(a, b, c) !== Const.ccw(a, b, d);
 	};
-	
+
 	// Convert degrees to radians.
 	// @param degrees value.
 	// @return radians equivalent.
 	Const.degreesToRadians = function(degrees) {
 		return degrees * Math.PI / 180;
 	};
-	
+
 	// Convert radians to degrees.
 	// @param radians value.
 	// @return degrees equivalent.
 	Const.radiansToDegrees = function(radians) {
 		return radians * 180 / Math.PI;
 	};
-	
+
 	// Calculates the angle (in radians) between line segment AB and the positive X-origin.
 	// @param a: Point A of line AB.
 	// @param b: Point B of line AB.
@@ -223,7 +223,7 @@
 	Const.angleRadians = function(a, b) {
 		return Math.atan2(b.y-a.y, b.x-a.x);
 	};
-	
+
 	// Calculates the angle (in degrees) between line segment AB and the positive X-origin.
 	// Degree value is adjusted to fall within a 0-360 range.
 	// @param a: Point A of line AB.
@@ -233,7 +233,7 @@
 		var degrees = Const.radiansToDegrees(Const.angleRadians(a, b));
 		return degrees < 0 ? degrees+360 : degrees;
 	};
-	
+
 	// Gets the index of the circle sector that an angle falls into.
 	// This is useful for applying view states to a graphic while moving it around the grid.
 	// Ex: create 8 walk cycles
@@ -250,7 +250,7 @@
 		if (radians > circ) radians -= circ;
 		return Math.floor(radians / (circ / sectors));
 	};
-	
+
 	// Gets the rectangular bounds of a point ring.
 	// @param points: The ring of points to measure bounding on.
 	// @return: a new Rect object of the ring's maximum extent.
@@ -260,17 +260,17 @@
 		var maxX = first.x;
 		var minY = first.y;
 		var maxY = first.y;
-		
+
 		_c.each(points, function(pt) {
 			minX = min(minX, pt.x);
 			maxX = max(maxX, pt.x);
 			minY = min(minY, pt.y);
 			maxY = max(maxY, pt.y);
 		});
-		
+
 		return new Rect(minX, minY, maxX-minX, maxY-minY);
 	};
-	
+
 	// Tests if point P falls within a rectangle.
 	// @param p: The point to test.
 	// @param rect: The Rect object to test against.
@@ -280,10 +280,10 @@
 		var maxX = max(rect.x, rect.x + rect.width);
 		var minY = min(rect.y, rect.y + rect.height);
 		var maxY = max(rect.y, rect.y + rect.height);
-		
+
 		return p.x >= minX && p.y >= minY && p.x <= maxX && p.y <= maxY;
 	};
-	
+
 	// Tests if point P falls within a polygonal region; test performed by ray casting.
 	// @param p: The point to test.
 	// @param points: An array of points forming a polygonal shape.
@@ -291,7 +291,7 @@
 	Const.hitTestPointRing = function(p, points) {
 		var origin = new Point(0, p.y);
 		var hits = 0;
-	
+
 		// Test intersection of an external ray against each polygon side.
 		for (var i=0, sides=points.length; i < sides; i++) {
 			var s1 = points[i];
@@ -299,7 +299,7 @@
 			origin.x = min(origin.x, min(s1.x, s2.x)-1);
 			hits += (this.intersect(origin, p, s1, s2) ? 1 : 0);
 		}
-		
+
 		// Return true if an odd number of hits were found.
 		return hits % 2 > 0;
 	};
@@ -342,7 +342,7 @@
 			b = abs(p.x-b.x);
 			return b-a;
 		});
-	
+
 		while (i >= 0) {
 			a = points[i--];
 			if (abs(p.x-a.x) < bestDist) {
@@ -358,7 +358,7 @@
 
 		return bestPt;
 	};
-	
+
 	// Const.Node
 	// ----------
 	var Node = Const.Node = function(id, x, y, data, to) {
@@ -368,7 +368,7 @@
 		this.to = to || {};
 		this.data = data || null;
 	};
-	
+
 	Node.prototype = {
 		toPoint: function() {
 			return {
@@ -378,7 +378,7 @@
 			};
 		}
 	};
-	
+
 	// Const.Polygon
 	// -------------
 	var Polygon = Const.Polygon = function(id, nodes, data) {
@@ -386,7 +386,7 @@
 		this.nodes = nodes.slice();
 		this.data = data || null;
 	};
-	
+
 	// Const.Path
 	// ----------
 	var Path = Const.Path = function(nodes, weight, estimate) {
@@ -394,7 +394,7 @@
 		this.weight = (weight || 0);
 		this.estimate = (estimate || 0);
 	};
-	
+
 	Path.prototype = {
 		copy: function(weight, estimate) {
 			return new Path(this.nodes.slice(), (weight || this.weight), (estimate || this.estimate));
@@ -409,18 +409,18 @@
 			return b.estimate - a.estimate;
 		}
 	};
-	
+
 	// Const.Grid
 	// ----------
 	var Grid = Const.Grid = function(data) {
 		this.reset(data);
 	};
-	
+
 	Grid.prototype = {
 		nodes: {},
 		polys: {},
 		_i: 0,
-		
+
 		// Creates a raw data representation of the grid:
 		toJSON: function() {
 			return {
@@ -429,26 +429,26 @@
 				i: this._i
 			};
 		},
-		
+
 		// Clears all existing node and polygon references from the grid.
 		reset: function(data) {
 			this.nodes = {};
 			this.polys = {};
 			this._i = 0;
-			
+
 			if (data) {
 				this._i = data.i || 0;
-				
+
 				_c.each(data.nodes || {}, function(node) {
 					this.nodes[ node.id ] = node;
 				}, this);
-				
+
 				_c.each(data.polys || {}, function(poly) {
 					this.polys[ poly.id ] = poly;
 				}, this);
 			}
 		},
-		
+
 		// Adds a new node to the grid at the specified X and Y coordinates.
 		addNode: function(x, y, data) {
 			if (typeof x === 'object') {
@@ -459,34 +459,34 @@
 			this.nodes[ node.id ] = node;
 			return node;
 		},
-		
+
 		// Gets a node by id reference.
 		getNodeById: function(id) {
 			return this.nodes.hasOwnProperty(id) ? this.nodes[id] : null;
 		},
-		
+
 		// Gets a collection of nodes by id references.
 		getNodes: function(ids, rest) {
 			if (!isArray(ids) || rest) {
 				ids = getArgsArray(arguments);
 			}
-			
+
 			return _c.map(ids.slice(), function(id) {
 				return this.getNodeById(id);
 			}, this);
 		},
-		
+
 		// Counts the number of nodes defined within the grid.
 		getNumNodes: function() {
 			return _c.size(this.nodes);
 		},
-		
+
 		// Tests if a node id or array of node ids are defined.
 		hasNodes: function(ids, rest) {
 			if (!isArray(ids) || rest) {
 				ids = getArgsArray(arguments);
 			}
-			
+
 			return _c.all(ids, function(id) {
 				return this.nodes.hasOwnProperty(id);
 			}, this);
@@ -498,9 +498,9 @@
 			if (!isArray(ids) || rest) {
 				ids = getArgsArray(arguments);
 			}
-			
+
 			var change = false;
-			
+
 			// Group must contain two or more nodes to join...
 			if (ids.length > 1 && this.hasNodes(ids)) {
 
@@ -509,7 +509,7 @@
 					var node = this.nodes[id];
 					var len = ids.length;
 					var j = 0;
-						
+
 					while (j < len) {
 						id = ids[j++];
 						if (id !== node.id) {
@@ -519,28 +519,28 @@
 					}
 				}, this);
 			}
-			
+
 			return change;
 		},
-		
+
 		// Splits apart nodes within a selection group.
 		// Selection group may be an array of node ids, or an object of id keys.
 		splitNodes: function(ids, rest) {
 			if (!isArray(ids) || rest) {
 				ids = getArgsArray(arguments);
 			}
-			
+
 			// Alias 'detach' method for a single node reference.
 			if (ids.length < 2) {
 				return this.detachNodes(ids);
 			}
-			
+
 			var change = false;
-			
+
 			// Decouple group node references.
 			_c.each(ids, function(id) {
 				var node = this.nodes[id];
-				
+
 				if (node && node.to) {
 					for (id in node.to) {
 						if (_c.contains(ids, id)) {
@@ -550,32 +550,32 @@
 					}
 				}
 			}, this);
-			
+
 			return change;
 		},
-		
+
 		// Detachs a node from the grid.
 		// Each node's connections will be severed from all joining nodes.
 		detachNodes: function(ids, rest) {
 			if (!isArray(ids) || rest) {
 				ids = getArgsArray(arguments);
 			}
-			
+
 			var change = false;
-			
+
 			_c.each(ids, function(id) {
 				var local = this.nodes[id];
 				var foreign, j;
-				
+
 				if (local && local.to) {
 					// Break all connections between target and its neighbors.
 					for (j in local.to) {
 						// Delete local reference.
 						delete local.to[j];
-					
+
 						// Find foreign node.
 						foreign = this.nodes[j];
-					
+
 						// Delete foreign key relationship.
 						if (foreign && foreign.to) {
 							delete foreign.to[id];
@@ -584,25 +584,25 @@
 					change = true;
 				}
 			}, this);
-			
+
 			return change;
 		},
-		
+
 		// Detaches and removes a collection of nodes from the grid.
 		removeNodes: function(ids, rest) {
 			if (!isArray(ids) || rest) {
 				ids = getArgsArray(arguments);
 			}
-			
+
 			var change = this.detachNodes(ids);
 
 			_c.each(ids, function(id) {
 				var poly, j;
-					
+
 				if (this.nodes.hasOwnProperty(id)) {
 					// Detach and remove the node.
 					delete this.nodes[id];
-					
+
 					// Remove any dependent polygons.
 					for (j in this.polys) {
 						poly = this.polys[j];
@@ -617,7 +617,7 @@
 
 			return change;
 		},
-		
+
 		// Adds a polygon to the grid, formed by a collection of node ids.
 		addPolygon: function(nodes, data) {
 			if (nodes.length >= 3 && this.hasNodes(nodes)) {
@@ -627,21 +627,21 @@
 			}
 			return null;
 		},
-		
+
 		// Gets a polygon by id reference.
 		getPolygonById: function(id) {
 			return this.polys.hasOwnProperty(id) ? this.polys[id] : null;
 		},
-		
+
 		// Gets a collection of polygons by id references.
 		getPolygons: function(ids, rest) {
 			if (!isArray(ids) || rest) {
 				ids = getArgsArray(arguments);
 			}
-			
+
 			return _c.map(ids.slice(), this.getPolygonById, this);
 		},
-		
+
 		// Gets an array of nodes representing a polygon in the grid.
 		getNodesForPolygon: function(id) {
 			if (this.polys.hasOwnProperty(id)) {
@@ -649,18 +649,18 @@
 			}
 			return null;
 		},
-		
+
 		// Counts the number of polygons defined in the grid.
 		getNumPolygons: function() {
 			return _c.size(this.polys);
 		},
-		
+
 		// Removes a collection of polygons from the grid.
 		removePolygons: function(ids, rest) {
 			if (!isArray(ids) || rest) {
 				ids = getArgsArray(arguments);
 			}
-			
+
 			var change = false;
 
 			_c.each(ids, function(id) {
@@ -669,7 +669,7 @@
 					change = true;
 				}
 			}, this);
-			
+
 			return change;
 		},
 
@@ -687,7 +687,7 @@
 		//  @attr cycles: number of cycles required to complete the search.
 		//  @attr nodes: an array of path nodes, formatted as [startNode, ...connections, goalNode].
 		findPath: function(start, goal, weightFunction, estimateFunction) {
-			
+
 			var queue = []; // Queue of paths to search, sorted by estimated weight (highest to lowest).
 			var weights = {}; // Table of shortest weights found to each node id.
 			var bestPath; // The best completed path found to goal.
@@ -700,7 +700,7 @@
 			var goalNode = this.getNodeById(goal);
 			var cycles = 0;
 			var i;
-			
+
 			// Default weight and estimate functions to use distance calculation.
 			if (!isFunction(weightFunction)) weightFunction = Const.distance;
 			if (!isFunction(estimateFunction)) estimateFunction = Const.distance;
@@ -741,20 +741,20 @@
 										queue.push(branchPath); // Queue additional search path.
 									}
 								}
-								
+
 							}
 						}
 					}
-					
+
 				}
-				
+
 				// Sort queue by estimate to complete, highest to lowest.
 				queue.sort(Path.prototype.prioratize);
 
 				// Count search cycle.
 				cycles++;
 			}
-			
+
 			// Return best discovered path.
 			return {
 				cycles: cycles,
@@ -763,13 +763,13 @@
 				weight: (bestPath ? bestPath.weight : 0)
 			};
 		},
-		
+
 		// Finds a path between two points with the fewest number of connections.
 		findPathWithFewestNodes: function(start, goal) {
 			var step = function() { return 1; };
 			return this.findPath(start, goal, step, step);
 		},
-		
+
 		// Snaps the provided point to the nearest position within the node grid.
 		// @param pt  The point to snap into the grid.
 		// @param meta  Specify true to return full meta data on the snapped point/segment.
@@ -800,26 +800,26 @@
 					}
 				}
 			}, this);
-			
+
 			return {
 			  offset: isFinite(bestDistance) ? bestDistance : 0,
 				point: bestPoint || pt,
 				segment: bestSegment
 			};
 		},
-		
+
 		snapPoint: function(pt) {
 			var snapped = this.snapPointToGrid(pt);
 			return snapped.point || pt;
 		},
-		
+
 		// Finds the nearest node to the specified node.
 		// @param origin: The origin node to search from.
 		// @return: The nearest other grid node to the specified target.
 		getNearestNodeToNode: function(id) {
 			var nodes = [];
 			var target = this.getNodeById(id);
-			
+
 			if (target) {
 				_c.each(this.nodes, function(node) {
 					if (node.id !== target.id) {
@@ -831,21 +831,21 @@
 			}
 			return null;
 		},
-		
+
 		// Finds the nearest node to a specified point within the grid.
 		// @param pt: Point to test.
 		// @return: Nearest Node to target Point.
 		getNearestNodeToPoint: function(pt) {
 			return Const.getNearestPointToPoint(pt, _c.toArray(this.nodes));
 		},
-		
+
 		// Tests if a Point intersects any Polygon in the grid.
 		// @param pt: Point to test.
 		// @return: True if the point intersects any polygon.
 		hitTestPointInPolygons: function(pt) {
 			return !!this.getPolygonsOverPoint(pt).length;
 		},
-		
+
 		// Tests a Point for intersections with all Polygons in the grid, and returns their ids.
 		// @param pt  The point to snap into the grid.
 		// @return  Array of Polygon ids that hit the specified Point.
@@ -858,7 +858,7 @@
 			}
 			return hits;
 		},
-		
+
 		// Tests a Polygon for intersections with all nodes in the grid, and returns their ids.
 		// @param id  The polygon id to test.
 		// @return  Array of node ids that fall within the specified Polygon.
@@ -882,13 +882,13 @@
 
 			return hits;
 		},
-		
+
 		// Tests a Rect for intersections with all nodes in the grid, and returns their ids.
 		// @param id  The polygon id to test.
 		// @return  Array of node ids that fall within the specified Rect.
 		getNodesInRect: function(rect) {
 			var hits = [];
-			
+
 			_c.each(this.nodes, function(node) {
 				if (Const.hitTestRect(node, rect)) {
 					hits.push(node.id);
@@ -897,7 +897,7 @@
 
 			return hits;
 		},
-		
+
 		// Finds all adjacent line segments shared by two polygons.
 		// @param p1  First polygon to compare.
 		// @param p2  Second polygon to compare.
@@ -908,15 +908,15 @@
 		  var ring2 = this.getNodesForPolygon(p2);
 		  var len1 = ring1.length;
 		  var len2 = ring2.length;
-		  
+
 		  for (var i=0; i < len1; i++) {
 		    var a1 = ring1[i].id;
 		    var b1 = ring1[(i+1) % len1].id;
-		    
+
 		    for (var j=0; j < len2; j++) {
 		      var a2 = ring2[j].id;
   		    var b2 = ring2[(j+1) % len2].id;
-  		    
+
   		    if (isSameSegment(a1, b1, a2, b2)) {
   		      result.push([a1, b1]);
 		      }
@@ -924,17 +924,17 @@
 		  }
 		  return result;
 		},
-		
+
 		// Gets an array of polygon ids that contain the specified line segment:
 		getPolygonsWithLineSegment: function(n1, n2) {
 			var result = [];
-			
+
 			_c.each(this.polys, function(poly, id) {
 				// Loop through all polygon ring node pairs:
 				for (var i=0, len=poly.nodes.length; i < len; i++) {
 					var a = poly.nodes[i];
 					var b = poly.nodes[(i+1) % len];
-					
+
 					// Retain polygon id if it matches the specified segment:
 					if (isSameSegment(a, b, n1, n2)) {
 						result.push(id);
@@ -943,18 +943,18 @@
 			});
 			return result;
 		},
-		
+
 		// Maps the grid into descrete node fragments.
 		// Each fragment contains the IDs of contiguously joined nodes.
 		getContiguousNodesMap: function() {
 			var fragments = [];
 			var mapped = {};
 			var grid = this;
-			
+
 			function followNode(node, fragment) {
 				// Record node as mapped and belonging to the current fragment:
 				mapped[node.id] = fragment[node.id] = 1;
-				
+
 				for (var id in node.to) {
 					if (node.to.hasOwnProperty(id) && !fragment.hasOwnProperty(id)) {
 						fragment = followNode(grid.getNodeById(id), fragment);
@@ -962,16 +962,16 @@
 				}
 				return fragment;
 			}
-			
+
 			_c.each(this.nodes, function(node) {
 				if (!mapped.hasOwnProperty(node.id)) {
 					fragments.push(followNode(node, {}));
 				}
 			});
-			
+
 			return fragments;
 		},
-		
+
 		// Creates a path between two external (non-grid) points, using the grid to navigate between them.
 		// Start and goal points will be integrated as best as possible into the grid, then route between.
 		// @param a  Starting Point object to path from.
@@ -979,24 +979,24 @@
 		// @param confineToGrid  Specify TRUE to lock final route point to within the grid.
 		// @return  an array of Point objects specifying a path to follow.
 		bridgePoints: function(a, b, confineToGrid) {
-			
+
 			// 1) Connect points through common polygon.
 			// 2) Connect points through adjacent polygon.
 			// 3) Snap points to grid, connect anchors to segment and related polys.
 			// 4) Direct connect points on common line segment.
 			// 5) Direct connect points in common polygon.
-			
+
 			// Connect points through a common polygon:
 			// Get polygon intersections for each point.
 			var polysA = this.getPolygonsOverPoint(a);
 			var polysB = this.getPolygonsOverPoint(b);
-			
+
 			// Test if points can be bridged through the polygon grid:
 			// If so, a direction connection can be made.
 			if (testBridgeViaPolys(this, a, b, polysA, polysB)) {
 				return [a, b];
 			}
-			
+
 			// Connect temporary anchors to the node grid via polygons:
 			var anchorA = createBridgeAnchor(this, a, polysA);
 			var anchorB = createBridgeAnchor(this, b, polysB);
@@ -1004,38 +1004,38 @@
 			if (testBridgeViaAnchors(anchorA, anchorB)) {
 				this.joinNodes(anchorA.id, anchorB.id);
 			}
-			
+
 			// Find path then remove nodes:
 			var path = this.findPath(anchorA.id, anchorB.id);
 			this.removeNodes(anchorA.id, anchorB.id);
-			
+
 			if (path.valid) {
 				path = _c.map(path.nodes, function(node) {
 					return node.toPoint();
 				});
-				
+
 				// Add start point:
 				if (Const.distance(a, anchorA) > 1) {
 					path.unshift(a);
 				}
-				
+
 				// Add goal point:
 				if (!confineToGrid && Const.distance(b, anchorB) > 1) {
 					path.push(b);
 				}
-				
+
 				return path;
 			}
-			
+
 			// Return empty array if errors were encountered:
 			return [];
 		}
 	};
-	
+
 	function testBridgeViaPolys(grid, a, b, polysA, polysB) {
 		// If both points have polygon intersections,
 		if (polysA.length && polysB.length) {
-			
+
 			// search for a common polygon:
 			for (var i=0; i < polysA.length; i++) {
 				if (_c.contains(polysB, polysA[i])) {
@@ -1045,7 +1045,7 @@
 
 			// Then check polygons for adjacent sides,
 			var adjacent = grid.getAdjacentPolygonSegments(polysA, polysB);
-			
+
 			// search adjacent sides for an intersection with segment AB:
 			for (i=0; i < adjacent.length; i++) {
 				var n = _c.map(adjacent[i], grid.getNodeById, grid);
@@ -1056,7 +1056,7 @@
 		}
 		return false;
 	}
-	
+
 	function createBridgeAnchor(grid, pt, polys) {
 		var anchor = grid.addNode(pt.x, pt.y, {});
 
@@ -1064,38 +1064,38 @@
 		// this may generate some new polygons for the point.
 		if (!polys.length) {
 			var snap = grid.snapPointToGrid(pt);
-			
+
 			if (snap.point) {
 				anchor.x = snap.point.x;
 				anchor.y = snap.point.y;
 				anchor.snap = snap;
-				
+
 				// Attach to snapped segment:
 				for (var i=0, len=snap.segment.length; i < len; i++) {
 					grid.joinNodes(anchor.id, snap.segment[i]);
 				}
-				
+
 				// Find polygons for new segment:
 				polys = grid.getPolygonsWithLineSegment(snap.segment[0], snap.segment[1]);
 			}
 		}
-		
+
 		// Attach node to related polygon geometry:
 		if (polys.length) {
 			anchor.poly = polys;
-			
+
 			_c.each(polys, function(id) {
 				var nodes = grid.getPolygonById(id).nodes;
-				
+
 				for (var i=0, len=nodes.length; i < len; i++) {
 					grid.joinNodes(anchor.id, nodes[i]);
 				}
 			});
 		}
-		
+
 		return anchor;
 	}
-	
+
 	function testBridgeViaAnchors(anchor1, anchor2) {
 		// Test for common line segment:
 		if (anchor1.snap && anchor2.snap) {
@@ -1105,7 +1105,7 @@
 				return true;
 			}
 		}
-		
+
 		// Test for common polygon:
 		if (anchor1.poly && anchor2.poly) {
 			for (var i in anchor1.poly) {
@@ -1114,9 +1114,9 @@
 				}
 			}
 		}
-		
+
 		return false;
 	}
-	
+
 	return Const;
 }));

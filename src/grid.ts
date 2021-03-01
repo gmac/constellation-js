@@ -2,12 +2,23 @@ import Cell from './gridCell';
 import Node from './gridNode';
 import Path from './gridPath';
 import Point from './point';
+import Rect from './rect';
 import { NodeCostComparator, PathSelector } from './types';
-import { uuidv4 } from './utils';
+import {
+  uuidv4,
+  snapPointToLineSegment,
+  boundingRectForPoints,
+  nearestPointToPoint,
+  hitTestPointRing,
+} from './utils';
 
 interface GridData {
   nodes: Array<{ id: string, x: number, y: number, to: Array<string>, data?: Record<any, any> }>,
   cells: Array<{ id: string, rels: Array<string>, data?: Record<any, any> }>,
+}
+
+function isSameLineSegment(a: Node, b: Node, c: Node, d: Node): boolean {
+  return (a.id === c.id && b.id === d.id) || (a.id === d.id && b.id === c.id);
 }
 
 export default class Grid {
@@ -45,7 +56,7 @@ export default class Grid {
   }
 
   addNode(x: number=0, y: number=0, data?: Record<any, any>): Node {
-    const node = new Node(uuidv4(), x, y, [], data);
+    const node = new Node(data?.id ?? uuidv4(), x, y, [], data);
     this.nodes[node.id] = node;
     return node;
   }
@@ -166,7 +177,7 @@ export default class Grid {
         return existing;
       }
 
-      const cell = new Cell(uuidv4(), rels, data);
+      const cell = new Cell(data?.id ?? uuidv4(), rels, data);
       this.cells[cell.id] = cell;
       return cell;
     }
@@ -208,19 +219,10 @@ export default class Grid {
     return changed;
   }
 
-  // Finds the shortest path between two nodes among the grid of nodes.
+  // Finds the lowest cost path between two nodes among the grid of nodes.
   // @param start: The node id within the seach grid to start at.
-  // @param goal: The node id within the search grid to reach via shortest path.
-  // @attr this.nodes: The grid of nodes to search, formatted as:
-  /* {
-    n1: {id:"n1", x:25, y:25, to:{n2:1, n3:1}},
-    n2: {id:"n2", x:110, y:110, to:{n1:1}},
-    n3: {id:"n3", x:50, y:180, to:{n1:1}},
-  };*/
-  // @return: A report on the search, including:
-  //  @attr length: length of completed path.
-  //  @attr cycles: number of cycles required to complete the search.
-  //  @attr nodes: an array of path nodes, formatted as [startNode, ...connections, goalNode].
+  // @param goal: The node id within the search grid to reach via lowest cost path.
+  // @return: Path found to goal
   findPath({
     start,
     goal,
@@ -242,25 +244,25 @@ export default class Grid {
     let bestPath: Path | undefined = undefined;
 
     // Create initial search path with default weight from/to self.
-    queue.push(new Path([startNode], costForSegment(startNode, startNode), costEstimateToGoal(startNode, goalNode)));
+    queue.push(new Path([startNode], costForSegment(startNode, startNode)));
 
     // While the queue contains paths:
     while (queue.length > 0) {
-      let currentPath = queue.pop() as Path;
-      let prevNode = currentPath.nodes[currentPath.nodes.length-1];
+      const currentPath = queue.pop() as Path;
+      const lastNode = currentPath.nodes[currentPath.nodes.length-1];
 
       // Extend search path outward to the next set of connections, creating X new paths.
-      Object.keys(prevNode.to).forEach(id => {
+      Object.keys(lastNode.to).forEach(id => {
         const currentNode = this.getNode(id);
 
         // Reject loops.
         if (currentNode && !currentPath.nodes.find(n => n.id === currentNode.id)) {
-          const branchWeight = currentPath.weight + costForSegment(prevNode, currentNode);
+          const branchWeight = currentPath.weight + costForSegment(lastNode, currentNode);
 
           // Test branch fitness.
           if (branchWeight <= (bestWeights[currentNode.id] || branchWeight)) {
             bestWeights[currentNode.id] = branchWeight;
-            const branchEstimate = branchWeight + costEstimateToGoal(currentNode, goalNode);
+            const branchEstimate = branchWeight + (currentNode !== goalNode ? costEstimateToGoal(currentNode, goalNode) : 0);
 
             // Test for viable path to goal.
             if (bestPath == null || branchEstimate <= bestPath.weight) {
@@ -289,170 +291,144 @@ export default class Grid {
     return bestPath ?? null;
   }
 
-  // // Finds a path between two points with the fewest number of connections.
-  // findPathWithFewestNodes(options: {
-  //   start: string,
-  //   goal: string,
-  //   tiebreakerFunction?: PathSelector
-  // }): Path {
-  //   const step = () => 1;
-  //   return this.findPath({ ...options,  });
-  // }
+  // Snaps the provided point to the nearest position within the node grid.
+  // @param pt  The point to snap into the grid.
+  snapPointToGrid(pt: Point): {
+    p: Point,
+    a: Node | null,
+    b: Node | null,
+  } {
+    let p: Point | null = null;
+    let a: Node | null = null;
+    let b: Node | null = null;
+    let bestDistance: number = Infinity;
+    const tested: Record<any, boolean> = Object.create(null);
 
-  // // Snaps the provided point to the nearest position within the node grid.
-  // // @param pt  The point to snap into the grid.
-  // // @param meta  Specify true to return full meta data on the snapped point/segment.
-  // // @return  A new point with the snapped position, or the original point if no grid was searched.
-  // snapPointToGrid: function(pt) {
-  //   var bestPoint = null;
-  //   var bestDistance = Infinity;
-  //   var bestSegment = [];
-  //   var tested = {};
+    Object.values(this.nodes).forEach(node => {
+      Object.keys(node.to).forEach(relId => {
+        if (!tested[`${relId} ${node.id}`]) {
+          tested[`${node.id} ${relId}`] = true;
+          const rel = this.getNode(relId);
+          const snapped = snapPointToLineSegment(pt, node, rel);
+          const offset = Point.distance(pt, snapped);
 
-  //   _c.each(this.nodes, function(local, id) {
-  //     if (pt.id === id) return;
+          if (p == null || offset < bestDistance) {
+            bestDistance = offset;
+            p = snapped;
+            a = node;
+            b = rel;
+          }
+        }
+      });
+    });
 
-  //     // Loop through each node's connections.
-  //     for (var i in local.to) {
-  //       if (local.to.hasOwnProperty(i) && !tested.hasOwnProperty(i+' '+local.id)) {
-  //         var foreign = this.nodes[i];
-  //         var snapped = Const.snapPointToLineSegment(pt, local, foreign);
-  //         var offset = Const.distance(pt, snapped);
-  //         tested[local.id+' '+foreign.id] = true;
+    return {
+      p: p ?? pt,
+      a,
+      b,
+    };
+  }
 
-  //         if (!bestPoint || offset < bestDistance) {
-  //           bestPoint = snapped;
-  //           bestDistance = offset;
-  //           bestSegment[0] = local.id;
-  //           bestSegment[1] = foreign.id;
-  //         }
-  //       }
-  //     }
-  //   }, this);
+  snapPoint(pt: Point): Point {
+    return this.snapPointToGrid(pt).p;
+  }
 
-  //   return {
-  //     offset: isFinite(bestDistance) ? bestDistance : 0,
-  //     point: bestPoint || pt,
-  //     segment: bestSegment
-  //   };
-  // },
+  // Finds the nearest node to the specified node.
+  // @param origin: The origin node to search from.
+  // @return: The nearest other grid node to the specified target.
+  nearestNodeToNode(id: string): Node | null {
+    const node = this.getNode(id);
+    const candidates = Object.values(this.nodes).filter(n => n.id !== id);
+    return node && candidates.length ? nearestPointToPoint(node, candidates) as Node : null;
+  }
 
-  // snapPoint: function(pt) {
-  //   var snapped = this.snapPointToGrid(pt);
-  //   return snapped.point || pt;
-  // },
+  // Finds the nearest node to a specified point within the grid.
+  // @param pt: Point to test.
+  // @return: Nearest Node to target Point.
+  nearestNodeToPoint(pt: Point): Node | null {
+    return nearestPointToPoint(pt, Object.values(this.nodes)) as Node;
+  }
 
-  // // Finds the nearest node to the specified node.
-  // // @param origin: The origin node to search from.
-  // // @return: The nearest other grid node to the specified target.
-  // getNearestNodeToNode: function(id) {
-  //   var nodes = [];
-  //   var target = this.getNodeById(id);
+  // Tests a Point for intersections with all Cells in the grid, and returns their ids.
+  // @param pt  The point to snap into the grid.
+  // @return  Array of Cell ids that hit the specified Point.
+  cellsContainingPoint(pt: Point): Array<Cell> {
+    return Object.values(this.cells).reduce((acc: Array<Cell>, cell: Cell) => {
+      const ring = cell.rels.map(id => this.getNode(id));
+      if (boundingRectForPoints(ring).hitTest(pt) && hitTestPointRing(pt, ring)) {
+        acc.push(cell);
+      }
+      return acc;
+    }, []);
+  }
 
-  //   if (target) {
-  //     _c.each(this.nodes, function(node) {
-  //       if (node.id !== target.id) {
-  //         nodes.push(node);
-  //       }
-  //     }, this);
+  // Tests if a Point intersects any Cell in the grid.
+  // @param pt: Point to test.
+  // @return: True if the point intersects any polygon.
+  hitTestCells(pt: Point): boolean {
+    return this.cellsContainingPoint(pt).length > 0;
+  }
 
-  //     return Const.getNearestPointToPoint(target, nodes);
-  //   }
-  //   return null;
-  // },
+  // Tests a Cell for intersections with all nodes in the grid, and returns their ids.
+  // @param id  The polygon id to test.
+  // @return  Array of node ids that fall within the specified Cell.
+  nodesInCell(id: string): Array<Node> {
+    const nodes: Array<Node> = [];
+    const cell = this.getCell(id);
 
-  // // Finds the nearest node to a specified point within the grid.
-  // // @param pt: Point to test.
-  // // @return: Nearest Node to target Point.
-  // getNearestNodeToPoint: function(pt) {
-  //   return Const.getNearestPointToPoint(pt, Object.value(this.nodes));
-  // },
+    if (cell) {
+      const ring = cell.rels.map(id => this.getNode(id));
+      const rect = boundingRectForPoints(ring);
+      Object.values(this.nodes).forEach(node => {
+        // Run incrementally costly tests:
+        // - node in cell ring?
+        // - OR...
+        // node in rect AND node within ring?
+        if (cell.rels.includes(node.id) || (rect.hitTest(node) && hitTestPointRing(node, ring))) {
+          nodes.push(node);
+        }
+      });
+    }
 
-  // // Tests if a Point intersects any Cell in the grid.
-  // // @param pt: Point to test.
-  // // @return: True if the point intersects any polygon.
-  // hitTestPointInCells: function(pt) {
-  //   return !!this.getCellsOverPoint(pt).length;
-  // },
+    return nodes;
+  }
 
-  // // Tests a Point for intersections with all Cells in the grid, and returns their ids.
-  // // @param pt  The point to snap into the grid.
-  // // @return  Array of Cell ids that hit the specified Point.
-  // getCellsOverPoint: function(pt) {
-  //   var hits = [];
-  //   for (var id in this.cells) {
-  //     if (this.cells.hasOwnProperty(id) && Const.hitTestPointRing(pt, this.getNodesForCell(id))) {
-  //       hits.push(id);
-  //     }
-  //   }
-  //   return hits;
-  // },
+  // Tests a Rect for intersections with all nodes in the grid, and returns their ids.
+  // @param id  The polygon id to test.
+  // @return  Array of node ids that fall within the specified Rect.
+  nodesInRect(rect: Rect): Array<Node> {
+    return Object.values(this.nodes).reduce((acc: Array<Node>, node: Node) => {
+      if (rect.hitTest(node)) {
+        acc.push(node);
+      }
 
-  // // Tests a Cell for intersections with all nodes in the grid, and returns their ids.
-  // // @param id  The polygon id to test.
-  // // @return  Array of node ids that fall within the specified Cell.
-  // getNodesInCell: function(id) {
-  //   var hits = [];
-  //   var poly = this.getCellById(id);
-  //   var points = this.getNodesForCell(id);
-  //   var rect = Const.getRectForPointRing(points);
+      return acc;
+    }, []);
+  }
 
-  //   if (poly) {
-  //     _c.each(this.nodes, function(node) {
-  //       // Run incrementally costly tests:
-  //       // - node in shape?
-  //       // - OR...
-  //       // node in rect AND node within ring?
-  //       if (_c.contains(poly.nodes, node.id) || (rect.hitTest(node) && Const.hitTestPointRing(node, points))) {
-  //         hits.push(node.id);
-  //       }
-  //     }, this);
-  //   }
+  // Finds all adjacent line segments shared by two polygons.
+  // @param p1  First polygon to compare.
+  // @param p2  Second polygon to compare.
+  // @returns  Array of line segments.
+  getAdjacentCellSegments(c1: string, c2: string): Array<{ a: Node, b: Node }> {
+    const result: Array<{ a: Node, b: Node }> = [];
+    const ring1 = this.getCell(c1).rels.map(id => this.getNode(id));
+    const ring2 = this.getCell(c2).rels.map(id => this.getNode(id));
 
-  //   return hits;
-  // },
+    ring1.forEach((a, i) => {
+      const b = ring1[(i+1) % ring1.length];
 
-  // // Tests a Rect for intersections with all nodes in the grid, and returns their ids.
-  // // @param id  The polygon id to test.
-  // // @return  Array of node ids that fall within the specified Rect.
-  // getNodesInRect: function(rect) {
-  //   var hits = [];
+      ring2.forEach((c, j) => {
+        const d = ring2[(j+1) % ring2.length];
 
-  //   _c.each(this.nodes, function(node) {
-  //     if (rect.hitTest(node)) {
-  //       hits.push(node.id);
-  //     }
-  //   }, this);
+        if (isSameLineSegment(a, b, c, d)) {
+          result.push({ a, b });
+        }
+      });
+    });
 
-  //   return hits;
-  // },
-
-  // // Finds all adjacent line segments shared by two polygons.
-  // // @param p1  First polygon to compare.
-  // // @param p2  Second polygon to compare.
-  // // @returns  Array of arrays, each containing two node ids for a line segment.
-  // getAdjacentCellSegments: function(p1, p2) {
-  //   var result = [];
-  //   var ring1 = this.getNodesForCell(p1);
-  //   var ring2 = this.getNodesForCell(p2);
-  //   var len1 = ring1.length;
-  //   var len2 = ring2.length;
-
-  //   for (var i=0; i < len1; i++) {
-  //     var a1 = ring1[i].id;
-  //     var b1 = ring1[(i+1) % len1].id;
-
-  //     for (var j=0; j < len2; j++) {
-  //       var a2 = ring2[j].id;
-  //       var b2 = ring2[(j+1) % len2].id;
-
-  //       if (isSameSegment(a1, b1, a2, b2)) {
-  //         result.push([a1, b1]);
-  //       }
-  //     }
-  //   }
-  //   return result;
-  // },
+    return result;
+  }
 
   // // Gets an array of polygon ids that contain the specified line segment:
   // getCellsWithLineSegment: function(n1, n2) {
@@ -465,7 +441,7 @@ export default class Grid {
   //       var b = poly.nodes[(i+1) % len];
 
   //       // Retain polygon id if it matches the specified segment:
-  //       if (isSameSegment(a, b, n1, n2)) {
+  //       if (isSameLineSegment(a, b, n1, n2)) {
   //         result.push(id);
   //       }
   //     }

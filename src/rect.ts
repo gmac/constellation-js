@@ -13,7 +13,7 @@ export default class Rect {
     this.height = h;
   }
 
-  hitTest(p: Point) {
+  hitTest(p: Point): boolean {
     const minX = Math.min(this.x, this.x + this.width);
     const maxX = Math.max(this.x, this.x + this.width);
     const minY = Math.min(this.y, this.y + this.height);

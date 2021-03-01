@@ -89,7 +89,7 @@ export function angleSector(radians: number, sectors: number, offset: number): n
 // Gets the rectangular bounds of a point ring.
 // @param points: The ring of points to measure bounding on.
 // @return: a new Rect object of the ring's maximum extent.
-export function getRectForPointRing(points: Array<Point>) {
+export function boundingRectForPoints(points: Array<Point>): Rect {
   let minX = points[0].x;
   let maxX = points[0].x;
   let minY = points[0].y;
@@ -109,13 +109,12 @@ export function getRectForPointRing(points: Array<Point>) {
 // @param p: The point to test.
 // @param points: An array of points forming a polygonal shape.
 // @return: true if point falls within point ring.
-export function hitTestPointRing(p: Point, points: Array<Point>) {
+export function hitTestPointRing(p: Point, points: Array<Point>): boolean {
   const origin: Point = new Point(0, p.y);
   let hits: number = 0;
 
   // Test intersection of an external ray against each polygon side.
-  points.forEach((_point, i) => {
-    const s1 = points[i];
+  points.forEach((s1, i) => {
     const s2 = points[(i+1) % points.length];
     origin.x = Math.min(origin.x, Math.min(s1.x, s2.x)-1);
     hits += (intersect(origin, p, s1, s2) ? 1 : 0);
@@ -130,7 +129,7 @@ export function hitTestPointRing(p: Point, points: Array<Point>) {
 // @param a: Point A of line segment AB.
 // @param b: Point B of line segment AB.
 // @return: new Point object with snapped coordinates.
-export function snapPointToLineSegment(p: Point, a: Point, b: Point) {
+export function snapPointToLineSegment(p: Point, a: Point, b: Point): Point {
   const ap1: number = p.x-a.x;
   const ap2: number = p.y-a.y;
   const ab1: number = b.x-a.x;
@@ -151,19 +150,17 @@ export function snapPointToLineSegment(p: Point, a: Point, b: Point) {
 // @param p: Point P to test against.
 // @param points: Array of Points to find the nearest point within.
 // @return: nearest Point to P, or null if no points were available.
-export function getNearestPointToPoint(p: Point, points: Array<Point>) {
-  let bestPt = null;
-  let bestDist = Infinity;
-  let i = points.length-1;
-  let a, dist;
+export function nearestPointToPoint(p: Point, points: Array<Point>): Point | null {
+  let bestPt: Point | null = null;
+  let bestDist: number = Infinity;
 
   // Sort points by horizontal offset from P.
-  points = points.sort((a, b) => Math.abs(p.x-b.x) - Math.abs(p.x-a.x));
+  points = points.slice().sort((a, b) => Math.abs(p.x-b.x) - Math.abs(p.x-a.x));
 
-  while (i >= 0) {
-    a = points[i -= 1];
+  for (let i = points.length-1; i >= 0; i -= 1) {
+    const a = points[i];
     if (Math.abs(p.x-a.x) < bestDist) {
-      dist = Point.distance(p, a);
+      const dist = Point.distance(p, a);
       if (dist < bestDist) {
         bestPt = a;
         bestDist = dist;

@@ -2,6 +2,7 @@ import Grid from '../src/grid';
 import Node from '../src/gridNode';
 import Cell from '../src/gridCell';
 import Path from '../src/gridPath';
+import Rect from '../src/rect';
 
 describe('Grid', () => {
   let grid: Grid;
@@ -13,6 +14,8 @@ describe('Grid', () => {
   function numConnections(node: Node): number {
     return Object.keys(node.to).length;
   }
+
+  const sortNodes: (a: Node, b: Node) => number = (a, b) => a.id.localeCompare(b.id);
 
   describe('addNode', () => {
     it('adds a new node with specified X and Y coordinates, and returns it', () => {
@@ -297,7 +300,7 @@ describe('Grid', () => {
   });
 
   describe('findPath', () => {
-    it("finds a path between two joined nodes", function() {
+    it('finds a path between two joined nodes', () => {
       const a = grid.addNode(0, 0);
       const b = grid.addNode(0, 100);
       grid.joinNodes([a.id, b.id]);
@@ -308,7 +311,7 @@ describe('Grid', () => {
       expect(path.nodes[1]).toEqual( b );
     });
 
-    it("finds a path between two nodes across a network of joined nodes", function() {
+    it('finds a path between two nodes across a network of joined nodes', () => {
       const a = grid.addNode(0, 0);
       const b = grid.addNode(0, 100);
       const c = grid.addNode(0, 200);
@@ -322,7 +325,7 @@ describe('Grid', () => {
       expect(path.nodes[2]).toEqual(c);
     });
 
-    it("fails to find a path between two nodes in unconnected grid fragments", function() {
+    it('fails to find a path between two nodes in unconnected grid fragments', () => {
       const a = grid.addNode(0, 0);
       const b = grid.addNode(0, 100);
       const c = grid.addNode(0, 200);
@@ -332,7 +335,7 @@ describe('Grid', () => {
       expect(path).toBeNull();
     });
 
-    it("finds the shortest path between two nodes by default, regardless of connection count", function() {
+    it('finds the shortest path between two nodes by default, regardless of connection count', () => {
       var a = grid.addNode(0, 0).id;
       var b = grid.addNode(25, 0).id;
       var c = grid.addNode(75, 0).id;
@@ -350,37 +353,231 @@ describe('Grid', () => {
       expect(path.nodes.map(n => n.id)).toEqual([a, b, c, d]);
     });
 
-    it("allows custom grid searches using costing, estimating, and prioratizing functions", function() {
-      const a = grid.addNode(0, 0, {weight: 2}).id;
-      const b = grid.addNode(25, 0, {weight: 3}).id;
-      const c = grid.addNode(75, 0, {weight: 3}).id;
-      const d = grid.addNode(100, 0, {weight: 2}).id;
-      const e = grid.addNode(50, 100, {weight: 2}).id;
-      //const f = grid.addNode(50, 100, {weight: 2}).id;
+    it('allows custom grid searches using costing and estimating functions', () => {
+      const a = grid.addNode(0, 0, { weight: 2 }).id;
+      const b = grid.addNode(25, 0, { weight: 3 }).id;
+      const c = grid.addNode(75, 0, { weight: 3 }).id;
+      const d = grid.addNode(100, 0, { weight: 2 }).id;
+      const e = grid.addNode(50, 100, { weight: 2 }).id;
 
       grid.joinNodes([a, b]);
       grid.joinNodes([b, c]);
       grid.joinNodes([c, d]);
       grid.joinNodes([a, e]);
       grid.joinNodes([e, d]);
-      // grid.joinNodes([a, f]);
-      // grid.joinNodes([f, d]);
 
       const path = grid.findPath({
         start: a,
         goal: d,
         costForSegment: (_prev, current) => current.data?.weight,
         costEstimateToGoal: (_current, goal) => goal.data?.weight,
-        // bestCandidatePath: (a, b) => {
-        //   console.log(a, b);
-        //   if (a.nodes.find(n => n.id === e)) return a;
-        //   if (b.nodes.find(n => n.id === e)) return b;
-        //   return a;
-        // },
       }) as Path;
 
       expect(path.weight).toEqual(6);
       expect(path.nodes.map(n => n.id)).toEqual([a, e, d]);
+    });
+
+    it('allows custom grid searches using final priority function', () => {
+      const a = grid.addNode(0, 0).id;
+      const b = grid.addNode(50, 0).id;
+      const c = grid.addNode(50, 100).id;
+      const d = grid.addNode(100, 100).id;
+
+      grid.joinNodes([a, b]);
+      grid.joinNodes([a, c]);
+      grid.joinNodes([b, d]);
+      grid.joinNodes([c, d]);
+
+      const viaB = grid.findPath({
+        bestCandidatePath: (p, q) => p.nodes.find(n => n.id === b) ? p : q,
+        start: a,
+        goal: d,
+      }) as Path;
+
+      const viaC = grid.findPath({
+        bestCandidatePath: (p, q) => p.nodes.find(n => n.id === c) ? p : q,
+        start: a,
+        goal: d,
+      }) as Path;
+
+      expect(viaB.nodes.map(n => n.id)).toEqual([a, b, d]);
+      expect(viaC.nodes.map(n => n.id)).toEqual([a, c, d]);
+    });
+  });
+
+  describe('snapPointToGrid', () => {
+    it('returns a point snapped to the nearest grid line segment', () => {
+      const a = grid.addNode(0, 0);
+      const b = grid.addNode(100, 0);
+      grid.joinNodes([a.id, b.id]);
+
+      const segment = grid.snapPointToGrid({ x: 50, y: 20 });
+
+      expect(segment.p.x).toEqual(50);
+      expect(segment.p.y).toEqual(0);
+      expect(segment.a).toEqual(a);
+      expect(segment.b).toEqual(b);
+    });
+
+    it('defers action when snapping a point to a grid with no nodes', () => {
+      const pt = { x: 50, y: 20 };
+      const segment = grid.snapPointToGrid(pt);
+
+      expect(segment.p.x).toEqual(pt.x);
+      expect(segment.p.y).toEqual(pt.y);
+      expect(segment.a).toBeNull();
+      expect(segment.b).toBeNull();
+    });
+
+    it('defers action when snapping a point to a grid with no node connections', () => {
+      grid.addNode();
+      grid.addNode();
+
+      const pt = { x: 50, y: 20 };
+      const segment = grid.snapPointToGrid(pt);
+
+      expect(segment.p.x).toEqual(pt.x);
+      expect(segment.p.y).toEqual(pt.y);
+      expect(segment.a).toBeNull();
+      expect(segment.b).toBeNull();
+    });
+  });
+
+  describe('nearestNodeToNode', () => {
+    it('finds the nearest node to the specified origin node', () => {
+      const a = grid.addNode(0, 0);
+      const c = grid.addNode(10, 10);
+      grid.addNode(100, 100);
+      expect(grid.nearestNodeToNode(c.id)).toEqual(a);
+    });
+
+    it('returns null when an invalid origin node is referenced', () => {
+      grid.addNode(0, 0);
+      grid.addNode(100, 100);
+      expect(grid.nearestNodeToNode('nope')).toBeNull();
+    });
+
+    it('returns null when there are no other nodes besides the origin', () => {
+      const a = grid.addNode(0, 0);
+      expect(grid.nearestNodeToNode(a.id)).toBeNull();
+    });
+  });
+
+  describe('nearestNodeToPoint', () => {
+    it('finds the nearest node to the provided point', () => {
+      const a = grid.addNode(0, 0);
+      grid.addNode(100, 0);
+      expect(grid.nearestNodeToPoint({ x: 10, y: 0 })).toEqual(a);
+    });
+
+    it('returns null for an empty grid', () => {
+      expect(grid.nearestNodeToPoint({ x: 10, y: 0 })).toBeNull();
+    });
+  });
+
+  describe('cellsContainingPoint', () => {
+    it('returns an array of all cells containing a point', () => {
+      const a = grid.addNode(0, 0).id;
+      const b = grid.addNode(100, 0).id;
+      const c = grid.addNode(0, 100).id;
+      const d = grid.addNode(100, 100).id;
+      grid.addCell([a, b, c]);
+      grid.addCell([a, c, d]);
+      const hit1 = grid.cellsContainingPoint({ x: 5, y: 50 });
+      const hit2 = grid.cellsContainingPoint({ x: 50, y: 5 });
+      const hit3 = grid.cellsContainingPoint({ x: 95, y: 50 });
+
+      expect(hit1.length).toEqual(2);
+      expect(hit2.length).toEqual(1);
+      expect(hit3.length).toEqual(0);
+    });
+
+    it('returns empty when there are no cells', () => {
+      expect(grid.cellsContainingPoint({ x: 10, y: 10 })).toEqual([]);
+    });
+  });
+
+  describe('hitTestCells', () => {
+    it('return true when the point falls within any cell', () => {
+      const a = grid.addNode(0, 0).id;
+      const b = grid.addNode(100, 0).id;
+      const c = grid.addNode(0, 100).id;
+      const d = grid.addNode(100, 100).id;
+      grid.addCell([a, b, c]);
+      grid.addCell([b, c, d]);
+
+      expect(grid.hitTestCells({ x: 10, y: 10 })).toEqual(true);
+      expect(grid.hitTestCells({ x: 90, y: 90 })).toEqual(true);
+      expect(grid.hitTestCells({ x: 200, y: 200 })).toEqual(false);
+    });
+
+    it('returns false when there are no cells', () => {
+      expect(grid.hitTestCells({ x: 10, y: 10 })).toEqual(false);
+    });
+  });
+
+  describe('nodesInCell', () => {
+    it("returns an array of all node ids contained within a polygon", () => {
+      const a = grid.addNode(0, 0);
+      const b = grid.addNode(100, 0);
+      const c = grid.addNode(0, 100);
+      const d = grid.addNode(50, 25); // Inside figure ABC
+      grid.addNode(200, 200); // Outside figure ABC
+      const order: (a: Node, b: Node) => number = (a, b) => a.id.localeCompare(b.id);
+      const cell = grid.addCell([a, b, c].map(n => n.id)) as Cell;
+      const nodes = grid.nodesInCell(cell.id).sort(order);
+      expect(nodes).toEqual([a, b, c, d].sort(order));
+    });
+  });
+
+  describe('nodesInCell', () => {
+    it("returns an array of all node ids contained within a polygon", () => {
+      const a = grid.addNode(0, 0);
+      const b = grid.addNode(100, 0);
+      const c = grid.addNode(0, 100);
+      const d = grid.addNode(50, 25); // Inside figure ABC
+      grid.addNode(200, 200); // Outside figure ABC
+      const cell = grid.addCell([a, b, c].map(n => n.id)) as Cell;
+      const nodes = grid.nodesInCell(cell.id).sort(sortNodes);
+      expect(nodes).toEqual([a, b, c, d].sort(sortNodes));
+    });
+  });
+
+  describe('nodesInRect', () => {
+    it("returns an array of all nodes contained within a rectangle", () => {
+      const a = grid.addNode(0, 0);
+      const b = grid.addNode(50, 50);
+      grid.addNode(100, 100);
+      const nodes = grid.nodesInRect(new Rect(75, 75, -100, -100));
+
+      expect(nodes.sort(sortNodes)).toEqual([a, b].sort(sortNodes));
+    });
+  });
+
+  describe('getAdjacentCellSegments', () => {
+    it("returns an array specifying an adjacent line segment", () => {
+      const a = grid.addNode(0, 0);
+      const b = grid.addNode(100, 0);
+      const c = grid.addNode(0, 100);
+      const d = grid.addNode(100, 100);
+      const c1 = grid.addCell([a, b, c].map(n => n.id)) as Cell;
+      const c2 = grid.addCell([a, c, d].map(n => n.id)) as Cell;
+
+      expect(grid.getAdjacentCellSegments(c1.id, c2.id)).toEqual([{ a: c, b: a }]);
+    });
+
+    it("finds all adjacent line segments in interlocking polygons", () => {
+      const a = grid.addNode(0, 0);
+      const b = grid.addNode(50, 50);
+      const c = grid.addNode(0, 100);
+      const d = grid.addNode(100, 50);
+      const c1 = grid.addCell([a, b, c].map(n => n.id)) as Cell;
+      const c2 = grid.addCell([a, d, c, b].map(n => n.id)) as Cell;
+
+      expect(grid.getAdjacentCellSegments(c1.id, c2.id)).toEqual([
+        { a: a, b: b },
+        { a: b, b: c },
+      ]);
     });
   });
 });
