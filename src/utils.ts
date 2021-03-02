@@ -1,5 +1,5 @@
-import Point from './point';
-import Rect from './rect';
+import { Point } from './point';
+import { Rect } from './rect';
 
 export function uuidv4() {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {

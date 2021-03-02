@@ -1,6 +1,6 @@
-import Point from './point';
+import { Point } from './point';
 
-export default class Rect {
+export class Rect {
   public x: number;
   public y: number;
   public width: number;

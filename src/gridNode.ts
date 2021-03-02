@@ -1,6 +1,6 @@
-import Point from './point';
+import { Point } from './point';
 
-export default class Node extends Point {
+export class Node extends Point {
   public id: string;
   public to: Record<string, boolean>;
 

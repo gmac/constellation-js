@@ -1,4 +1,4 @@
-import Point from '../src/point';
+import { Point } from '../src/point';
 
 describe('Point', () => {
   it('builds a point with data', () => {

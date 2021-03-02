@@ -1,6 +1,6 @@
-import Node from './gridNode';
+import { Node } from './gridNode';
 
-export default class Path {
+export class Path {
   public nodes: Array<Node>;
   public weight: number;
   public estimate: number;

@@ -1,4 +1,4 @@
-export default class Point {
+export class Point {
 
   // Tests the distance between two points.
   public static distance(a: Point, b: Point): number {

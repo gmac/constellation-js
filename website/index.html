@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Constellation.js</title>
+	<link href="style.css" rel="stylesheet" media="screen"/>
+</head>
+<body>
+
+<div class="container" id="app">
+	<div class="header">
+		<h1>constellation</h1>
+		<ul class="nav">
+			<li><a href="https://github.com/gmac/constellation-js">GitHub Source</a></li>
+			<li><a href="https://github.com/gmac/constellation-js#constellationjs">Documentation</a></li>
+		</ul>
+	</div>
+
+	<div class="toolbar" id="toolbar">
+		<h2>Actions</h2>
+		<ul>
+			<li><button class="action" @click="joinNodes">Join Nodes <span>(j)</span></button></li>
+			<li><button class="action" @click="splitNodes">Break Nodes <span>(b)</span></button></li>
+			<li><button class="action" @click="addCell">Make Cell <span>(p)</span></button></li>
+			<li><button class="action" data-action="remove">Remove Geometry <span>DEL</span></button></li>
+		</ul>
+
+		<h2>Functions</h2>
+		<ul>
+			<li><button class="action" data-action="path">Find Path <span>(f)</span></button></li>
+			<li><button class="action" data-action="nearest">Nearest Node <span>(n)</span></button></li>
+			<li><button class="action" data-action="snap">Snap to Grid <span>(s)</span></button></li>
+			<li><button class="action" data-action="hittest">Hittest Geometry <span>(h)</span></button></li>
+			<li><button class="action" data-action="print">Print to Console <span>(c)</span></button></li>
+		</ul>
+	</div>
+	<svg class="canvas" id="canvas" @mousedown="touch($event)">
+		<path v-for="(cell, id) in cells"
+			:key="id"
+			:id="id"
+			:d="cell"
+			:class="cellClass(id)" />
+		<line v-for="(line, id) in lines"
+			:key="id"
+			:id="id"
+			:x1="line.ax"
+			:y1="line.ay"
+			:x2="line.bx"
+			:y2="line.by"
+			:class="id" />
+		<circle v-for="(node, id) in grid.nodes"
+			:key="id"
+			:id="id"
+			r="6"
+			:cx="node.x"
+			:cy="node.y"
+			:class="nodeClass(id)" />
+		<rect v-if="marquee"
+			:x="marquee.x"
+			:y="marquee.y"
+			:width="marquee.width"
+			:height="marquee.height"
+			class="marquee" />
+	</svg>
+</div>
+
+<div class="message" id="message"></div>
+<div class="info closed" id="info">
+	<div class="view">
+		<b>About</b>
+		<p>Constellation manages 2D point grids and path navigation; it's designed to control dynamic sprite motion around 2D scenes. Constellation expands upon the motion system used in the <a href="http://www.lassiegames.com/games/wmyt">What Makes You Tick?</a> games.</p>
+		<b>Controls</b>
+		<ul>
+			<li>Double-click on canvas to add grid nodes.</li>
+			<li>Click+drag on canvas for selection marquee.</li>
+			<li>SHIFT+click to add and remove selections.</li>
+		</ul>
+	</div>
+	<button class="toggle">?</button>
+</div>
+
+<script src="scripts/vue.js"></script>
+<script src="../dist/index.js"></script>
+<script src="scripts/app.js"></script>
+</body>
+</html>

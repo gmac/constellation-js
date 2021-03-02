@@ -1,4 +1,4 @@
-export default class Cell {
+export class Cell {
   public id: string;
   public rels: Array<string>;
   public data?: Record<any, any>;

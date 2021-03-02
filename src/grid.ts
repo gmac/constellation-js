@@ -1,8 +1,8 @@
-import Cell from './gridCell';
-import Node from './gridNode';
-import Path from './gridPath';
-import Point from './point';
-import Rect from './rect';
+import { Cell } from './gridCell';
+import { Node } from './gridNode';
+import { Path } from './gridPath';
+import { Point } from './point';
+import { Rect } from './rect';
 import { NodeCostComparator, PathSelector } from './types';
 import {
   uuidv4,
@@ -21,7 +21,7 @@ function isSameLineSegment(a: Node, b: Node, c: Node, d: Node): boolean {
   return (a.id === c.id && b.id === d.id) || (a.id === d.id && b.id === c.id);
 }
 
-export default class Grid {
+export class Grid {
   private nodes: Record<string, Node> = Object.create(null);
   private cells: Record<string, Cell> = Object.create(null);
 

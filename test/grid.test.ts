@@ -1,8 +1,8 @@
-import Grid from '../src/grid';
-import Node from '../src/gridNode';
-import Cell from '../src/gridCell';
-import Path from '../src/gridPath';
-import Rect from '../src/rect';
+import { Grid } from '../src/grid';
+import { Node } from '../src/gridNode';
+import { Cell } from '../src/gridCell';
+import { Path } from '../src/gridPath';
+import { Rect } from '../src/rect';
 
 describe('Grid', () => {
   let grid: Grid;
