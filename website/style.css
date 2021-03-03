@@ -241,7 +241,7 @@ h1, h2, b {
 	stroke-width:2;
 }
 
-.canvas line.select {
+.canvas line.selected {
 	stroke: #f00;
 }
 
@@ -270,6 +270,11 @@ h1, h2, b {
 	font: bold 11px 'Helvetica Neue', Helvetica, Arial, sans-serif;
 	fill: white;
 	pointer-events: none;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
 .canvas rect.marquee {

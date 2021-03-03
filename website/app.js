@@ -1,3 +1,4 @@
+const getLineId = (n1, n2) => [n1.id, n2.id].sort().join('-');
 const App = {
   data() {
     return {
@@ -6,6 +7,7 @@ const App = {
       marquee: null,
       selections: [],
       selectionIds: {},
+      highlightIds: {},
     };
   },
 
@@ -14,8 +16,9 @@ const App = {
       return Object.values(this.grid.nodes).reduce((acc, node) => {
         Object.keys(node.to).forEach(relId => {
           const rel = this.grid.getNode(relId);
-          if (rel && !acc[`${rel.id} ${node.id}`]) {
-            acc[`${node.id} ${rel.id}`] = {
+          const id = getLineId(node, rel);
+          if (rel && !acc[id]) {
+            acc[id] = {
               ax: node.x,
               ay: node.y,
               bx: rel.x,
@@ -92,7 +95,7 @@ const App = {
 
     deleteGeometry() {
       if (!this.selections.length) {
-        return this.alert("No selected geometry");
+        return this.alert('No selected geometry');
       } else if (this.nodeSelection) {
         this.grid.removeNodes(Object.keys(this.selectionIds));
       } else if (this.cellSelection) {
@@ -101,8 +104,39 @@ const App = {
       this.select([]);
     },
 
+    findPath() {
+      if (this.nodeSelection && this.selections.length === 2 ) {
+        const path = this.grid.findPath({
+          start: this.selections[0].id,
+          goal: this.selections[1].id,
+        });
+
+        if (path) {
+          let prev = path.nodes[0];
+          this.highlightIds = path.nodes.slice(1).reduce((acc, node) => {
+            acc[getLineId(prev, node)] = true;
+            prev = node;
+            return acc;
+          }, {});
+          this.alert(`Shortest route of ${Math.round(path.weight)}px`);
+        } else {
+          this.alert('No valid routes');
+        }
+      } else {
+        this.alert('Select two nodes');
+      }
+    },
+
+    alert(mssg) {
+      console.log(mssg);
+    },
+
     hasSelection(id) {
       return this.selectionIds[id] || false;
+    },
+
+    hasHighlight(id) {
+      return this.highlightIds[id] || false;
     },
 
     isSelected(item) {
@@ -113,11 +147,11 @@ const App = {
       const items = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems];
       let selections = options.append ? this.selections : [];
 
-      if (selections.length && !(selections[0] instanceof items[0].constructor)) {
+      if (selections.length && items.length && !(selections[0] instanceof items[0].constructor)) {
         selections = [];
       }
 
-      this.selections = selections.concat(items);
+      this.selections = selections.concat(items).filter((v, i, a) => a.indexOf(v) === i);
       this.selectionIds = this.selections.reduce((acc, item) => {
         acc[item.id] = true;
         return acc;
@@ -158,6 +192,7 @@ const App = {
     touch(evt) {
       var doubleClick = (evt.timeStamp - this.lastTouch < 250);
       this.lastTouch = evt.timeStamp;
+      this.highlightIds = {};
 
       if (evt.target.tagName === 'circle') {
         this.touchNode(evt, doubleClick);
@@ -268,7 +303,7 @@ const App = {
         case 'P': return handle(() => this.print());
         case 'J': return handle(() => this.joinNodes());
         case 'C': return handle(() => this.addCell());
-        // case 70: return handle(() => this.findPath());
+        case 'F': return handle(() => this.findPath());
         // case 83: return handle(() => this.snapNodeToGrid());
         // case 78: return handle(() => evt.ctrlKey ? this.newGrid() : this.selectNearestGridNode());
         // case 72: return handle(() => this.hitTestGeometry());
