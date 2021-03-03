@@ -1,59 +1,4 @@
 const cacheModel = (() => {
-	// Grid Data
-	// ---------
-	// Stores data for an individual grid layout.
-	var GridRecordModel = Backbone.Model.extend({
-		defaults: {
-			uid: 0,
-			name: 'New Grid'
-		}
-	});
-
-	// Cache
-	// -----
-	// Manages the collection of grid layout options.
-	var CacheModel = Backbone.Collection.extend({
-
-		model: GridRecordModel,
-		localStorage: new Backbone.LocalStorage('constellation-index'),
-		selectedModel: null,
-		selectedIndex: -1,
-
-		_uid: 0,
-
-		initialize: function() {
-			this.listenTo(this, 'sync', this.onSync);
-		},
-
-		onSync: function() {
-			if (this.length) {
-				this._uid = Math.max.apply(null, this.pluck('uid').concat([0]))+1;
-				this.selectModelAt(0);
-			} else {
-				this.newRecord();
-			}
-		},
-
-		// Creates a new record:
-		newRecord: function() {
-			this.create({uid:this._uid++});
-			this.selectModelAt(this.length-1);
-		},
-
-		// Get / Set selected model index:
-		selectModelAt: function( index ) {
-			if (index !== this.selectedIndex && index >= 0 && index < this.length) {
-				this.selectedIndex = index;
-				this.selectedModel = this.at(index);
-				this.trigger('select');
-			}
-			return this.selectedModel;
-		}
-	});
-
-	return new CacheModel();
-})();
-
 const gridController = (() => {
 	var GridController = Backbone.Model.extend({
 		// Tests if the environment is configured for performing node operations.
@@ -202,95 +147,41 @@ const gridController = (() => {
 	return new GridController();
 })();
 
-const gridModel = (() => {
-	var updateMethods = [
-		'addNode',
-		'joinNodes',
-		'splitNodes',
-		'removeNodes',
-		'addPolygon',
-		'removePolygons',
-		'reset'
-	];
+var MessageView = Backbone.View.extend({
+	el: '#message',
+	empty: false,
 
-	var gridModel = _.extend(new Const.Grid(), Backbone.Events, {
+	initialize: function() {
+		this.listenTo(gridController, 'alert', this.onAlert);
+		this.listenTo(gridModel, 'change', this.onTestEmpty);
+		this.$el.hide();
+	},
 
-		bg: '',
-
-		init: function() {
-			this.listenTo(this, 'change', this.save);
-
-			var self = this;
-
-			// Override all grid mutators with event-firing method wrappers:
-			_.each(updateMethods, function(methodName) {
-				self[ methodName ] = function() {
-					Const.Grid.prototype[ methodName ].apply(self, arguments);
-					self.update();
-				};
-			});
-
-			return this;
-		},
-
-		setBackground: function(url) {
-			this.bg = url;
-			this.save();
-			this.update();
-		},
-
-		// Loads current cache selection into the model:
-		load: function() {
-			var data = store.get('constellation');
-			this.bg = (data && data.bg) || '';
-			this.reset(data);
-		},
-
-		// Saves current model data into the cache:
-		save: function(id) {
-			var data = this.toJSON();
-			data.bg = this.bg;
-			store.set('constellation', data);
-		},
-
-		update: function() {
-			this.trigger('change');
+	onTestEmpty: function() {
+		if (!gridModel.getNumNodes()) {
+			this.$el.clearQueue().html('Double-click to add nodes...<span>Click and drag for selection marquee</span>').fadeIn();
+			this.empty = true;
+		} else if (this.empty) {
+			this.$el.clearQueue().fadeOut(500);
+			this.empty = false;
 		}
-	});
+	},
 
-	return gridModel.init();
-})();
-
-const keyboardController = (() => {
-	var _enabled = true;
-
-	function stop(evt) {
-		evt.preventDefault();
+	onAlert: function(message, multi) {
+		if (gridModel.getNumNodes() > 0) {
+			this.$el
+				.clearQueue()
+				.html(message + (multi ? '<span>SHIFT+click adds to selection</span>' : ''))
+				.show()
+				.delay(2500)
+				.fadeOut(500);
+		} else {
+			this.$el.clearQueue()
+				.animate({marginLeft:"-=5px"}, 50)
+				.animate({marginLeft:"+=10px"}, 100)
+				.animate({marginLeft:"-=10px"}, 100)
+				.animate({marginLeft:"+=10px"}, 100)
+				.animate({marginLeft:"-=5px"}, 50);
+		}
 	}
-
-	$(window)
-		.on('keydown', function(evt) {
-			if (_enabled) {
-				switch ( evt.which ) {
-					case 8: stop(evt); gridController.deleteGeometry(); return false; // "delete"
-					case 66: stop(evt); gridController.splitNodes(); return false; // "b"
-					case 67: stop(evt); gridController.print(); return false; // "c"
-					case 74: stop(evt); gridController.joinNodes(); return false; // "j"
-					case 80: stop(evt); gridController.makePolygon(); return false; // "p"
-					case 70: stop(evt); gridController.findPath(); return false; // "f"
-					case 83: stop(evt); gridController.snapNodeToGrid(); return false; // "s"
-					case 78: stop(evt); evt.ctrlKey ? gridController.newGrid() : gridController.selectNearestGridNode(); return false; // "n"
-					case 72: stop(evt); gridController.hitTestGeometry(); return false; // "h"
-				}
-			}
-			//console.log(evt.which);
-		});
-
-	$('input')
-		.on('focus', function(evt) {
-			_enabled = false;
-		})
-		.on('blur', function(evt) {
-			_enabled = true;
-		});
-})();
+});

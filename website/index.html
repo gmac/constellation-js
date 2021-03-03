@@ -51,10 +51,16 @@
 		<circle v-for="(node, id) in grid.nodes"
 			:key="id"
 			:id="id"
-			r="6"
+			r="6.5"
 			:cx="node.x"
 			:cy="node.y"
 			:class="{ selected: hasSelection(id) }" />
+		<text v-for="ord in ordinals"
+			:x="ord.x"
+			:y="ord.y"
+			text-anchor="middle"
+			alignment-baseline="middle"
+			>{{ord.text}}</text>
 		<rect v-if="marquee"
 			:x="marquee.x"
 			:y="marquee.y"
@@ -65,8 +71,9 @@
 </div>
 
 <div class="message" id="message"></div>
-<div class="info closed" id="info">
-	<div class="view">
+
+<div class="info" id="info">
+	<div class="view" :class="{ open: enabled }">
 		<b>About</b>
 		<p>Constellation manages 2D point grids and path navigation; it's designed to control dynamic sprite motion around 2D scenes. Constellation expands upon the motion system used in the <a href="http://www.lassiegames.com/games/wmyt">What Makes You Tick?</a> games.</p>
 		<b>Controls</b>
@@ -76,7 +83,7 @@
 			<li>SHIFT+click to add and remove selections.</li>
 		</ul>
 	</div>
-	<button class="toggle">?</button>
+	<button class="toggle" @click="enabled=!enabled">{{ enabled ? 'x' : '?' }}</button>
 </div>
 
 <script src="scripts/vue.js"></script>

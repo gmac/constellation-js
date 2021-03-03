@@ -14,7 +14,7 @@ const App = {
       return Object.values(this.grid.nodes).reduce((acc, node) => {
         Object.keys(node.to).forEach(relId => {
           const rel = this.grid.getNode(relId);
-          if (rel && !(`${rel.id} ${node.id}` in acc)) {
+          if (rel && !acc[`${rel.id} ${node.id}`]) {
             acc[`${node.id} ${rel.id}`] = {
               ax: node.x,
               ay: node.y,
@@ -38,6 +38,13 @@ const App = {
         return acc;
       }, {});
     },
+    ordinals() {
+      return !this.nodeSelection ? [] : this.selections.map((n, i) => ({
+        text: String(i + 1),
+        x: n.x,
+        y: n.y,
+      }));
+    },
     nodeSelection() {
       return this.selections[0] instanceof Geom2d.Node;
     },
@@ -47,19 +54,40 @@ const App = {
   },
 
   methods: {
+    save() {
+      localStorage.setItem('constellation', JSON.stringify(this.grid.toConfig()));
+    },
+
+    load() {
+      const data = localStorage.getItem('constellation');
+      if (data) {
+        this.grid.reset(JSON.parse(data));
+      }
+    },
+
+    print() {
+      console.log(JSON.stringify(this.grid.toConfig()));
+    },
+
     joinNodes() {
-      if (!this.nodeSelection) return;
-      this.grid.joinNodes(Object.keys(this.selectionIds));
+      if (this.nodeSelection) {
+        this.grid.joinNodes(Object.keys(this.selectionIds));
+        this.save();
+      }
     },
 
     splitNodes() {
-      if (!this.nodeSelection) return;
-      this.grid.splitNodes(Object.keys(this.selectionIds));
+      if (this.nodeSelection) {
+        this.grid.splitNodes(Object.keys(this.selectionIds));
+        this.save();
+      }
     },
 
     addCell() {
-      if (!this.nodeSelection) return;
-      this.grid.addCell(Object.keys(this.selectionIds));
+      if (this.nodeSelection) {
+        this.grid.addCell(Object.keys(this.selectionIds));
+        this.save();
+      }
     },
 
     deleteGeometry() {
@@ -109,19 +137,20 @@ const App = {
 
     // Manages a click-and-drag sequence behavior.
     // Injects a localized event offset into the behavior handlers.
-    drag(onDrag, onDrop=() => null) {
+    drag(onDrag, onDrop=() => null, save=true) {
       let dragged = false;
-      function mouseUp(evt) {
+      const mouseUp = (evt) => {
         document.removeEventListener('mouseup', mouseUp);
         document.removeEventListener('mousemove', mouseMove);
         onDrop(evt.layerX, evt.layerY, dragged);
+        if (save) this.save();
         return false;
-      }
-      function mouseMove(evt) {
+      };
+      const mouseMove = (evt) => {
         dragged = true;
         onDrag(evt.layerX, evt.layerY);
         return false;
-      }
+      };
       document.addEventListener('mouseup', mouseUp);
       document.addEventListener('mousemove', mouseMove);
     },
@@ -142,7 +171,9 @@ const App = {
     touchNode(evt, doubleClick) {
       const node = this.grid.getNode(evt.target.id);
 
-      if (evt.shiftKey) {
+      if (doubleClick) {
+        this.select(node);
+      } else if (evt.shiftKey) {
         this.toggle(node);
       } else if (!this.isSelected(node)) {
         this.select(node);
@@ -196,6 +227,7 @@ const App = {
     touchCanvas(evt, doubleClick) {
       if (doubleClick) {
         this.grid.addNode(evt.layerX, evt.layerY);
+        this.save();
       } else {
         if (!evt.shiftKey) {
           this.select([]);
@@ -218,9 +250,42 @@ const App = {
       this.drag(plotRect, (x, y) => {
         this.select(this.grid.nodesInRect(this.marquee), { append: true });
         this.marquee = null;
-      });
+      }, false);
     }
+  },
+
+  mounted() {
+    window.addEventListener('keydown', (evt) => {
+      const handle = (fn) => {
+        evt.preventDefault();
+        fn();
+        return false;
+      };
+
+      switch (evt.key.toUpperCase()) {
+        case 'BACKSPACE': return handle(() => this.deleteGeometry());
+        case 'B': return handle(() => this.splitNodes());
+        case 'P': return handle(() => this.print());
+        case 'J': return handle(() => this.joinNodes());
+        case 'C': return handle(() => this.addCell());
+        // case 70: return handle(() => this.findPath());
+        // case 83: return handle(() => this.snapNodeToGrid());
+        // case 78: return handle(() => evt.ctrlKey ? this.newGrid() : this.selectNearestGridNode());
+        // case 72: return handle(() => this.hitTestGeometry());
+      }
+    });
+
+    this.load();
   }
 };
 
+const Info = {
+  data() {
+    return {
+      enabled: false,
+    };
+  },
+};
+
 Vue.createApp(App).mount('#app');
+Vue.createApp(Info).mount('#info');

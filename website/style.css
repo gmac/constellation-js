@@ -266,6 +266,12 @@ h1, h2, b {
 	stroke: #900;
 }
 
+.canvas text {
+	font: bold 11px 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	fill: white;
+	pointer-events: none;
+}
+
 .canvas rect.marquee {
 	fill: rgba(0, 0, 0, 0.1);
 	stroke: #ccc;
@@ -279,6 +285,10 @@ h1, h2, b {
 	position: fixed;
 	right: 10px;
 	z-index: 2;
+}
+
+.info button {
+	outline: none;
 }
 
 .info .toggle {
@@ -313,6 +323,7 @@ h1, h2, b {
 	border-radius: 17px;
 	bottom: 0;
 	color: #fff;
+	display: none;
 	font-size: 14px;
 	line-height: 1.6em;
 	opacity: 0.95;
@@ -322,8 +333,8 @@ h1, h2, b {
 	width: 310px;
 }
 
-.info.closed .view {
-	display: none;
+.info .view.open {
+	display: block;
 }
 
 .info b {
