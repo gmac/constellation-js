@@ -1,14 +1,11 @@
-const grid = new Geom2d.Grid();
 const App = {
   data() {
     return {
+      grid: new Geom2d.Grid(),
       lastTouch: 0,
       marquee: null,
-      points: [],
       selections: [],
-      selectedNodes: {},
-      selectedCells: {},
-      grid,
+      selectionIds: {},
     };
   },
 
@@ -40,88 +37,84 @@ const App = {
         acc[cell.id] = draw.concat(['Z']).join('');
         return acc;
       }, {});
+    },
+    nodeSelection() {
+      return this.selections[0] instanceof Geom2d.Node;
+    },
+    cellSelection() {
+      return this.selections[0] instanceof Geom2d.Cell;
     }
   },
 
   methods: {
-    nodeClass(id) {
-      return this.selectedNodes[id] ? 'selected' : '';
-    },
-
-    cellClass(id) {
-      return this.selectedCells[id] ? 'selected' : '';
-    },
-
     joinNodes() {
-      this.grid.joinNodes(Object.keys(this.selectedNodes));
+      if (!this.nodeSelection) return;
+      this.grid.joinNodes(Object.keys(this.selectionIds));
     },
 
     splitNodes() {
-      this.grid.splitNodes(Object.keys(this.selectedNodes));
+      if (!this.nodeSelection) return;
+      this.grid.splitNodes(Object.keys(this.selectionIds));
     },
 
     addCell() {
-      this.grid.addCell(Object.keys(this.selectedNodes));
+      if (!this.nodeSelection) return;
+      this.grid.addCell(Object.keys(this.selectionIds));
+    },
+
+    deleteGeometry() {
+      if (!this.selections.length) {
+        return this.alert("No selected geometry");
+      } else if (this.nodeSelection) {
+        this.grid.removeNodes(Object.keys(this.selectionIds));
+      } else if (this.cellSelection) {
+        this.grid.removeCells(Object.keys(this.selectionIds));
+      }
+      this.select([]);
+    },
+
+    hasSelection(id) {
+      return this.selectionIds[id] || false;
     },
 
     isSelected(item) {
-      return this.selectedNodes[item.id] || this.selectedCells[item.id];
+      return this.selectionIds[item.id] || false;
     },
 
-    select(itemOrItems, options={ reset: false }) {
+    select(itemOrItems, options={ append: false }) {
       const items = Array.isArray(itemOrItems) ? itemOrItems : [itemOrItems];
-      const type = items[0] instanceof Geom2d.Cell ? Geom2d.Cell : Geom2d.Node;
-      let selections = this.selections;
+      let selections = options.append ? this.selections : [];
 
-      if (options.reset || (this.selections.length && !(this.selections[0] instanceof type))) {
+      if (selections.length && !(selections[0] instanceof items[0].constructor)) {
         selections = [];
       }
 
       this.selections = selections.concat(items);
-
-      const nodeIds = {};
-      const cellIds = {};
-      this.selections.forEach(item => {
-        if (item instanceof Geom2d.Node) {
-          nodeIds[item.id] = true;
-        } else if (item instanceof Geom2d.Cell) {
-          cellIds[item.id] = true;
-        }
-      });
-
-      this.selectedNodes = nodeIds;
-      this.selectedCells = cellIds;
+      this.selectionIds = this.selections.reduce((acc, item) => {
+        acc[item.id] = true;
+        return acc;
+      }, {});
       return true;
     },
 
     deselect(item) {
-      if (item instanceof Geom2d.Cell) {
-        if (this.isSelected(item)) {
-          this.selections = this.selections.filter(c => c !== item);
-          delete this.selectedCells[item.id];
-        }
-      } else if (this.isSelected(item)) {
-        this.selections = this.selections.filter(n => n !== item);
-        delete this.selectedNodes[item.id];
-      }
+      this.selections = this.selections.filter(s => s !== item);
+      delete this.selectionIds[item.id];
       return false;
     },
 
     toggle(item) {
-      if (item instanceof Geom2d.Cell) {
-        return this.selectedCells[item.id] ? this.deselect(item) : this.select(item);
-      }
-      return this.selectedNodes[item.id] ? this.deselect(item) : this.select(item);
+      return this.isSelected(item) ? this.deselect(item) : this.select(item, { append: true });
     },
 
     // Manages a click-and-drag sequence behavior.
     // Injects a localized event offset into the behavior handlers.
-    drag(onDrag, onDrop) {
+    drag(onDrag, onDrop=() => null) {
       let dragged = false;
       function mouseUp(evt) {
         document.removeEventListener('mouseup', mouseUp);
         document.removeEventListener('mousemove', mouseMove);
-        onDrop && onDrop(evt.layerX, evt.layerY, dragged);
+        onDrop(evt.layerX, evt.layerY, dragged);
         return false;
       }
       function mouseMove(evt) {
@@ -148,20 +141,17 @@ const App = {
 
     touchNode(evt, doubleClick) {
       const node = this.grid.getNode(evt.target.id);
-      let addedToSelection = false;
 
       if (evt.shiftKey) {
         this.toggle(node);
-        addedToSelection = true;
       } else if (!this.isSelected(node)) {
-        this.select(node, { reset: true });
+        this.select(node);
       }
 
-      if (this.selectedNodes[node.id]) {
+      if (this.isSelected(node)) {
         const origin = new Geom2d.Point(evt.layerX, evt.layerY);
         const dragPoint = (x, y) => {
-          Object.keys(this.selectedNodes).forEach(id => {
-            const n = this.grid.getNode(id);
+          this.selections.forEach(n => {
             n.x += (x - origin.x);
             n.y += (y - origin.y);
           });
@@ -169,33 +159,33 @@ const App = {
           origin.y = y;
         };
 
-        this.drag(dragPoint, (x, y, dragged) => {
-          if (!dragged && !addedToSelection) {
-            this.selectedNodes = { [node.id]: true };
-          }
-        });
+        this.drag(dragPoint);
       }
     },
 
     touchCell(evt, doubleClick) {
       const cell = this.grid.getCell(evt.target.id);
       if (doubleClick) {
-        this.select(cell.rels.map(id => this.grid.getNode(id)), { reset: true });
+        this.select(cell.rels.map(id => this.grid.getNode(id)));
       } else if (evt.shiftKey) {
         this.toggle(cell);
       } else if (!this.isSelected(cell)) {
-        this.select(cell, { reset: true });
+        this.select(cell);
       }
 
       if (this.isSelected(cell)) {
         const origin = new Geom2d.Point(evt.layerX, evt.layerY);
         this.drag((x, y) => {
-          Object.keys(this.selectedCells).forEach(cid => {
-            this.grid.getCell(cid).rels.forEach(nid => {
-              const n = this.grid.getNode(nid);
-              n.x += (x - origin.x);
-              n.y += (y - origin.y);
+          const uniqueNodes = this.selections.reduce((acc, cell) => {
+            cell.rels.forEach(nid => {
+              acc[nid] = acc[nid] || this.grid.getNode(nid);
             });
+            return acc;
+          }, {});
+
+          Object.values(uniqueNodes).forEach(n => {
+            n.x += (x - origin.x);
+            n.y += (y - origin.y);
           });
           origin.x = x;
           origin.y = y;
@@ -208,7 +198,7 @@ const App = {
         this.grid.addNode(evt.layerX, evt.layerY);
       } else {
         if (!evt.shiftKey) {
-          this.select([], { reset: true });
+          this.select([]);
         }
         this.dragMarquee(evt);
       }
@@ -226,11 +216,11 @@ const App = {
 
       plotRect(origin.x, origin.y);
       this.drag(plotRect, (x, y) => {
-        this.select(this.grid.nodesInRect(this.marquee));
+        this.select(this.grid.nodesInRect(this.marquee), { append: true });
         this.marquee = null;
       });
     }
   }
 };
 
-Vue.createApp(App).mount('#app')
+Vue.createApp(App).mount('#app');
