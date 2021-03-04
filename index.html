@@ -28,7 +28,7 @@
 		<h2>Functions</h2>
 		<ul>
 			<li><button class="action" @click="findPath">Find Path <span>(f)</span></button></li>
-			<li><button class="action" data-action="nearest">Nearest Node <span>(n)</span></button></li>
+			<li><button class="action" @click="nearestNodeToNode">Nearest Node <span>(n)</span></button></li>
 			<li><button class="action" @click="snapToGrid">Snap to Grid <span>(s)</span></button></li>
 			<li><button class="action" @click="hitTestGeometry">Hittest Geometry <span>(h)</span></button></li>
 			<li><button class="action" @click="print">Print to Console <span>(c)</span></button></li>
@@ -68,9 +68,10 @@
 			:height="marquee.height"
 			class="marquee" />
 	</svg>
+	<transition name="fade">
+		<div class="message" id="message" v-if="message">{{message.text}} <span v-show="message.hint">{{message.hint}}</span></div>
+	</transition>
 </div>
-
-<div class="message" id="message">Hello World</div>
 
 <div class="info" id="info">
 	<div class="view" :class="{ open: enabled }">

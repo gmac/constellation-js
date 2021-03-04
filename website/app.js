@@ -1,9 +1,11 @@
+const shiftClickHint = 'SHIFT+click adds to selection';
 const getLineId = (n1, n2) => [n1.id, n2.id].sort().join('-');
 const App = {
   data() {
     return {
       grid: new Geom2d.Grid(),
       lastTouch: 0,
+      message: null,
       marquee: null,
       selections: [],
       selectionIds: {},
@@ -53,6 +55,15 @@ const App = {
     },
     cellSelection() {
       return this.selections[0] instanceof Geom2d.Cell;
+    },
+    nodeCount() {
+      return Object.keys(this.grid.nodes).length;
+    }
+  },
+
+  watch: {
+    nodeCount() {
+      this.alert(null);
     }
   },
 
@@ -81,7 +92,7 @@ const App = {
         this.grid.joinNodes(Object.keys(this.selectionIds));
         this.save();
       } else {
-        this.alert('Select two or more nodes');
+        this.alert('Select two or more nodes', { hint: shiftClickHint });
       }
     },
 
@@ -90,7 +101,7 @@ const App = {
         this.grid.splitNodes(Object.keys(this.selectionIds));
         this.save();
       } else {
-        this.alert('Select two or more joined nodes');
+        this.alert('Select two or more joined nodes', { hint: shiftClickHint });
       }
     },
 
@@ -99,7 +110,7 @@ const App = {
         this.grid.addCell(Object.keys(this.selectionIds));
         this.save();
       } else {
-        this.alert('Select three or more nodes');
+        this.alert('Select three or more nodes', { hint: shiftClickHint });
       }
     },
 
@@ -133,7 +144,7 @@ const App = {
           this.alert('No valid routes');
         }
       } else {
-        this.alert('Select two nodes');
+        this.alert('Select two nodes', { hint: shiftClickHint });
       }
     },
 
@@ -147,7 +158,7 @@ const App = {
           node.y = pt.y;
           this.save();
         } else {
-          this.alert('Node must be unconnected');
+          this.alert('Node must not be connected');
         }
       } else {
         this.alert('Select a single node');
@@ -157,14 +168,13 @@ const App = {
     nearestNodeToNode() {
       if (this.nodeSelection && this.selections.length === 1) {
         const node = this.grid.nearestNodeToPoint(this.selections[0]);
-        console.log(node)
         if (node) {
           this.select(node);
         } else {
           this.alert('No valid targets');
         }
       } else {
-        this.alert("Select a single node");
+        this.alert('Select a single node');
       }
     },
 
@@ -181,16 +191,38 @@ const App = {
         if (selection.length) {
           this.select(selection);
         } else {
-          this.alert("No intersections");
+          this.alert('No intersections');
         }
 
       } else {
-        this.alert("Select a single node or cell");
+        this.alert('Select a single node or cell');
       }
     },
 
-    alert(mssg) {
-      console.log(mssg);
+    alert(text, options={}) {
+      options = Object.assign({ duration: 2500, hint: null }, options);
+      let message = null;
+
+      if (this.message) {
+        clearTimeout(this.message.timer);
+      }
+
+      if (text) {
+        message = { text, hint: options.hint };
+        if (options.duration > 0) {
+          message.timer = setTimeout(() => this.alert(null), options.duration);
+        }
+      }
+
+      if (!message && !this.nodeCount) {
+        message = {
+          text: 'Double-click to add nodes...',
+          hint: 'Click and drag for selection marquee',
+          default: null,
+        };
+      }
+
+      this.message = message;
     },
 
     hasSelection(id) {

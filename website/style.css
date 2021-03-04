@@ -210,21 +210,42 @@ h1, h2, b {
 	border-radius: 6px;
 	box-shadow: 0 0 8px rgba(0,0,0,0.5);
 	color: #fff;
-
 	font-size: 20px;
 	left: 50%;
-	margin-left: -150px;
+	opacity: 1;
 	padding: 10px 15px;
 	position: fixed;
+	text-align: center;
 	top: 10px;
-	width: 300px;
+	transform: translateX(-50%);
 	z-index: 3;
+
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
 
 .message span {
 	display: block;
 	font-size: 14px;
 	margin-top: 10px;
+}
+
+transition .message {
+	display: none;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.6s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 /* Canvas Display
