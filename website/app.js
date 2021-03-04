@@ -68,28 +68,38 @@ const App = {
       }
     },
 
+    newGrid() {
+      this.grid = new Geom2d.Grid();
+    },
+
     print() {
       console.log(JSON.stringify(this.grid.toConfig()));
     },
 
     joinNodes() {
-      if (this.nodeSelection) {
+      if (this.nodeSelection && this.selections.length > 1) {
         this.grid.joinNodes(Object.keys(this.selectionIds));
         this.save();
+      } else {
+        this.alert('Select two or more nodes');
       }
     },
 
     splitNodes() {
-      if (this.nodeSelection) {
+      if (this.nodeSelection && this.selections.length > 1) {
         this.grid.splitNodes(Object.keys(this.selectionIds));
         this.save();
+      } else {
+        this.alert('Select two or more joined nodes');
       }
     },
 
     addCell() {
-      if (this.nodeSelection) {
+      if (this.nodeSelection && this.selections.length >= 3) {
         this.grid.addCell(Object.keys(this.selectionIds));
         this.save();
+      } else {
+        this.alert('Select three or more nodes');
       }
     },
 
@@ -105,7 +115,7 @@ const App = {
     },
 
     findPath() {
-      if (this.nodeSelection && this.selections.length === 2 ) {
+      if (this.nodeSelection && this.selections.length === 2) {
         const path = this.grid.findPath({
           start: this.selections[0].id,
           goal: this.selections[1].id,
@@ -124,6 +134,58 @@ const App = {
         }
       } else {
         this.alert('Select two nodes');
+      }
+    },
+
+    snapToGrid() {
+      if (this.nodeSelection && this.selections.length === 1) {
+        const node = this.selections[0];
+
+        if (!Object.keys(node.to).length) {
+          const pt = this.grid.snapPoint(node);
+          node.x = pt.x;
+          node.y = pt.y;
+          this.save();
+        } else {
+          this.alert('Node must be unconnected');
+        }
+      } else {
+        this.alert('Select a single node');
+      }
+    },
+
+    nearestNodeToNode() {
+      if (this.nodeSelection && this.selections.length === 1) {
+        const node = this.grid.nearestNodeToPoint(this.selections[0]);
+        console.log(node)
+        if (node) {
+          this.select(node);
+        } else {
+          this.alert('No valid targets');
+        }
+      } else {
+        this.alert("Select a single node");
+      }
+    },
+
+    hitTestGeometry() {
+      if (this.selections.length === 1) {
+        let selection;
+
+        if (this.nodeSelection) {
+          selection = this.grid.cellsContainingPoint(this.selections[0]);
+        } else if (this.cellSelection) {
+          selection = this.grid.nodesInCell(this.selections[0].id);
+        }
+
+        if (selection.length) {
+          this.select(selection);
+        } else {
+          this.alert("No intersections");
+        }
+
+      } else {
+        this.alert("Select a single node or cell");
       }
     },
 
@@ -304,9 +366,9 @@ const App = {
         case 'J': return handle(() => this.joinNodes());
         case 'C': return handle(() => this.addCell());
         case 'F': return handle(() => this.findPath());
-        // case 83: return handle(() => this.snapNodeToGrid());
-        // case 78: return handle(() => evt.ctrlKey ? this.newGrid() : this.selectNearestGridNode());
-        // case 72: return handle(() => this.hitTestGeometry());
+        case 'S': return handle(() => this.snapToGrid());
+        case 'H': return handle(() => this.hitTestGeometry());
+        case 'N': return handle(() => evt.ctrlKey ? this.newGrid() : this.nearestNodeToNode());
       }
     });
 

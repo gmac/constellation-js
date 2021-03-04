@@ -29,9 +29,9 @@
 		<ul>
 			<li><button class="action" @click="findPath">Find Path <span>(f)</span></button></li>
 			<li><button class="action" data-action="nearest">Nearest Node <span>(n)</span></button></li>
-			<li><button class="action" data-action="snap">Snap to Grid <span>(s)</span></button></li>
-			<li><button class="action" data-action="hittest">Hittest Geometry <span>(h)</span></button></li>
-			<li><button class="action" data-action="print">Print to Console <span>(c)</span></button></li>
+			<li><button class="action" @click="snapToGrid">Snap to Grid <span>(s)</span></button></li>
+			<li><button class="action" @click="hitTestGeometry">Hittest Geometry <span>(h)</span></button></li>
+			<li><button class="action" @click="print">Print to Console <span>(c)</span></button></li>
 		</ul>
 	</div>
 	<svg class="canvas" id="canvas" @mousedown="touch($event)">
@@ -70,7 +70,7 @@
 	</svg>
 </div>
 
-<div class="message" id="message"></div>
+<div class="message" id="message">Hello World</div>
 
 <div class="info" id="info">
 	<div class="view" :class="{ open: enabled }">
