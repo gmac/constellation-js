@@ -25,7 +25,7 @@ import { Point } from 'constellation';
 const pt = new Point(100, 100);
 ```
 
-**Point (constructor)** `let pt = new Point(x, y);`
+**new Point(x, y)**
 
 Builds a Point primitive with the following properties:
 
@@ -43,7 +43,7 @@ import { Rect } from 'constellation';
 const rect = new Rect(10, 10, 100, 100);
 ```
 
-**Rect (constructor)** `let rect = new Rect(x, y, width, height);`
+**new Rect(x, y, width, height)**
 
 Builds a Rect primitive with the following properties:
 
@@ -59,63 +59,63 @@ import { Grid } from 'constellation';
 const grid = new Grid(data);
 ```
 
-**Grid (constructor)** `let grid = new Grid( data? );`
+**new Grid(data?)**
 
 Builds a new `Grid` instance with all of the following operations...
 
-**grid.addNode** `grid.addNode( x, y, data? );`
+**grid.addNode(x, y, data?)**
 
 Adds a new `Node` object with specified X and Y coordinates, and an optional data object. Returns a reference to the new `Node` object. A data object may be provided as the sole parameter; if the data object contains an `id` property, that id will be assigned to the new node.
 
-**grid.getNode** `grid.getNode( id );`
+**grid.getNode(id)**
 
 Gets a node by id reference. Returns a `Node` object, or `null` for missing ids.
 
-**grid.nodeCount** `grid.nodeCount;`
+**grid.nodeCount**\
 
 Specifies the number of nodes in the grid.
 
-**grid.hasNodes** `grid.hasNodes( [id, ...] );`
+**grid.hasNodes([id, ...])**
 
 Tests if all of the specified node ids exist in the grid.
 
-**grid.joinNodes** `grid.joinNodes( [id1, id2, ...] );`
+**grid.joinNodes([id1, id2, ...])**
 
 Joins an array of two or more node ids with connections. Returns `true` if changes are made.
 
-**grid.splitNodes** `grid.splitNodes( [id1, id2, ...] );`
+**grid.splitNodes([id1, id2, ...])**
 
 Breaks the connections among an array of two or more node ids. Returns `true` if changes are made.
 
-**grid.detachNodes** `grid.detachNodes( [id, ...] );`
+**grid.detachNodes([id, ...])**
 
 Splits an array of node ids from all of their respective connections. Returns `true` if changes are made.
 
-**grid.removeNodes** `grid.removeNodes( [id, ...] );`
+**grid.removeNodes([id, ...])**
 
 Detaches an array of node ids, then removes them each from the grid. Any dependent grid cells are also removed. Returns `true` if changes are made.
 
-**grid.addCell** `grid.addCell( [nodeIds], data? );`
+**grid.addCell([nodeId, ...], data?)**
 
 Creates a new `Cell` from three or more node ids. Returns a reference to the new `Cell` object, or null if no cell was created.
 
-**grid.getCell** `grid.getCell( id );`
+**grid.getCell(id)**
 
 Gets a cell by id reference. Returns a `Cell` object, or `null` for missing ids.
 
-**grid.nodesForCell** `grid.nodesForCell( id );`
+**grid.nodesForCell(id)**
 
 Gets an array of `Node` objects defining the point ring for a cell id. Returns `null` for missing cells.
 
-**grid.cellCount** `grid.cellCount;`
+**grid.cellCount**
 
 Specifies the number of cells in the grid.
 
-**grid.removeCells** `grid.removeCells( [id, ...] );`
+**grid.removeCells([id, ...])**
 
 Removes an array of cell ids from the grid. All nodes assocated with the cells are left unchanged. Returns `true` if changes are made.
 
-**grid.findPath**
+**grid.findPath({ options })**
 
 ```ts
 grid.findPath({
@@ -135,7 +135,8 @@ Takes `start` and `goal` node ids, then finds the shortest path between them. Ro
 
  - `bestCandidatePath`: once a path to goal is reached, subsequent paths discovered with _equal_ cost will use this tiebreaker to select which path to return. Favors the first discovered path by default.
 
-**grid.snapPointToGrid** `grid.snapPointToGrid( point );`
+**grid.snapPointToGrid( point )**
+
 Snaps the provided point to the nearest position among all joined line segments within the node grid. The snapped point will be plotted at the nearest available line segment, or the nearest grid point if no line segments are defined. Returns a meta object with the following attributes:
 
  - `point`: the snapped `Point` object.
