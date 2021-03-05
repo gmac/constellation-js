@@ -27,6 +27,7 @@
   "github": "https://github.com/gmac/constellation-js",
   "scripts": {
     "build": "rollup -c --format umd --name 'Constellation'",
+    "release": "yarn build && npm publish",
     "test": "jest --no-watchman --forceExit"
   },
   "license": "MIT",
