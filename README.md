@@ -2,7 +2,7 @@
 
 A geometry toolkit for controlling 2D sprite motion.
 
-![sample graph](./website/example.png)
+![sample graph](./website/example.png?v=2)
 
 Constellation manages 2D point grids and pathfinding. The library is designed to control sprite motion within a 2D environment. Constellation expands upon the motion control system used in the [What Makes You Tick?](https://www.youtube.com/watch?v=qxngufqrZBE "What Makes You Tick?") adventure game series. Features include:
 
