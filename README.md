@@ -18,7 +18,7 @@ See the [grid builder](http://gmac.github.io/constellation-js "constellation-js"
 
 While Constellation is not an animation library itself, it's designed to work with animation tools. Use Constellation to manage and search grid geometry, then feed its point arrays into your preferred animation library.
 
-# Getting started
+## Getting started
 
 Install via NPM:
 
@@ -33,9 +33,9 @@ import { Grid } from 'constellation';
 const Constellation = require('constellation');
 ```
 
-# API Documentation
+## API Documentation
 
-## Constellation.Point
+### Constellation.Point
 
 ```js
 import { Point } from 'constellation';
@@ -53,7 +53,7 @@ Builds a Point primitive with the following properties:
 
 Calculates the distance between two provided `Point` objects.
 
-## Constellation.Rect
+### Constellation.Rect
 
 ```js
 import { Rect } from 'constellation';
@@ -73,7 +73,7 @@ Builds a Rect primitive with the following properties:
 
 Returns `true` if the point falls within the rectangle bounds.
 
-## Constellation.Grid
+### Constellation.Grid
 
 ```js
 import { Grid } from 'constellation';
@@ -188,7 +188,7 @@ Returns an array of grid `Node` objects that compose the shape of the given cell
 
 Returns an array of grid `Node` objects that fall within the bounds of the given rectangle.
 
-## Constellation.Node
+### Constellation.Node
 
 ```js
 import { Grid } from 'constellation';
@@ -206,7 +206,7 @@ Use `grid.addNode();` to create and manage nodes. Nodes are just `Point` objects
 - `to`: table of connections to other nodes.
 - `data?`: a freeform data object with meta attributes for the node.
 
-## Constellation.Cell
+### Constellation.Cell
 
 ```js
 import { Grid } from 'constellation';
@@ -225,7 +225,7 @@ Use `grid.addCell();` to create and manage cells. Grid cells have the following 
 - `rels`: an array of node ids defining the point ring.
 - `data?`: a freeform data object with meta attributes for the cell.
 
-## Constellation.Path
+### Constellation.Path
 
 ```js
 import { Grid } from 'constellation';
@@ -244,7 +244,7 @@ Use `grid.findPath();` to create paths. Grid paths have the following properties
 - `weight`: a numeric weight of the completed path. Uses coordinate geometry distances by default.
 - `estimate`: a numeric estimate of the path's cost to completion. Should match weight in completed paths.
 
-## Utilities
+### Utilities
 
 ```js
 import { intersect } from 'constellation';
@@ -297,7 +297,7 @@ Receives target point P, and snaps it to the nearest point along line segment AB
 
 Receives target point P and an array of points to search. Returns the nearest point to P within the array of points, using a basic [nearest neighbor](http://en.wikipedia.org/wiki/Closest_pair_of_points_problem "Nearest neighbor") search.
 
-# Data Graphs
+## Data graphs
 
 While Constellation is designed to manage 2D coordinate geometry, it also provides support for managing node-based data graphs that can be searched using a-star. For example, let's set up a simple social graph using Constellation's node data API:
 
