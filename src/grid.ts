@@ -329,10 +329,6 @@ export class Grid {
     };
   }
 
-  snapPoint(pt: Point): Point {
-    return this.snapPointToGrid(pt).p;
-  }
-
   // Finds the nearest node to the specified node.
   // @param origin: The origin node to search from.
   // @return: The nearest other grid node to the specified target.
@@ -449,9 +445,9 @@ export class Grid {
   //   return result;
   // },
 
-  // // Maps the grid into descrete node fragments.
-  // // Each fragment contains the IDs of contiguously joined nodes.
-  // getContiguousNodesMap: function() {
+  // Maps the grid into descrete node fragments.
+  // Each fragment contains the IDs of contiguously joined nodes.
+  // getContiguousNodes() {
   //   var fragments = [];
   //   var mapped = {};
   //   var grid = this;

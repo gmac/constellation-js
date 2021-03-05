@@ -17,21 +17,20 @@
 	</div>
 
 	<div class="toolbar" id="toolbar">
-		<h2>Actions</h2>
+		<strong>Actions</strong>
 		<ul>
-			<li><button class="action" @click="joinNodes">Join Nodes <span>(j)</span></button></li>
-			<li><button class="action" @click="splitNodes">Break Nodes <span>(b)</span></button></li>
-			<li><button class="action" @click="addCell">Make Cell <span>(p)</span></button></li>
-			<li><button class="action" @click="deleteGeometry">Remove Geometry <span>DEL</span></button></li>
+			<li><button class="action" @click="joinNodes">Join nodes <span>j</span></button></li>
+			<li><button class="action" @click="splitNodes">Break nodes <span>b</span></button></li>
+			<li><button class="action" @click="addCell">Add cell <span>c</span></button></li>
+			<li><button class="action" @click="deleteGeometry">Delete <span>DEL</span></button></li>
 		</ul>
 
-		<h2>Functions</h2>
+		<strong>Functions</strong>
 		<ul>
-			<li><button class="action" @click="findPath">Find Path <span>(f)</span></button></li>
-			<li><button class="action" @click="nearestNodeToNode">Nearest Node <span>(n)</span></button></li>
-			<li><button class="action" @click="snapToGrid">Snap to Grid <span>(s)</span></button></li>
-			<li><button class="action" @click="hitTestGeometry">Hittest Geometry <span>(h)</span></button></li>
-			<li><button class="action" @click="print">Print to Console <span>(c)</span></button></li>
+			<li><button class="action" @click="findPath">Pathfinder <span>f</span></button></li>
+			<li><button class="action" @click="snapToGrid">Snap point <span>s</span></button></li>
+			<li><button class="action" @click="hitTestGeometry">Hittest <span>h</span></button></li>
+			<li><button class="action" @click="print">Print <span>p</span></button></li>
 		</ul>
 	</div>
 	<svg class="canvas" id="canvas" @mousedown="touch($event)">
@@ -76,7 +75,7 @@
 <div class="info" id="info">
 	<div class="view" :class="{ open: enabled }">
 		<b>About</b>
-		<p>Constellation manages 2D point grids and path navigation; it's designed to control dynamic sprite motion around 2D scenes. Constellation expands upon the motion system used in the <a href="http://www.lassiegames.com/games/wmyt">What Makes You Tick?</a> games.</p>
+		<p>Constellation manages 2D point grids and path navigation; it's designed to control dynamic sprite motion around 2D scenes. Constellation expands upon the motion system used in the <a href="https://www.youtube.com/watch?v=qxngufqrZBE">What Makes You Tick?</a> games.</p>
 		<b>Controls</b>
 		<ul>
 			<li>Double-click on canvas to add grid nodes.</li>

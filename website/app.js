@@ -85,6 +85,7 @@ const App = {
 
     print() {
       console.log(JSON.stringify(this.grid.toConfig()));
+      this.alert('Data printed to console (CTRL+OPT J)');
     },
 
     joinNodes() {
@@ -153,25 +154,12 @@ const App = {
         const node = this.selections[0];
 
         if (!Object.keys(node.to).length) {
-          const pt = this.grid.snapPoint(node);
+          const pt = this.grid.snapPointToGrid(node).p;
           node.x = pt.x;
           node.y = pt.y;
           this.save();
         } else {
           this.alert('Node must not be connected');
-        }
-      } else {
-        this.alert('Select a single node');
-      }
-    },
-
-    nearestNodeToNode() {
-      if (this.nodeSelection && this.selections.length === 1) {
-        const node = this.grid.nearestNodeToPoint(this.selections[0]);
-        if (node) {
-          this.select(node);
-        } else {
-          this.alert('No valid targets');
         }
       } else {
         this.alert('Select a single node');
@@ -400,7 +388,7 @@ const App = {
         case 'F': return handle(() => this.findPath());
         case 'S': return handle(() => this.snapToGrid());
         case 'H': return handle(() => this.hitTestGeometry());
-        case 'N': return handle(() => evt.ctrlKey ? this.newGrid() : this.nearestNodeToNode());
+        case 'N': return handle(() => this.newGrid());
       }
     });
 
@@ -410,9 +398,7 @@ const App = {
 
 const Info = {
   data() {
-    return {
-      enabled: false,
-    };
+    return { enabled: false };
   },
 };
 
