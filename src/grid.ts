@@ -101,7 +101,7 @@ export class Grid {
 
   // Splits apart nodes within a selection group.
   // Selection group may be an array of node ids, or an object of id keys.
-  splitNodes(ids: Array<string>) {
+  splitNodes(ids: Array<string>): boolean {
     // Alias 'detach' method for a single node reference.
     if (ids.length < 2) {
       return this.detachNodes(ids);
@@ -127,7 +127,7 @@ export class Grid {
 
   // Detachs a node from the grid.
   // Each node's connections will be severed from all joining nodes.
-  detachNodes(ids: Array<string>) {
+  detachNodes(ids: Array<string>): boolean {
     let changed = false;
 
     ids.forEach(id => {
@@ -149,7 +149,7 @@ export class Grid {
   }
 
   // Detaches and removes a collection of nodes from the grid.
-  removeNodes(ids: Array<string>) {
+  removeNodes(ids: Array<string>): boolean {
     let changed = this.detachNodes(ids);
 
     ids.forEach(id => {
@@ -351,13 +351,6 @@ export class Grid {
       }
       return acc;
     }, []);
-  }
-
-  // Tests if a Point intersects any Cell in the grid.
-  // @param pt: Point to test.
-  // @return: True if the point intersects any polygon.
-  hitTestCells(pt: Point): boolean {
-    return this.cellsContainingPoint(pt).length > 0;
   }
 
   // Tests a Cell for intersections with all nodes in the grid, and returns their ids.

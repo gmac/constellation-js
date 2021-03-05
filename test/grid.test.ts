@@ -497,25 +497,6 @@ describe('Grid', () => {
     });
   });
 
-  describe('hitTestCells', () => {
-    it('return true when the point falls within any cell', () => {
-      const a = grid.addNode(0, 0).id;
-      const b = grid.addNode(100, 0).id;
-      const c = grid.addNode(0, 100).id;
-      const d = grid.addNode(100, 100).id;
-      grid.addCell([a, b, c]);
-      grid.addCell([b, c, d]);
-
-      expect(grid.hitTestCells({ x: 10, y: 10 })).toEqual(true);
-      expect(grid.hitTestCells({ x: 90, y: 90 })).toEqual(true);
-      expect(grid.hitTestCells({ x: 200, y: 200 })).toEqual(false);
-    });
-
-    it('returns false when there are no cells', () => {
-      expect(grid.hitTestCells({ x: 10, y: 10 })).toEqual(false);
-    });
-  });
-
   describe('nodesInCell', () => {
     it("returns an array of all node ids contained within a polygon", () => {
       const a = grid.addNode(0, 0);
