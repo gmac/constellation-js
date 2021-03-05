@@ -2,13 +2,15 @@
 
 A geometry toolkit for controlling 2D sprite motion.
 
+![sample graph](./website/example.png)
+
 Constellation manages 2D point grids and pathfinding. The library is designed to control sprite motion within a 2D environment. Constellation expands upon the motion control system used in the [What Makes You Tick?](https://www.youtube.com/watch?v=qxngufqrZBE "What Makes You Tick?") adventure game series. Features include:
 
- - Point and cell grid management.
- - Point pathfinding with [A-star](http://en.wikipedia.org/wiki/A*_search_algorithm "A-star").
- - Cell hit tests with [ray casting](http://en.wikipedia.org/wiki/Point_in_polygon "Ray casting").
- - Snapping points to line segments.
- - Optimized nearest-point searching.
+- Point and cell grid management.
+- Point pathfinding with [A-star](http://en.wikipedia.org/wiki/A*_search_algorithm "A-star").
+- Cell hit tests with [ray casting](http://en.wikipedia.org/wiki/Point_in_polygon "Ray casting").
+- Snapping points to line segments.
+- Optimized nearest-point searching.
 
 See the [grid builder](http://gmac.github.io/constellation-js "constellation-js") demo.
 
@@ -127,29 +129,29 @@ Removes an array of cell ids from the grid. All nodes assocated with the removed
 
 ```ts
 grid.findPath({
-	start: string,
-	goal: string,
-	costForSegment?: (a: Node, b: Node) => number,
-	costEstimateToGoal?: (a: Node, b: Node) => number,
-	bestCandidatePath?: (a: Path, b: Path) => Path,
+  start: string,
+  goal: string,
+  costForSegment?: (a: Node, b: Node) => number,
+  costEstimateToGoal?: (a: Node, b: Node) => number,
+  bestCandidatePath?: (a: Path, b: Path) => Path,
 });
 ```
 
 Takes `start` and `goal` node ids, then finds the shortest path between them. Routing favors the shortest path based on coordinate geometry by default. You may customize path routing using the optional weight and estimate functions:
 
- - `costForSegment`: used to calculate the weight (or cost) of each new grid segment added to a path. Receives two `Node` objects as arguments: the previous search node, and the current search node. Returns a numeric weight for each path segment. The pathfinder returns a path that accrues the lowest total weight; `Point.distance` is the default measure.
+- `costForSegment`: used to calculate the weight (or cost) of each new grid segment added to a path. Receives two `Node` objects as arguments: the previous search node, and the current search node. Returns a numeric weight for each path segment. The pathfinder returns a path that accrues the lowest total weight; `Point.distance` is the default measure.
 
- - `costEstimateToGoal`: provides a best-case scenario estimate for each node's cost to reach the goal. Receives two `Node` objects as arguments: the current search node, and the goal node. Returns a numeric estimated cost-to-goal. The pathfinder prioritizes paths that estimate the lowest total weight; `Point.distance` is the default measure.
+- `costEstimateToGoal`: provides a best-case scenario estimate for each node's cost to reach the goal. Receives two `Node` objects as arguments: the current search node, and the goal node. Returns a numeric estimated cost-to-goal. The pathfinder prioritizes paths that estimate the lowest total weight; `Point.distance` is the default measure.
 
- - `bestCandidatePath`: once a path to goal is reached, subsequent paths discovered with _equal_ cost will use this tiebreaker to select which path to return. Favors the first discovered path by default.
+- `bestCandidatePath`: once a path to goal is reached, subsequent paths discovered with _equal_ cost will use this tiebreaker to select which path to return. Favors the first discovered path by default.
 
 **grid.snapPointToGrid(point)**
 
 Snaps the provided `Point` to the nearest position among all joined line segments within the grid. The snapped point will be plotted along the nearest available line segment. Returns line segment _AB_ (if available) with the point _P_ plotted along it:
 
- - `a`: grid node _A_ of line segment.
- - `b`: grid node _B_ of line segment.
- - `p`: the snapped `Point` object.
+- `a`: grid node _A_ of line segment.
+- `b`: grid node _B_ of line segment.
+- `p`: the snapped `Point` object.
 
 **grid.nearestNodeToNode(id)**
 
