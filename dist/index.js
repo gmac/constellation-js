@@ -1,7 +1,7 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
-  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.Geom2d = {}));
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.Constellation = {}));
 }(this, (function (exports) { 'use strict';
 
   var Cell = /** @class */ (function () {
@@ -444,11 +444,6 @@
       Grid.prototype.getCell = function (id) {
           return this.cells[id];
       };
-      // Gets a collection of polygons by id references.
-      Grid.prototype.getCells = function (ids) {
-          var _this = this;
-          return ids.map(function (id) { return _this.getCell(id); });
-      };
       // Gets an array of nodes representing a polygon in the grid.
       Grid.prototype.nodesForCell = function (id) {
           var _this = this;
@@ -559,9 +554,6 @@
               a: a,
               b: b,
           };
-      };
-      Grid.prototype.snapPoint = function (pt) {
-          return this.snapPointToGrid(pt).p;
       };
       // Finds the nearest node to the specified node.
       // @param origin: The origin node to search from.

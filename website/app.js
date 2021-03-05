@@ -3,7 +3,7 @@ const getLineId = (n1, n2) => [n1.id, n2.id].sort().join('-');
 const App = {
   data() {
     return {
-      grid: new Geom2d.Grid(),
+      grid: new Constellation.Grid(),
       lastTouch: 0,
       message: null,
       marquee: null,
@@ -51,10 +51,10 @@ const App = {
       }));
     },
     nodeSelection() {
-      return this.selections[0] instanceof Geom2d.Node;
+      return this.selections[0] instanceof Constellation.Node;
     },
     cellSelection() {
-      return this.selections[0] instanceof Geom2d.Cell;
+      return this.selections[0] instanceof Constellation.Cell;
     },
     nodeCount() {
       return Object.keys(this.grid.nodes).length;
@@ -80,7 +80,7 @@ const App = {
     },
 
     newGrid() {
-      this.grid = new Geom2d.Grid();
+      this.grid = new Constellation.Grid();
     },
 
     print() {
@@ -297,7 +297,7 @@ const App = {
       }
 
       if (this.isSelected(node)) {
-        const origin = new Geom2d.Point(evt.layerX, evt.layerY);
+        const origin = new Constellation.Point(evt.layerX, evt.layerY);
         const dragPoint = (x, y) => {
           this.selections.forEach(n => {
             n.x += (x - origin.x);
@@ -322,7 +322,7 @@ const App = {
       }
 
       if (this.isSelected(cell)) {
-        const origin = new Geom2d.Point(evt.layerX, evt.layerY);
+        const origin = new Constellation.Point(evt.layerX, evt.layerY);
         this.drag((x, y) => {
           const uniqueNodes = this.selections.reduce((acc, cell) => {
             cell.rels.forEach(nid => {
@@ -354,13 +354,13 @@ const App = {
     },
 
     dragMarquee(evt) {
-      const origin = new Geom2d.Point(evt.layerX, evt.layerY);
+      const origin = new Constellation.Point(evt.layerX, evt.layerY);
       const plotRect = (x, y) => {
         const minX = Math.min(origin.x, x);
         const minY = Math.min(origin.y, y);
         const maxX = Math.max(origin.x, x);
         const maxY = Math.max(origin.y, y);
-        this.marquee = new Geom2d.Rect(minX, minY, maxX-minX, maxY-minY);
+        this.marquee = new Constellation.Rect(minX, minY, maxX-minX, maxY-minY);
       };
 
       plotRect(origin.x, origin.y);
