@@ -25,14 +25,14 @@ import { Point } from 'constellation';
 const pt = new Point(100, 100);
 ```
 
-**new Point(x, y)**
+**point = new Point(x, y)**
 
 Builds a Point primitive with the following properties:
 
 - `x`: horizontal coordinate of the point.
 - `y`: vertical coordinate of the point.
 
-**Point.distance** `var result = Point.distance(a, b);`
+**Point.distance(a, b)**
 
 Calculates the distance between two provided `Point` objects.
 
@@ -43,7 +43,7 @@ import { Rect } from 'constellation';
 const rect = new Rect(10, 10, 100, 100);
 ```
 
-**new Rect(x, y, width, height)**
+**rect = new Rect(x, y, width, height)**
 
 Builds a Rect primitive with the following properties:
 
@@ -59,7 +59,7 @@ import { Grid } from 'constellation';
 const grid = new Grid(data);
 ```
 
-**new Grid(data?)**
+**grid = new Grid(data?)**
 
 Builds a new `Grid` instance with all of the following operations...
 
