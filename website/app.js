@@ -393,6 +393,9 @@ const App = {
     });
 
     this.load();
+    if (!this.nodeCount) {
+      this.alert(null);
+    }
   }
 };
 

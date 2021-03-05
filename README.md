@@ -1,22 +1,17 @@
 # Constellation.js
 
-A geometry toolkit for controlling 2D sprite motion.
+A zero-dependency geometry toolkit for controlling 2D sprite motion.
 
 ![sample graph](./website/example.png?v=2)
 
-Constellation manages 2D point grids and pathfinding. The library is designed to control sprite motion within a 2D environment. Constellation expands upon the motion control system used in the [What Makes You Tick?](https://www.youtube.com/watch?v=qxngufqrZBE "What Makes You Tick?") adventure game series. Features include:
+Constellation manages 2D point grids and pathfinding. The library is designed to control sprite motion within a 2D environment. While not an animation library itself, Constellation may be used to manage and search grid geometry, and then feed the resulting point arrays into your preferred animation library. Constellation expands upon the motion control system used in the [What Makes You Tick?](https://www.youtube.com/watch?v=qxngufqrZBE "What Makes You Tick?") adventure game series. Features include:
 
 - Point and cell grid management.
 - Point pathfinding with [A-star](http://en.wikipedia.org/wiki/A*_search_algorithm "A-star").
 - Cell hit tests with [ray casting](http://en.wikipedia.org/wiki/Point_in_polygon "Ray casting").
 - Snapping points to line segments.
-- Optimized nearest-point searching.
 
-See the [grid builder](http://gmac.github.io/constellation-js "constellation-js") demo.
-
-**Creating Animations**
-
-While Constellation is not an animation library itself, it's designed to work with animation tools. Use Constellation to manage and search grid geometry, then feed its point arrays into your preferred animation library.
+See the [grid builder](http://gmac.github.io/constellation-js "constellation-js") demo for an interactive trial.
 
 ## Getting started
 
