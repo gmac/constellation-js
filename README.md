@@ -26,12 +26,14 @@ const pt = new Point(100, 100);
 ```
 
 **Point (constructor)** `let pt = new Point(x, y);`
+
 Builds a Point primitive with the following properties:
 
 - `x`: horizontal coordinate of the point.
 - `y`: vertical coordinate of the point.
 
 **Point.distance** `var result = Point.distance(a, b);`
+
 Calculates the distance between two provided `Point` objects.
 
 ## Constellation.Rect
@@ -42,6 +44,7 @@ const rect = new Rect(10, 10, 100, 100);
 ```
 
 **Rect (constructor)** `let rect = new Rect(x, y, width, height);`
+
 Builds a Rect primitive with the following properties:
 
 - `x`: horizontal coordinate of the rectangle origin.
@@ -57,45 +60,59 @@ const grid = new Grid(data);
 ```
 
 **Grid (constructor)** `let grid = new Grid( data? );`
+
 Builds a new `Grid` instance with all of the following operations...
 
 **grid.addNode** `grid.addNode( x, y, data? );`
+
 Adds a new `Node` object with specified X and Y coordinates, and an optional data object. Returns a reference to the new `Node` object. A data object may be provided as the sole parameter; if the data object contains an `id` property, that id will be assigned to the new node.
 
 **grid.getNode** `grid.getNode( id );`
+
 Gets a node by id reference. Returns a `Node` object, or `null` for missing ids.
 
 **grid.nodeCount** `grid.nodeCount;`
+
 Specifies the number of nodes in the grid.
 
 **grid.hasNodes** `grid.hasNodes( [id, ...] );`
+
 Tests if all of the specified node ids exist in the grid.
 
 **grid.joinNodes** `grid.joinNodes( [id1, id2, ...] );`
+
 Joins an array of two or more node ids with connections. Returns `true` if changes are made.
 
 **grid.splitNodes** `grid.splitNodes( [id1, id2, ...] );`
+
 Breaks the connections among an array of two or more node ids. Returns `true` if changes are made.
 
 **grid.detachNodes** `grid.detachNodes( [id, ...] );`
+
 Splits an array of node ids from all of their respective connections. Returns `true` if changes are made.
 
 **grid.removeNodes** `grid.removeNodes( [id, ...] );`
+
 Detaches an array of node ids, then removes them each from the grid. Any dependent grid cells are also removed. Returns `true` if changes are made.
 
 **grid.addCell** `grid.addCell( [nodeIds], data? );`
+
 Creates a new `Cell` from three or more node ids. Returns a reference to the new `Cell` object, or null if no cell was created.
 
 **grid.getCell** `grid.getCell( id );`
+
 Gets a cell by id reference. Returns a `Cell` object, or `null` for missing ids.
 
 **grid.nodesForCell** `grid.nodesForCell( id );`
+
 Gets an array of `Node` objects defining the point ring for a cell id. Returns `null` for missing cells.
 
 **grid.cellCount** `grid.cellCount;`
+
 Specifies the number of cells in the grid.
 
 **grid.removeCells** `grid.removeCells( [id, ...] );`
+
 Removes an array of cell ids from the grid. All nodes assocated with the cells are left unchanged. Returns `true` if changes are made.
 
 **grid.findPath**
@@ -126,26 +143,33 @@ Snaps the provided point to the nearest position among all joined line segments 
  - `segment`: an array of node ids defining the line segment on which the point was snapped.
 
 **grid.getNearestNodeToPoint** `grid.getNearestNodeToPoint( point );`
+
 Finds and returns the closest grid `Node` object to the specified `Point` position. Performs an optimized (sorted) search.
 
 **grid.getNearestNodeToNode** `grid.getNearestNodeToNode( id );`
+
 Finds the next closest grid node to the specified node id. Similar to `getNearestNodeToPoint`, except that the input is a node id rather than a `Point` object.
 
 **grid.hitTestPointInPolygons** `grid.hitTestPointInPolygons( point );`
+
 Returns true if the provided `Point` intersects any `Polygon` objects within the grid.
 
 **grid.getPolygonHitsForPoint** `grid.getPolygonHitsForPoint( point );`
+
 Tests a `Point` object for intersections with all `Polygon` objects in the grid, then returns an array of polygon ids that encompass the point.
 
 **grid.getNodesInPolygon** `grid.getNodesInPolygon( id );`
+
 Takes a polygon id and tests it for intersections with all nodes in the grid, then returns an array of the contained node ids. Nodes that compose the polygon's ring will be included in the returned array, even though their edge positions may fail a mathematical hit test.
 
 **grid.getNodesInRect** `grid.getNodesInRect( rect );`
+
 Tests a `Rect` object for intersections with all nodes in the grid, and returns an array of the contained node ids.
 
 ## Constellation.Node
 
 **Const.Node** use... `grid.addNode();`
+
 Constellation grid `Node` object; use a `Grid` instance to create and manage nodes. Nodes are just `Point` objects with additional attributes, therefore they may be used directly with any Constellation method that performs `Point` operations. `Node` objects have the following properties:
 
 - `id`: unique identifier for the node. Don't touch this.
@@ -154,7 +178,10 @@ Constellation grid `Node` object; use a `Grid` instance to create and manage nod
 - `to`: Table of connections to other nodes. Seriously, don't touch this.
 - `data`: A data object of user-defined data attached to the node.
 
-**Const.Polygon** use... `grid.addPolygon();`
+## Constellation.Cell
+
+**Cell** use... `grid.addCell();`
+
 Constellation grid `Polygon` object; use a `Grid` instance to create and manage polygons. Grid polygons have the following properties:
 
 - `id`: unique identifier for the node. Don't touch this.
@@ -163,44 +190,60 @@ Constellation grid `Polygon` object; use a `Grid` instance to create and manage 
 
 Constellation `Grid` is a constructor function that must be instanced. A `Grid` object manages a collection of `Node` and `Polygon` objects.
 
-## Const - Static methods
+## Constellation.Path
 
-**Const.ccw** `var result = Const.ccw( pointA, pointB, pointC, exclusive? );`
+**Path** use... `grid.findPath();`
+
+## Utilities
+
+**ccw** `var result = Const.ccw( pointA, pointB, pointC, exclusive? );`
+
 Tests for counter-clockwise winding among three `Point` objects. Returns true if the three points trend in a counter-clockwise arc. Useful for intersection tests. Passing `true` for the optional `exclusive` param will pass balanced arcs.
 
-**Const.intersect** `var result = Const.intersect( pointA, pointB, pointC, pointD );`
+**intersect** `var result = Const.intersect( pointA, pointB, pointC, pointD );`
+
 Tests for intersection between line segments AB and CD. Returns true if the line segments intersect.
 
-**Const.degreesToRadians** `var radians = Const.degreesToRadians( degrees );`
+**degreesToRadians** `var radians = Const.degreesToRadians( degrees );`
+
 Utility method for converting [degrees](http://en.wikipedia.org/wiki/Degree_%28angle%29 "Degrees") to [radians](http://en.wikipedia.org/wiki/Radian "Radians").
 
-**Const.radiansToDegrees** `var degrees = Const.radiansToDegrees( radians );`
+**radiansToDegrees** `var degrees = Const.radiansToDegrees( radians );`
+
 Utility method for converting [radians](http://en.wikipedia.org/wiki/Radian "Radians") to [degrees](http://en.wikipedia.org/wiki/Degree_%28angle%29 "Degrees").
 
-**Const.angleRadians** `var radians = Const.angleRadians( pointA, pointB );`
+**angleRadians** `var radians = Const.angleRadians( pointA, pointB );`
+
 Calculates the angle (in radians) between line segment AB and the [positive X-origin axis](http://en.wikipedia.org/wiki/Origin_%28mathematics%29 "Origin axis"). Accepts two `Point` objects and returns the angle in [radians](http://en.wikipedia.org/wiki/Radian "Radians").
 
-**Const.angleDegrees** `var degrees = Const.angleDegrees( pointA, pointB );`
+**angleDegrees** `var degrees = Const.angleDegrees( pointA, pointB );`
+
 Calculates the angle (in degrees) between line segment AB and the [positive X-origin axis](http://en.wikipedia.org/wiki/Origin_%28mathematics%29 "Origin axis"). Accepts two `Point` objects and returns the angle in [degrees](http://en.wikipedia.org/wiki/Degree_%28angle%29 "Degrees").
 
-**Const.angleSector** `var degrees = Const.angleSector( radians, sectors?, offsetRadians? );`
+**angleSector** `var degrees = Const.angleSector( radians, sectors?, offsetRadians? );`
+
 Gets the [circular sector](http://en.wikipedia.org/wiki/Circular_sector "Circular Sector") index that an angle falls into. You may specify how many sectors to divide the circle into, and then plot an angle among those breaks. This is useful for applying orientation view states to a sprite while moving it around a grid; for example: given a sprite with 4 walk cycles for different orientations (left, front, right, back), use this method to select one of the four views based on the sprite's next angle of motion.
 
 Requires an angle to be provided in radians. You may optionally specify the number of sectors to divide the circle into, the default is 8. Also accepts an optional offset (in radians) used to shift sector divisions off the [positive X-origin axis](http://en.wikipedia.org/wiki/Origin_%28mathematics%29 "Origin axis"). By default, offset is configured as one-half of the sector size, which centers the X-origin axis within the first sector. Returns an index between `0` and `x-1`, where x is the number of sectors.
 
-**Const.getRectForPointRing** `var result = Const.getRectForPointRing( [points] );`
+**getRectForPointRing** `var result = Const.getRectForPointRing( [points] );`
+
 Takes an array of `Point` objects; returns a `Rect` object of their bounding box.
 
-**Const.hitTestRect** `var result = Const.hitTestRect( pointP, rect );`
+**hitTestRect** `var result = Const.hitTestRect( pointP, rect );`
+
 Takes target point P and a `Rect` object; returns `true` if the point falls within the rectangle.
 
-**Const.hitTestPointRing** `var result = Const.hitTestPointRing( pointP, [points, ...] );`
+**hitTestPointRing** `var result = Const.hitTestPointRing( pointP, [points, ...] );`
+
 Takes a target point P and an array of points defining a ring. Returns true if P falls within the ring of points. Hit test is performed using [ray casting](http://en.wikipedia.org/wiki/Point_in_polygon "ray casting") method.
 
-**Const.snapPointToLineSegment** `var result = Const.snapPointToLineSegment( pointP, pointA, pointB );`
+**snapPointToLineSegment** `var result = Const.snapPointToLineSegment( pointP, pointA, pointB );`
+
 Takes target point P, and snaps it to the nearest point along line segment AB.
 
-**Const.getNearestPointToPoint** `var result = Const.getNearestPointToPoint( pointP, [points, ...] );`
+**getNearestPointToPoint** `var result = Const.getNearestPointToPoint( pointP, [points, ...] );`
+
 Takes target point P and an array of points to search. Returns the nearest point to P within the array of points, using a simplified [nearest neighbor](http://en.wikipedia.org/wiki/Closest_pair_of_points_problem "Nearest neighbor") search.
 
 # Data Graphs
