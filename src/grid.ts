@@ -3,7 +3,11 @@ import { Node } from './gridNode';
 import { Path } from './gridPath';
 import { Point } from './point';
 import { Rect } from './rect';
-import { NodeCostComparator, PathSelector } from './types';
+import {
+  GridData,
+  NodeCostComparator,
+  PathSelector,
+} from './types';
 import {
   uuidv4,
   snapPointToLineSegment,
@@ -11,11 +15,6 @@ import {
   nearestPointToPoint,
   hitTestPointRing,
 } from './utils';
-
-interface GridData {
-  nodes: Array<{ id: string, x: number, y: number, to: Array<string>, data?: Record<any, any> }>,
-  cells: Array<{ id: string, rels: Array<string>, data?: Record<any, any> }>,
-}
 
 function isSameLineSegment(a: Node, b: Node, c: Node, d: Node): boolean {
   return (a.id === c.id && b.id === d.id) || (a.id === d.id && b.id === c.id);
