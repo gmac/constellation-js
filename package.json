@@ -1,10 +1,35 @@
 {
-  "name": "constellation-js",
+  "name": "constellation",
   "version": "1.0.0",
+  "description": "A grid geometry toolkit for controlling 2D sprite motion.",
+  "homepage": "http://gmac.github.io/constellation-js",
+  "url": "http://gmac.github.io/constellation-js",
+  "keywords": [
+    "geometry",
+    "grid",
+    "astar",
+    "a-star",
+    "pathfinding",
+    "2d",
+    "sprite",
+    "motion",
+    "animation"
+  ],
+  "author": {
+    "name": "Greg MacWilliam",
+    "email": "gmacwill77@gmail.com",
+    "web": "https://github.com/gmac"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gmac/constellation-js"
+  },
+  "github": "https://github.com/gmac/constellation-js",
   "scripts": {
     "build": "rollup -c --format umd --name 'Constellation'",
     "test": "jest --no-watchman --forceExit"
   },
+  "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
   "typings": "dist/index.d.ts",

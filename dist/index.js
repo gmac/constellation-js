@@ -582,12 +582,6 @@
               return acc;
           }, []);
       };
-      // Tests if a Point intersects any Cell in the grid.
-      // @param pt: Point to test.
-      // @return: True if the point intersects any polygon.
-      Grid.prototype.hitTestCells = function (pt) {
-          return this.cellsContainingPoint(pt).length > 0;
-      };
       // Tests a Cell for intersections with all nodes in the grid, and returns their ids.
       // @param id  The polygon id to test.
       // @return  Array of node ids that fall within the specified Cell.

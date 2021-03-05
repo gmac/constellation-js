@@ -14,9 +14,24 @@ Constellation manages 2D point grids and pathfinding. The library is designed to
 
 See the [grid builder](http://gmac.github.io/constellation-js "constellation-js") demo.
 
-## Creating Animations
+**Creating Animations**
 
 While Constellation is not an animation library itself, it's designed to work with animation tools. Use Constellation to manage and search grid geometry, then feed its point arrays into your preferred animation library.
+
+# Getting started
+
+Install via NPM:
+
+```shell
+yarn add constellation
+```
+
+Import or require:
+
+```js
+import { Grid } from 'constellation';
+const Constellation = require('constellation');
+```
 
 # API Documentation
 
@@ -305,10 +320,10 @@ The above defines a graph of data without real coordinates. This graph can be in
 
 ```js
 var path = grid.findPath({
-	start: 'sister',
-	goal: 'friend',
-	costForSegment: (last, current) => last.data.age + current.data.age,
-	costEstimateToGoal: (current, goal) => goal.data.age,
+  start: 'sister',
+  goal: 'friend',
+  costForSegment: (last, current) => last.data.age + current.data.age,
+  costEstimateToGoal: (current, goal) => goal.data.age,
 });
 // result array: ["sister" > "brother" > "friend"]
 ```
