@@ -4,56 +4,6 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.Constellation = {}));
 }(this, (function (exports) { 'use strict';
 
-  var Cell = /** @class */ (function () {
-      function Cell(id, rels, data) {
-          this.id = id;
-          this.rels = rels.slice();
-          this.data = data;
-          if (rels.length < 3) {
-              throw new Error('A cell requires a minimum of three node references');
-          }
-      }
-      Cell.prototype.toConfig = function () {
-          return {
-              id: this.id,
-              rels: this.rels,
-              data: this.data,
-          };
-      };
-      return Cell;
-  }());
-
-  /*! *****************************************************************************
-  Copyright (c) Microsoft Corporation.
-
-  Permission to use, copy, modify, and/or distribute this software for any
-  purpose with or without fee is hereby granted.
-
-  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
-  REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
-  AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
-  INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
-  LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
-  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
-  PERFORMANCE OF THIS SOFTWARE.
-  ***************************************************************************** */
-  /* global Reflect, Promise */
-
-  var extendStatics = function(d, b) {
-      extendStatics = Object.setPrototypeOf ||
-          ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-          function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-      return extendStatics(d, b);
-  };
-
-  function __extends(d, b) {
-      if (typeof b !== "function" && b !== null)
-          throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-      extendStatics(d, b);
-      function __() { this.constructor = d; }
-      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  }
-
   var Point = /** @class */ (function () {
       function Point(x, y, data) {
           if (x === void 0) { x = 0; }
@@ -69,47 +19,6 @@
           return Math.sqrt(x * x + y * y);
       };
       return Point;
-  }());
-
-  var Node = /** @class */ (function (_super) {
-      __extends(Node, _super);
-      function Node(id, x, y, to, data) {
-          if (x === void 0) { x = 0; }
-          if (y === void 0) { y = 0; }
-          if (to === void 0) { to = []; }
-          var _this = _super.call(this, x, y, data) || this;
-          _this.id = id;
-          _this.to = to.reduce(function (memo, id) {
-              memo[id] = true;
-              return memo;
-          }, Object.create(null));
-          return _this;
-      }
-      Node.prototype.toConfig = function () {
-          return {
-              id: this.id,
-              x: this.x,
-              y: this.y,
-              to: Object.keys(this.to),
-              data: this.data,
-          };
-      };
-      return Node;
-  }(Point));
-
-  var Path = /** @class */ (function () {
-      function Path(nodes, weight, estimate) {
-          if (nodes === void 0) { nodes = []; }
-          if (weight === void 0) { weight = 0; }
-          if (estimate === void 0) { estimate = 0; }
-          this.nodes = nodes;
-          this.weight = weight;
-          this.estimate = estimate;
-      }
-      Path.prototype.copy = function (weight, estimate) {
-          return new Path(this.nodes.slice(), weight !== null && weight !== void 0 ? weight : this.weight, estimate !== null && estimate !== void 0 ? estimate : this.estimate);
-      };
-      return Path;
   }());
 
   var Rect = /** @class */ (function () {
@@ -138,6 +47,9 @@
           var r = (Math.random() * 16) | 0;
           return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
       });
+  }
+  function compositeId(ids) {
+      return ids.slice().sort().join('/');
   }
   // Tests for counter-clockwise winding among three points.
   // @param x: Point X of triangle XYZ.
@@ -285,9 +197,102 @@
       return bestPt;
   }
 
-  function isSameLineSegment(a, b, c, d) {
-      return (a.id === c.id && b.id === d.id) || (a.id === d.id && b.id === c.id);
+  var Cell = /** @class */ (function () {
+      function Cell(id, rels, data) {
+          this.id = id;
+          this.data = data;
+          if (rels.length !== 3) {
+              throw new Error('A cell requires exactly three node references');
+          }
+          this.rels = rels.slice();
+          this.edges = rels.reduce(function (acc, a, i) {
+              var b = rels[(i + 1) % rels.length];
+              acc[compositeId([a, b])] = true;
+              return acc;
+          }, Object.create(null));
+      }
+      Cell.prototype.toConfig = function () {
+          return {
+              id: this.id,
+              rels: this.rels,
+              data: this.data,
+          };
+      };
+      return Cell;
+  }());
+
+  /*! *****************************************************************************
+  Copyright (c) Microsoft Corporation.
+
+  Permission to use, copy, modify, and/or distribute this software for any
+  purpose with or without fee is hereby granted.
+
+  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+  REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+  AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+  INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+  LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+  PERFORMANCE OF THIS SOFTWARE.
+  ***************************************************************************** */
+  /* global Reflect, Promise */
+
+  var extendStatics = function(d, b) {
+      extendStatics = Object.setPrototypeOf ||
+          ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+          function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+      return extendStatics(d, b);
+  };
+
+  function __extends(d, b) {
+      if (typeof b !== "function" && b !== null)
+          throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+      extendStatics(d, b);
+      function __() { this.constructor = d; }
+      d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
   }
+
+  var Node = /** @class */ (function (_super) {
+      __extends(Node, _super);
+      function Node(id, x, y, to, data) {
+          if (x === void 0) { x = 0; }
+          if (y === void 0) { y = 0; }
+          if (to === void 0) { to = []; }
+          var _this = _super.call(this, x, y, data) || this;
+          _this.id = id;
+          _this.to = to.reduce(function (memo, id) {
+              memo[id] = true;
+              return memo;
+          }, Object.create(null));
+          return _this;
+      }
+      Node.prototype.toConfig = function () {
+          return {
+              id: this.id,
+              x: this.x,
+              y: this.y,
+              to: Object.keys(this.to),
+              data: this.data,
+          };
+      };
+      return Node;
+  }(Point));
+
+  var Path = /** @class */ (function () {
+      function Path(nodes, weight, estimate) {
+          if (nodes === void 0) { nodes = []; }
+          if (weight === void 0) { weight = 0; }
+          if (estimate === void 0) { estimate = 0; }
+          this.nodes = nodes;
+          this.weight = weight;
+          this.estimate = estimate;
+      }
+      Path.prototype.copy = function (weight, estimate) {
+          return new Path(this.nodes.slice(), weight !== null && weight !== void 0 ? weight : this.weight, estimate !== null && estimate !== void 0 ? estimate : this.estimate);
+      };
+      return Path;
+  }());
+
   var Grid = /** @class */ (function () {
       function Grid(data) {
           this.nodes = Object.create(null);
@@ -354,9 +359,9 @@
               // Loop through selection group of nodes...
               ids.forEach(function (id) {
                   var node = _this.getNode(id);
-                  ids.forEach(function (refId) {
-                      if (id !== refId) {
-                          node.to[refId] = true;
+                  ids.forEach(function (rel) {
+                      if (id !== rel) {
+                          node.to[rel] = true;
                           changed = true;
                       }
                   });
@@ -373,17 +378,23 @@
               return this.detachNodes(ids);
           }
           var changed = false;
+          var removedEdges = Object.create(null);
           // Decouple group node references.
           ids.forEach(function (id) {
               var node = _this.getNode(id);
               if (node) {
-                  ids.forEach(function (refId) {
-                      if (node.to[refId]) {
-                          delete node.to[refId];
+                  ids.forEach(function (rel) {
+                      if (node.to[rel]) {
+                          removedEdges[compositeId([id, rel])] = true;
+                          delete node.to[rel];
                           changed = true;
                       }
                   });
               }
+          });
+          Object.keys(removedEdges).forEach(function (edge) {
+              var cells = Object.values(_this.cells).filter(function (cell) { return !!cell.edges[edge]; });
+              _this.removeCells(cells.map(function (c) { return c.id; }));
           });
           return changed;
       };
@@ -428,15 +439,17 @@
       // Adds a polygon to the grid, formed by a collection of node ids.
       Grid.prototype.addCell = function (rels, data) {
           var _a;
-          if (rels.length >= 3 && this.hasNodes(rels)) {
-              var key_1 = rels.slice().sort().join('/');
-              var existing = Object.values(this.cells).find(function (c) { return c.rels.slice().sort().join('/') === key_1; });
+          if (rels.length === 3 && this.hasNodes(rels)) {
+              var key_1 = compositeId(rels);
+              var existing = Object.values(this.cells).find(function (c) { return compositeId(c.rels) === key_1; });
               if (existing) {
                   return existing;
               }
-              var cell = new Cell((_a = data === null || data === void 0 ? void 0 : data.id) !== null && _a !== void 0 ? _a : uuidv4(), rels, data);
-              this.cells[cell.id] = cell;
-              return cell;
+              if (this.joinNodes(rels)) {
+                  var cell = new Cell((_a = data === null || data === void 0 ? void 0 : data.id) !== null && _a !== void 0 ? _a : uuidv4(), rels, data);
+                  this.cells[cell.id] = cell;
+                  return cell;
+              }
           }
           return null;
       };
@@ -615,25 +628,10 @@
               return acc;
           }, []);
       };
-      // Finds all adjacent line segments shared by two polygons.
-      // @param p1  First polygon to compare.
-      // @param p2  Second polygon to compare.
-      // @returns  Array of line segments.
-      Grid.prototype.getAdjacentCellSegments = function (c1, c2) {
-          var _this = this;
-          var result = [];
-          var ring1 = this.getCell(c1).rels.map(function (id) { return _this.getNode(id); });
-          var ring2 = this.getCell(c2).rels.map(function (id) { return _this.getNode(id); });
-          ring1.forEach(function (a, i) {
-              var b = ring1[(i + 1) % ring1.length];
-              ring2.forEach(function (c, j) {
-                  var d = ring2[(j + 1) % ring2.length];
-                  if (isSameLineSegment(a, b, c, d)) {
-                      result.push({ a: a, b: b });
-                  }
-              });
-          });
-          return result;
+      // Gets an array of cells that contain the specified edge segment:
+      Grid.prototype.cellsWithEdge = function (n1, n2) {
+          var edgeId = compositeId([n1.id, n2.id]);
+          return Object.values(this.cells).filter(function (cell) { return !!cell.edges[edgeId]; });
       };
       return Grid;
   }());
@@ -649,6 +647,7 @@
   exports.angleSector = angleSector;
   exports.boundingRectForPoints = boundingRectForPoints;
   exports.ccw = ccw;
+  exports.compositeId = compositeId;
   exports.degreesToRadians = degreesToRadians;
   exports.hitTestPointRing = hitTestPointRing;
   exports.intersect = intersect;

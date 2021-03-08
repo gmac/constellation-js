@@ -8,6 +8,10 @@ export function uuidv4() {
   });
 }
 
+export function compositeId(ids: Array<string>): string {
+  return ids.slice().sort().join('/');
+}
+
 // Tests for counter-clockwise winding among three points.
 // @param x: Point X of triangle XYZ.
 // @param y: Point Y of triangle XYZ.

@@ -15,7 +15,7 @@ describe('Grid', () => {
     return Object.keys(node.to).length;
   }
 
-  const sortNodes: (a: Node, b: Node) => number = (a, b) => a.id.localeCompare(b.id);
+  const sortElements: (a: Node | Cell, b: Node | Cell) => number = (a, b) => a.id.localeCompare(b.id);
 
   describe('addNode', () => {
     it('adds a new node with specified X and Y coordinates, and returns it', () => {
@@ -498,29 +498,15 @@ describe('Grid', () => {
   });
 
   describe('nodesInCell', () => {
-    it("returns an array of all node ids contained within a polygon", () => {
-      const a = grid.addNode(0, 0);
-      const b = grid.addNode(100, 0);
-      const c = grid.addNode(0, 100);
-      const d = grid.addNode(50, 25); // Inside figure ABC
-      grid.addNode(200, 200); // Outside figure ABC
-      const order: (a: Node, b: Node) => number = (a, b) => a.id.localeCompare(b.id);
-      const cell = grid.addCell([a, b, c].map(n => n.id)) as Cell;
-      const nodes = grid.nodesInCell(cell.id).sort(order);
-      expect(nodes).toEqual([a, b, c, d].sort(order));
-    });
-  });
-
-  describe('nodesInCell', () => {
-    it("returns an array of all node ids contained within a polygon", () => {
+    it("returns an array of all node ids contained within a cell", () => {
       const a = grid.addNode(0, 0);
       const b = grid.addNode(100, 0);
       const c = grid.addNode(0, 100);
       const d = grid.addNode(50, 25); // Inside figure ABC
       grid.addNode(200, 200); // Outside figure ABC
       const cell = grid.addCell([a, b, c].map(n => n.id)) as Cell;
-      const nodes = grid.nodesInCell(cell.id).sort(sortNodes);
-      expect(nodes).toEqual([a, b, c, d].sort(sortNodes));
+      const nodes = grid.nodesInCell(cell.id).sort(sortElements);
+      expect(nodes).toEqual([a, b, c, d].sort(sortElements));
     });
   });
 
@@ -530,35 +516,19 @@ describe('Grid', () => {
       const b = grid.addNode(50, 50);
       grid.addNode(100, 100);
       const nodes = grid.nodesInRect(new Rect(75, 75, -100, -100));
-
-      expect(nodes.sort(sortNodes)).toEqual([a, b].sort(sortNodes));
+      expect(nodes.sort(sortElements)).toEqual([a, b].sort(sortElements));
     });
   });
 
-  describe('getAdjacentCellSegments', () => {
-    it("returns an array specifying an adjacent line segment", () => {
+   describe('cellsWithEdge', () => {
+    it("returns an array of all cells containing an edge", () => {
       const a = grid.addNode(0, 0);
       const b = grid.addNode(100, 0);
       const c = grid.addNode(0, 100);
       const d = grid.addNode(100, 100);
-      const c1 = grid.addCell([a, b, c].map(n => n.id)) as Cell;
-      const c2 = grid.addCell([a, c, d].map(n => n.id)) as Cell;
-
-      expect(grid.getAdjacentCellSegments(c1.id, c2.id)).toEqual([{ a: c, b: a }]);
-    });
-
-    it("finds all adjacent line segments in interlocking polygons", () => {
-      const a = grid.addNode(0, 0);
-      const b = grid.addNode(50, 50);
-      const c = grid.addNode(0, 100);
-      const d = grid.addNode(100, 50);
-      const c1 = grid.addCell([a, b, c].map(n => n.id)) as Cell;
-      const c2 = grid.addCell([a, d, c, b].map(n => n.id)) as Cell;
-
-      expect(grid.getAdjacentCellSegments(c1.id, c2.id)).toEqual([
-        { a: a, b: b },
-        { a: b, b: c },
-      ]);
+      const cell1 = grid.addCell([a, b, c].map(n => n.id)) as Cell;
+      const cell2 = grid.addCell([a, c, d].map(n => n.id)) as Cell;
+      expect(grid.cellsWithEdge(a, c).sort(sortElements)).toEqual([cell1, cell2].sort(sortElements));
     });
   });
 });
