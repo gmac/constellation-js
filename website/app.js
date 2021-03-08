@@ -134,10 +134,9 @@ const App = {
         });
 
         if (path) {
-          let prev = path.nodes[0];
-          this.highlightIds = path.nodes.slice(1).reduce((acc, node) => {
-            acc[getLineId(prev, node)] = true;
-            prev = node;
+          this.highlightIds = path.nodes.reduce((acc, at, i) => {
+            const to = path.nodes[(i+1) % path.nodes.length];
+            acc[getLineId(at, to)] = true;
             return acc;
           }, {});
           this.alert(`Shortest route of ${Math.round(path.weight)}px`);

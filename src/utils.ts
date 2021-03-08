@@ -8,15 +8,19 @@ export function uuidv4() {
   });
 }
 
+// Test if point Z is left|on|right of an infinite 2D line.
+// > 0 left, = 0 on, < 0 for right
+export function winding(x: Point, y: Point, z: Point): number {
+  return (z.y-x.y) * (y.x-x.x) - (y.y-x.y) * (z.x-x.x);
+}
+
 // Tests for counter-clockwise winding among three points.
 // @param x: Point X of triangle XYZ.
 // @param y: Point Y of triangle XYZ.
 // @param z: Point Z of triangle XYZ.
 // @param exclusive boolean: when true, equal points will be excluded from the test.
 export function ccw(x: Point, y: Point, z: Point, exclusive: boolean=false): boolean {
-  return exclusive ?
-    (z.y-x.y) * (y.x-x.x) > (y.y-x.y) * (z.x-x.x) :
-    (z.y-x.y) * (y.x-x.x) >= (y.y-x.y) * (z.x-x.x);
+  return exclusive ? winding(x, y, z) > 0 : winding(x, y, z) >= 0;
 }
 
 // Tests for intersection between line segments AB and CD.
@@ -122,7 +126,22 @@ export function hitTestPointRing(p: Point, points: Array<Point>): boolean {
 
   // Return true if an odd number of hits were found.
   return hits % 2 > 0;
-};
+}
+
+export function pointInPolygon(p: Point, points: Array<Point>): boolean {
+  let hits = 0;
+
+  points.forEach((a, i) => {
+    const b = points[(i+1) % points.length];
+    if (a.y <= p.y && b.y > p.y && winding(a, b, p) > 0) {
+      hits += 1;
+    } else if (b.y <= p.y && winding(a, b, p) < 0) {
+      hits -= 1;
+    }
+  });
+
+  return hits > 0;
+}
 
 // Snaps point P to the nearest position along line segment AB.
 // @param p: Point P to snap to line segment AB.
@@ -171,4 +190,12 @@ export function nearestPointToPoint(p: Point, points: Array<Point>): Point | nul
   }
 
   return bestPt;
+}
+
+export function dot(a: Point, b: Point): number {
+  return a.x * b.x + a.y * b.y;
+}
+
+export function cross(a: Point, b: Point): number {
+  return a.x * b.y - a.y * b.x;
 }

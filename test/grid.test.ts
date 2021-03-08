@@ -561,4 +561,19 @@ describe('Grid', () => {
       ]);
     });
   });
+
+  describe.only('contiguousCellAreaFromPoint', () => {
+    it("returns an array specifying an adjacent line segment", () => {
+      const a = grid.addNode(0, 0);
+      const b = grid.addNode(50, 0);
+      const c = grid.addNode(25, 25);
+      const d = grid.addNode(50, 50);
+      const e = grid.addNode(75, 25);
+      grid.addCell([a, b, c].map(n => n.id)) as Cell;
+      grid.addCell([b, c, d].map(n => n.id)) as Cell;
+      grid.addCell([b, d, e].map(n => n.id)) as Cell;
+
+      expect(grid.contiguousCellAreaFromPoint({ x: 25, y: 10 })).toEqual([]);
+    });
+  });
 });

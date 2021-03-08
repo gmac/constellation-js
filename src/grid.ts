@@ -352,6 +352,53 @@ export class Grid {
     }, []);
   }
 
+  contiguousCellAreaFromPoint(pt: Point): Array<Node> {
+    const cellHits = this.cellsContainingPoint(pt);
+    if (!cellHits.length) return [];
+
+    const cellsByLineId: Record<string, Array<Cell>> = Object.create(null);
+    const linesByCellId: Record<string, Array<string>> = Object.create(null);
+    const normalizedLineId: (a: string, b: string) => string = (a, b) => [a, b].sort().join('--');
+
+    Object.values(this.cells).forEach(cell => {
+      linesByCellId[cell.id] = [];
+      cell.rels.forEach((at, i) => {
+        const to = cell.rels[(i+1) % cell.rels.length];
+        const line = normalizedLineId(at, to);
+        cellsByLineId[line] = cellsByLineId[line] || [];
+        cellsByLineId[line].push(cell);
+        linesByCellId[cell.id].push(line);
+      });
+    });
+
+    const lines: string[] = [];
+    function visitCell(set: Set<Cell>, cell: Cell): Set<Cell> {
+      if (!set.has(cell)) {
+        set.add(cell);
+        linesByCellId[cell.id].forEach(lineId => {
+          const cellsForLine = cellsByLineId[lineId];
+          if (cellsForLine.length > 1) {
+            cellsByLineId[lineId].forEach(c => {
+              if (c !== cell) visitCell(set, c);
+            });
+          } else {
+            lines.push(lineId);
+          }
+        });
+      }
+      return set;
+    }
+
+
+    const contiguousCells: Set<Cell> = cellHits.reduce((set: Set<Cell>, cell: Cell) => visitCell(set, cell), new Set());
+    console.log(lines);
+    // Array.from(contiguousCells).forEach(cell => {
+
+    // });
+    console.log(Array.from(contiguousCells));
+    return [];
+  }
+
   // Tests a Cell for intersections with all nodes in the grid, and returns their ids.
   // @param id  The polygon id to test.
   // @return  Array of node ids that fall within the specified Cell.
