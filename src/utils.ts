@@ -118,35 +118,21 @@ export function boundingRectForPoints(points: Array<Point>): Rect {
 // @param points: An array of points forming a polygonal shape.
 // @return: true if point falls within point ring.
 export function hitTestPointRing(p: Point, points: Array<Point>): boolean {
-  const origin: Point = new Point(0, p.y);
-  let hits: number = 0;
+  let wn = 0; // winding number
 
-  // Test intersection of an external ray against each polygon side.
-  points.forEach((s1, i) => {
-    const s2 = points[(i+1) % points.length];
-    origin.x = Math.min(origin.x, Math.min(s1.x, s2.x)-1);
-    hits += (intersect(origin, p, s1, s2) ? 1 : 0);
+  points.forEach((a, i) => {
+    const b = points[(i+1) % points.length];
+    if (a.y <= p.y) {
+      if (b.y > p.y && cross(a, b, p) > 0) {
+        wn += 1;
+      }
+    } else if (b.y <= p.y && cross(a, b, p) < 0) {
+      wn -= 1;
+    }
   });
 
-  // Return true if an odd number of hits were found.
-  return hits % 2 > 0;
+  return wn !== 0;
 }
-
-// export function hitTestPointRing(p: Point, points: Array<Point>): boolean {
-//   let wn = 0; // winding number
-
-//   points.forEach((a, i) => {
-//     const b = points[(i+1) % points.length];
-//     if (a.y <= p.y && b.y > p.y && cross(a, b, p) > 0) {
-//       wn += 1;
-//     } else if (b.y <= p.y && cross(a, b, p) < 0) {
-//       wn -= 1;
-//     }
-//   });
-
-//   console.log(wn)
-//   return wn !== 0;
-// }
 
 // Snaps point P to the nearest position along line segment AB.
 // @param p: Point P to snap to line segment AB.

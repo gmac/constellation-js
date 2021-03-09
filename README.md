@@ -8,7 +8,7 @@ Constellation manages 2D point grids and pathfinding. The library is designed to
 
 - Point and cell grid management.
 - Point pathfinding with [A-star](http://en.wikipedia.org/wiki/A*_search_algorithm "A-star").
-- Cell hit tests with [ray casting](http://en.wikipedia.org/wiki/Point_in_polygon "Ray casting").
+- Cell hit tests with [winding number](http://en.wikipedia.org/wiki/Point_in_polygon "Point in polygon").
 - Snapping points to line segments.
 
 See the [grid builder](http://gmac.github.io/constellation-js "constellation-js") demo for an interactive trial.
