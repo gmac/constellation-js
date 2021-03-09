@@ -246,9 +246,9 @@ import { intersect } from 'constellation';
 const x = intersect(new Point(0, 0), new Point(100, 100), new Point(100, 0), new Point(0, 100));
 ```
 
-**ccw(pointA, pointB, pointC, exclusive?)**
+**ccw(pointA, pointB, pointC)**
 
-Tests for counter-clockwise winding among three `Point` objects. Returns true if the three points trend in a counter-clockwise arc. Useful for testing line intersections. Passing `true` for the optional `exclusive` param will pass balanced arcs.
+Tests for counter-clockwise winding among three `Point` objects. Returns true if the three points trend in a counter-clockwise arc. Useful for testing line intersections.
 
 **intersect(pointA, pointB, pointC, pointD)**
 

@@ -203,11 +203,21 @@ describe('Grid', () => {
   });
 
   describe('addCell', () => {
-    it('creates a cell from a group of nodes, and returns it', () => {
-      const a = grid.addNode().id;
-      const b = grid.addNode().id;
-      const c = grid.addNode().id;
+    it('creates a cell from a ccw group of nodes, and returns it', () => {
+      const a = grid.addNode(0, 0).id;
+      const b = grid.addNode(0, 10).id;
+      const c = grid.addNode(10, 10).id;
       const x = grid.addCell([a, b, c]) as Cell;
+
+      expect(grid.cellCount).toEqual(1);
+      expect(x.rels).toEqual([a, b, c]);
+    });
+
+    it('creates a normalized (ccw) cell from a cw group of nodes, and returns it', () => {
+      const a = grid.addNode(0, 0).id;
+      const b = grid.addNode(0, 10).id;
+      const c = grid.addNode(10, 10).id;
+      const x = grid.addCell([c, b, a]) as Cell;
 
       expect(grid.cellCount).toEqual(1);
       expect(x.rels).toEqual([a, b, c]);
@@ -481,15 +491,17 @@ describe('Grid', () => {
       const b = grid.addNode(100, 0).id;
       const c = grid.addNode(0, 100).id;
       const d = grid.addNode(100, 100).id;
-      grid.addCell([a, b, c]);
-      grid.addCell([a, c, d]);
+      grid.addCell([a, b, c]); // cw
+      grid.addCell([a, c, d]); // ccw
       const hit1 = grid.cellsContainingPoint({ x: 5, y: 50 });
       const hit2 = grid.cellsContainingPoint({ x: 50, y: 5 });
-      const hit3 = grid.cellsContainingPoint({ x: 95, y: 50 });
+      const hit3 = grid.cellsContainingPoint({ x: 50, y: 95 });
+      const hit4 = grid.cellsContainingPoint({ x: 95, y: 50 });
 
       expect(hit1.length).toEqual(2);
       expect(hit2.length).toEqual(1);
-      expect(hit3.length).toEqual(0);
+      expect(hit3.length).toEqual(1);
+      expect(hit4.length).toEqual(0);
     });
 
     it('returns empty when there are no cells', () => {

@@ -11,6 +11,7 @@ import {
 import {
   uuidv4,
   compositeId,
+  cross,
   snapPointToLineSegment,
   boundingRectForPoints,
   nearestPointToPoint,
@@ -181,6 +182,13 @@ export class Grid {
       }
 
       if (this.joinNodes(rels)) {
+        const [a, b, c] = rels;
+
+        // wind references counter-clockwise
+        if (cross(this.getNode(a), this.getNode(b), this.getNode(c)) > 0) {
+          rels = rels.reverse();
+        }
+
         const cell = new Cell(data?.id ?? uuidv4(), rels, data);
         this.cells[cell.id] = cell;
         return cell;
