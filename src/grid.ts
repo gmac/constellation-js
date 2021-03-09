@@ -233,7 +233,7 @@ export class Grid {
     start,
     goal,
     costForSegment = Point.distance,
-    costEstimateToGoal = Point.distance,
+    costEstimateToGoal = Point.distance2,
     bestCandidatePath = (a, _b) => a,
   }: {
     start: string,

@@ -1,9 +1,12 @@
 import { Grid } from './grid';
+import { Node } from './gridNode';
 import { Cell } from './gridCell';
 import { Point } from './point';
 
 export class ExtendedGrid {
-  constructor(grid) {
+  private grid: Grid;
+
+  constructor(grid: Grid) {
     this.grid = grid;
   }
 
@@ -22,48 +25,63 @@ export class ExtendedGrid {
 
     // Connect points through a common polygon:
     // Get polygon intersections for each point.
-    const acells = this.grid.cellsContainingPoint(a);
-    const bcells = this.grid.cellsContainingPoint(b);
+    const cellsA = this.grid.cellsContainingPoint(a);
+    const cellsB = this.grid.cellsContainingPoint(b);
 
     // Test if points can be bridged through the polygon grid:
     // If so, a direction connection can be made.
     // @todo – needs a polygon union with edge intersections
-    if (acells.find(cell => bcells.includes(cell))) {
+    if (cellsA.find(cell => cellsB.includes(cell))) {
       return [a, b];
     }
 
     // Connect temporary anchors to the node grid via polygons:
-    const anchorA = createBridgeAnchor(this.grid, a, acells);
-    const anchorB = createBridgeAnchor(this.grid, b, bcells);
+    const anchorA = this.createBridgeAnchor(a, cellsA);
+    const anchorB = this.createBridgeAnchor(b, cellsB);
+    const path = this.grid.findPath({ start: anchorA.id, goal: anchorB.id });
+    this.grid.removeNodes([anchorA.id, anchorB.id]);
+
+    if (path) {
+      const points: Array<Point> = path.nodes.map(n => new Point(n.x, n.y));
+
+      if (Point.distance(a, anchorA) > 1) {
+        points.unshift(a);
+      }
+
+      if (!confineToGrid && Point.distance(b, anchorB) > 1) {
+        points.push(b);
+      }
+
+      return points;
+    }
+
+    return [];
   }
-}
 
-function createBridgeAnchor(grid: Grid, pt: Point, cells: Array<Cell>) {
-  const anchor = grid.addNode(pt.x, pt.y, {});
+  createBridgeAnchor(pt: Point, cells: Array<Cell>): Node {
+    const anchor: Node = this.grid.addNode(pt.x, pt.y, {});
 
-  // Attach to grid if there are no polygons to hook into:
-  // this may generate some new polygons for the point.
-  if (!cells.length) {
-    var snap = grid.snapPointToGrid(pt);
+    // Attach to grid if there are no polygons to hook into:
+    // this may generate some new polygons for the point.
+    if (!cells.length) {
+      const segment = this.grid.snapPointToGrid(pt);
+      anchor.x = segment.p.x;
+      anchor.y = segment.p.y;
 
-    if (snap.p) {
-      anchor.x = snap.p.x;
-      anchor.y = snap.p.y;
-
-      if (snap.a && snap.b) {
-        grid.joinNodes(anchor.id, snap.a.id);
-        grid.joinNodes(anchor.id, snap.b.id);
-        cells = grid.cellsWithEdge(snap.a, snap.b);
+      if (segment.a != null && segment.b != null) {
+        this.grid.joinNodes([anchor.id, segment.a.id]);
+        this.grid.joinNodes([anchor.id, segment.b.id]);
+        cells = this.grid.cellsWithEdge(segment.a, segment.b);
       }
     }
-  }
 
-  // Attach node to related polygon geometry:
-  if (cells.length) {
-    cells.forEach(cell => {
-      cell.rels.forEach(rel => grid.joinNodes(anchor.id, rel));
-    });
-  }
+    // Attach node to related polygon geometry:
+    if (cells.length) {
+      cells.forEach(cell => {
+        cell.rels.forEach(rel => this.grid.joinNodes([anchor.id, rel]));
+      });
+    }
 
-  return anchor;
+    return anchor;
+  }
 }
