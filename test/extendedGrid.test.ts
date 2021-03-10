@@ -1,33 +1,65 @@
 import { ExtendedGrid } from '../src/extendedGrid';
 import { Grid } from '../src/grid';
+import { Node } from '../src/gridNode';
 import { Point } from '../src/point';
 
 describe('ExtendedGrid', () => {
   let grid: Grid;
   let exgrid: ExtendedGrid;
+  let a: Node, b: Node, c: Node, d: Node, e: Node;
 
   beforeEach(() => {
     grid = new Grid();
     exgrid = new ExtendedGrid(grid);
-    const a = grid.addNode(25, 25).id;
-    const b = grid.addNode(75, 25).id;
-    const c = grid.addNode(25, 75).id;
-    const d = grid.addNode(75, 75).id;
-    const e = grid.addNode(125, 25).id;
 
-    grid.addCell([a, b, c]);
-    grid.addCell([b, c, d]);
-    grid.joinNodes([b, d, e]);
+    // A -- D -- E
+    // |x\  |
+    // |xx\ |
+    // B -- C
+    a = grid.addNode(0, 0);
+    b = grid.addNode(0, 10);
+    c = grid.addNode(10, 10);
+    d = grid.addNode(10, 0);
+    e = grid.addNode(20, 0);
+
+    grid.addCell([a, b, c].map(n => n.id));
+    grid.joinNodes([a, c, d].map(n => n.id));
+    grid.joinNodes([d, e].map(n => n.id));
+
+    expect.extend({
+      toEqualPoints(received: Array<Point | Node>, expected: Array<Point | Node>) {
+        return {
+          message: () => 'points tested',
+          pass: received.every((p, i) => expected[i] && p.x === expected[i].x && p.y === expected[i].y),
+        };
+      }
+    });
   });
+
+  function equalPoints(received: Array<Point | Node>, expected: Array<Point | Node>): boolean {
+    return received.every((p, i) => expected[i] && p.x === expected[i].x && p.y === expected[i].y);
+  }
 
   // function numConnections(id) {
   //   return Object.keys(grid.getNode(id).to).length;
   // }
 
-  it('should directly conntect two points within a common polygon.', () => {
-    const s = new Point(26, 26);
-    const g = new Point(28, 28);
+  it('should directly conntect two points within a common cell', () => {
+    const s = new Point(1, 9);
+    const g = new Point(5, 9);
     expect(exgrid.route(s, g)).toEqual([s, g]);
+  });
+
+  it('snaps a start point to the grid, then routes to nearest confined end point', () => {
+    const s = new Point(-1, 5);
+    const g = new Point(11, 9);
+    expect(equalPoints(exgrid.route(s, g), [s, new Point(0, 5), c, new Point(10, 9)])).toEqual(true);
+  });
+
+  it('snaps a start point to the grid, then routes to an unconfined end point', () => {
+    const s = new Point(-1, 5);
+    const g = new Point(11, 9);
+    expect(equalPoints(exgrid.route(s, g, false), [s, new Point(0, 5), c, new Point(10, 9), g])).toEqual(true);
   });
 
   // it('should directly connect two points in adjacent polygons who\'s ray intersects their common side.', () => {
@@ -42,11 +74,7 @@ describe('ExtendedGrid', () => {
   //   expect(path[1]).toEqual(goal);
   // });
 
-  it('should snap a point to a grid segment, then directly connect it to a point within a related cell.', () => {
-    const s = new Point(20, 50);
-    const g = new Point(26, 26);
-    expect(exgrid.route(s, g)).toEqual([s, new Point(25, 50), g]);
-  });
+  // it('should snap a point to a grid segment, then directly connect it to a point within a related cell.')
 
   // it('should snap points to a grid segment, then directly connect them through a common polygon.', () => {
   //   const start = { x: 20, y: 50 };

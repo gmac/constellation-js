@@ -36,19 +36,19 @@ export class ExtendedGrid {
     }
 
     // Connect temporary anchors to the node grid via polygons:
-    const anchorA = this.createBridgeAnchor(a, cellsA);
-    const anchorB = this.createBridgeAnchor(b, cellsB);
+    const anchorA = this.addRouteAnchor(a, cellsA);
+    const anchorB = this.addRouteAnchor(b, cellsB);
     const path = this.grid.findPath({ start: anchorA.id, goal: anchorB.id });
     this.grid.removeNodes([anchorA.id, anchorB.id]);
 
     if (path) {
       const points: Array<Point> = path.nodes.map(n => new Point(n.x, n.y));
 
-      if (Point.distance(a, anchorA) > 1) {
+      if (Point.distance(a, anchorA) > 0) {
         points.unshift(a);
       }
 
-      if (!confineToGrid && Point.distance(b, anchorB) > 1) {
+      if (!confineToGrid && Point.distance(b, anchorB) > 0) {
         points.push(b);
       }
 
@@ -58,7 +58,7 @@ export class ExtendedGrid {
     return [];
   }
 
-  createBridgeAnchor(pt: Point, cells: Array<Cell>): Node {
+  addRouteAnchor(pt: Point, cells: Array<Cell> = []): Node {
     const anchor: Node = this.grid.addNode(pt.x, pt.y, {});
 
     // Attach to grid if there are no polygons to hook into:
@@ -75,12 +75,10 @@ export class ExtendedGrid {
       }
     }
 
-    // Attach node to related polygon geometry:
-    if (cells.length) {
-      cells.forEach(cell => {
-        cell.rels.forEach(rel => this.grid.joinNodes([anchor.id, rel]));
-      });
-    }
+    // Attach node to related cell geometry:
+    cells.forEach(cell => {
+      cell.rels.forEach(rel => this.grid.joinNodes([anchor.id, rel]));
+    });
 
     return anchor;
   }
