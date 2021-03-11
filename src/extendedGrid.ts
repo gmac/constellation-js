@@ -2,6 +2,7 @@ import { Grid } from './grid';
 import { Node } from './gridNode';
 import { Cell } from './gridCell';
 import { Point } from './point';
+import { compositeId } from './utils';
 
 export class ExtendedGrid {
   private grid: Grid;
@@ -37,7 +38,7 @@ export class ExtendedGrid {
 
     // Connect temporary anchors to the node grid via polygons:
     const anchorA = this.addRouteAnchor(a, cellsA);
-    const anchorB = this.addRouteAnchor(b, cellsB);
+    const anchorB = this.addRouteAnchor(b, cellsB, anchorA);
     const path = this.grid.findPath({ start: anchorA.id, goal: anchorB.id });
     this.grid.removeNodes([anchorA.id, anchorB.id]);
 
@@ -58,8 +59,9 @@ export class ExtendedGrid {
     return [];
   }
 
-  addRouteAnchor(pt: Point, cells: Array<Cell> = []): Node {
-    const anchor: Node = this.grid.addNode(pt.x, pt.y, {});
+  addRouteAnchor(pt: Point, cells: Array<Cell> = [], prevAnchor?: Node): Node {
+    const anchor: Node = this.grid.addNode(pt.x, pt.y);
+    let edge: string | undefined = undefined;
 
     // Attach to grid if there are no polygons to hook into:
     // this may generate some new polygons for the point.
@@ -72,6 +74,11 @@ export class ExtendedGrid {
         this.grid.joinNodes([anchor.id, segment.a.id]);
         this.grid.joinNodes([anchor.id, segment.b.id]);
         cells = this.grid.cellsWithEdge(segment.a, segment.b);
+        edge = compositeId([segment.a.id, segment.b.id]);
+
+        if (edge === prevAnchor?.data?.edge) {
+          this.grid.joinNodes([anchor.id, prevAnchor.id]);
+        }
       }
     }
 
@@ -80,6 +87,12 @@ export class ExtendedGrid {
       cell.rels.forEach(rel => this.grid.joinNodes([anchor.id, rel]));
     });
 
+    // Attach directly to previous anchor when possible
+    if (prevAnchor?.data?.cells?.some((c: Cell) => cells.includes(c))) {
+      this.grid.joinNodes([anchor.id, prevAnchor.id]);
+    }
+
+    anchor.data = { cells, edge };
     return anchor;
   }
 }
