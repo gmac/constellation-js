@@ -48,6 +48,10 @@ Builds a Point primitive with the following properties:
 
 Calculates the distance between two provided `Point` objects.
 
+**Point.distance2(a, b)**
+
+The squared distance between two provided `Point` objects; same as `Point.distance` without calculating square root. Useful for heuristics where arbitrary cheap weight calculations are sufficient.
+
 ### Constellation.Rect
 
 ```js
@@ -299,7 +303,7 @@ Receives an array of `Point` objects and returns a `Rect` comprising their bound
 
 **hitTestPointRing(pointP, [point, ...])**
 
-Receives a target point P and an array of points defining a ring. Returns true if P falls within the ring of points. Hit test is performed using [ray casting](http://en.wikipedia.org/wiki/Point_in_polygon "ray casting").
+Receives a target point P and an array of points defining a ring. Returns true if P falls within the ring of points. Hit test is performed using [winding number](http://en.wikipedia.org/wiki/Point_in_polygon "Point in polygon").
 
 **snapPointToLineSegment(pointP, pointA, pointB)**
 
