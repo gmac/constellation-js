@@ -8,7 +8,7 @@ Constellation manages 2D point grids and pathfinding. The library is designed to
 
 - Point and cell grid management.
 - Point pathfinding with [A-star](http://en.wikipedia.org/wiki/A*_search_algorithm "A-star").
-- Cell hit tests with [ray casting](http://en.wikipedia.org/wiki/Point_in_polygon "Ray casting").
+- Cell hit tests with [winding number](http://en.wikipedia.org/wiki/Point_in_polygon "Point in polygon").
 - Snapping points to line segments.
 
 See the [grid builder](http://gmac.github.io/constellation-js "constellation-js") demo for an interactive trial.
@@ -67,6 +67,23 @@ Builds a Rect primitive with the following properties:
 **rect.hitTest(point)**
 
 Returns `true` if the point falls within the rectangle bounds.
+
+### Constellation.ExtendedGrid
+
+```js
+import { Grid, ExtendedGrid } from 'constellation';
+const grid = new Grid(data);
+const exgrid = new ExtendedGrid(grid);
+const path = exgrid.route(new Point(10, 10), new Point(100, 100));
+```
+
+**exgrid = new ExtendedGrid(grid)**
+
+Builds a new `ExtendedGrid` instance that wraps a basic `Grid`. An extended grid allows arbitrary points outside of the base grid to be routed between using the geometry of the base grid.
+
+**exgrid.route(a, b, confineToGrid?)**
+
+Receives basic points A and B, and builds a path of points between them that follows the constraints of the base grid geometry. Start point A is always connected into the grid at the nearest valid position. End point B will be constrained to fall within grid geometry unless `confineToGrid` is specified as false. In either scenario, A and B will connect directly if their constrained positions fall within a common cell or along a common line segment. Otherwise, they will attach to their nearest geometry features and routing follows the grid to navigate between them. Returns an array of Point objects definiting the route.
 
 ### Constellation.Grid
 
@@ -246,9 +263,9 @@ import { intersect } from 'constellation';
 const x = intersect(new Point(0, 0), new Point(100, 100), new Point(100, 0), new Point(0, 100));
 ```
 
-**ccw(pointA, pointB, pointC, exclusive?)**
+**ccw(pointA, pointB, pointC)**
 
-Tests for counter-clockwise winding among three `Point` objects. Returns true if the three points trend in a counter-clockwise arc. Useful for testing line intersections. Passing `true` for the optional `exclusive` param will pass balanced arcs.
+Tests for counter-clockwise winding among three `Point` objects. Returns true if the three points trend in a counter-clockwise arc. Useful for testing line intersections.
 
 **intersect(pointA, pointB, pointC, pointD)**
 

@@ -1,6 +1,6 @@
 {
   "name": "constellation",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A grid geometry toolkit for controlling 2D sprite motion.",
   "homepage": "http://gmac.github.io/constellation-js",
   "url": "http://gmac.github.io/constellation-js",

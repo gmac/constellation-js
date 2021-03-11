@@ -1,5 +1,5 @@
 const shiftClickHint = 'SHIFT+click adds to selection';
-const getLineId = (n1, n2) => [n1.id, n2.id].sort().join('-');
+const getLineId = (n1, n2) => Constellation.compositeId([n1.id, n2.id]);
 const App = {
   data() {
     return {
@@ -107,11 +107,11 @@ const App = {
     },
 
     addCell() {
-      if (this.nodeSelection && this.selections.length >= 3) {
+      if (this.nodeSelection && this.selections.length === 3) {
         this.grid.addCell(Object.keys(this.selectionIds));
         this.save();
       } else {
-        this.alert('Select three or more nodes', { hint: shiftClickHint });
+        this.alert('Select exactly three nodes', { hint: shiftClickHint });
       }
     },
 

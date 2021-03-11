@@ -1,10 +1,15 @@
 export class Point {
 
-  // Tests the distance between two points.
+  // Find the distance between two points.
   public static distance(a: Point, b: Point): number {
+    return Math.sqrt(Point.distance2(a, b));
+  }
+
+  // A cheaper version of distance squared, for heuristics
+  public static distance2(a: Point, b: Point): number {
     const x: number = b.x-a.x;
     const y: number = b.y-a.y;
-    return Math.sqrt(x*x + y*y);
+    return x * x + y * y;
   }
 
   public x: number;

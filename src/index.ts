@@ -1,3 +1,4 @@
+export * from './extendedGrid';
 export * from './grid';
 export * from './gridNode';
 export * from './gridCell';

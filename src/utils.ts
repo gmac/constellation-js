@@ -8,15 +8,23 @@ export function uuidv4() {
   });
 }
 
+export function compositeId(ids: Array<string>): string {
+  return ids.slice().sort().join('/');
+}
+
+// Test if point Z is left|on|right of an infinite 2D line.
+// > 0 left, = 0 on, < 0 right
+export function cross(x: Point, y: Point, z: Point): number {
+  return (y.x - x.x) * (z.y - x.y) - (z.x - x.x) * (y.y - x.y);
+}
+
 // Tests for counter-clockwise winding among three points.
 // @param x: Point X of triangle XYZ.
 // @param y: Point Y of triangle XYZ.
 // @param z: Point Z of triangle XYZ.
 // @param exclusive boolean: when true, equal points will be excluded from the test.
-export function ccw(x: Point, y: Point, z: Point, exclusive: boolean=false): boolean {
-  return exclusive ?
-    (z.y-x.y) * (y.x-x.x) > (y.y-x.y) * (z.x-x.x) :
-    (z.y-x.y) * (y.x-x.x) >= (y.y-x.y) * (z.x-x.x);
+export function ccw(x: Point, y: Point, z: Point): boolean {
+  return cross(x, y, z) < 0;
 }
 
 // Tests for intersection between line segments AB and CD.
@@ -48,7 +56,7 @@ export function radiansToDegrees(radians: number): number {
 // @param b: Point B of line AB.
 // @return angle (in radians).
 export function angleRadians(a: Point, b: Point): number {
-  return Math.atan2(b.y-a.y, b.x-a.x);
+  return Math.atan2(b.y - a.y, b.x - a.x);
 }
 
 // Calculates the angle (in degrees) between line segment AB and the positive X-origin.
@@ -68,9 +76,8 @@ export function angleDegrees(a: Point, b: Point): number {
 // @param sectors: number of sectors to divide the circle into. Default is 8.
 // @param offset: offsets the origin of the sector divides within the circle. Default is PI*2/16.
 // @return sector index (a number between 0 and X-1, where X is number of sectors).
-export function angleSector(radians: number, sectors: number, offset: number): number {
+export function angleSector(radians: number, sectors: number = 8, offset?: number): number {
   const circ = Math.PI * 2;
-  sectors = sectors || 8;
   offset = offset || circ / (sectors * 2);
 
   if (radians < 0) {
@@ -90,6 +97,10 @@ export function angleSector(radians: number, sectors: number, offset: number): n
 // @param points: The ring of points to measure bounding on.
 // @return: a new Rect object of the ring's maximum extent.
 export function boundingRectForPoints(points: Array<Point>): Rect {
+  if (!points.length) {
+    return new Rect(0, 0, 0, 0);
+  }
+
   let minX = points[0].x;
   let maxX = points[0].x;
   let minY = points[0].y;
@@ -110,19 +121,21 @@ export function boundingRectForPoints(points: Array<Point>): Rect {
 // @param points: An array of points forming a polygonal shape.
 // @return: true if point falls within point ring.
 export function hitTestPointRing(p: Point, points: Array<Point>): boolean {
-  const origin: Point = new Point(0, p.y);
-  let hits: number = 0;
+  let wn = 0; // winding number
 
-  // Test intersection of an external ray against each polygon side.
-  points.forEach((s1, i) => {
-    const s2 = points[(i+1) % points.length];
-    origin.x = Math.min(origin.x, Math.min(s1.x, s2.x)-1);
-    hits += (intersect(origin, p, s1, s2) ? 1 : 0);
+  points.forEach((a, i) => {
+    const b = points[(i+1) % points.length];
+    if (a.y <= p.y) {
+      if (b.y > p.y && cross(a, b, p) > 0) {
+        wn += 1;
+      }
+    } else if (b.y <= p.y && cross(a, b, p) < 0) {
+      wn -= 1;
+    }
   });
 
-  // Return true if an odd number of hits were found.
-  return hits % 2 > 0;
-};
+  return wn !== 0;
+}
 
 // Snaps point P to the nearest position along line segment AB.
 // @param p: Point P to snap to line segment AB.
@@ -130,13 +143,13 @@ export function hitTestPointRing(p: Point, points: Array<Point>): boolean {
 // @param b: Point B of line segment AB.
 // @return: new Point object with snapped coordinates.
 export function snapPointToLineSegment(p: Point, a: Point, b: Point): Point {
-  const ap1: number = p.x-a.x;
-  const ap2: number = p.y-a.y;
-  const ab1: number = b.x-a.x;
-  const ab2: number = b.y-a.y;
-  const mag: number = ab1*ab1 + ab2*ab2;
-  const dot: number = ap1*ab1 + ap2*ab2;
-  const t: number = dot/mag;
+  const ap1: number = p.x - a.x;
+  const ap2: number = p.y - a.y;
+  const ab1: number = b.x - a.x;
+  const ab2: number = b.y - a.y;
+  const mag: number = ab1 * ab1 + ab2 * ab2;
+  const dot: number = ap1 * ab1 + ap2 * ab2;
+  const t: number = dot / mag;
 
   if (t < 0) {
     return new Point(a.x, a.y);
@@ -160,7 +173,7 @@ export function nearestPointToPoint(p: Point, points: Array<Point>): Point | nul
   for (let i = points.length-1; i >= 0; i -= 1) {
     const a = points[i];
     if (Math.abs(p.x-a.x) < bestDist) {
-      const dist = Point.distance(p, a);
+      const dist = Point.distance2(p, a);
       if (dist < bestDist) {
         bestPt = a;
         bestDist = dist;

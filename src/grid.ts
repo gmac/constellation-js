@@ -10,15 +10,13 @@ import {
 } from './types';
 import {
   uuidv4,
+  compositeId,
+  cross,
   snapPointToLineSegment,
   boundingRectForPoints,
   nearestPointToPoint,
   hitTestPointRing,
 } from './utils';
-
-function isSameLineSegment(a: Node, b: Node, c: Node, d: Node): boolean {
-  return (a.id === c.id && b.id === d.id) || (a.id === d.id && b.id === c.id);
-}
 
 export class Grid {
   private nodes: Record<string, Node> = Object.create(null);
@@ -86,9 +84,9 @@ export class Grid {
       // Loop through selection group of nodes...
       ids.forEach(id => {
         const node = this.getNode(id) as Node;
-        ids.forEach(refId => {
-          if (id !== refId) {
-            node.to[refId] = true;
+        ids.forEach(rel => {
+          if (id !== rel) {
+            node.to[rel] = true;
             changed = true;
           }
         });
@@ -107,18 +105,25 @@ export class Grid {
     }
 
     let changed = false;
+    const removedEdges: Record<string, boolean> = Object.create(null);
 
     // Decouple group node references.
     ids.forEach(id => {
       const node = this.getNode(id);
       if (node) {
-        ids.forEach(refId => {
-          if (node.to[refId]) {
-            delete node.to[refId];
+        ids.forEach(rel => {
+          if (node.to[rel]) {
+            removedEdges[compositeId([id, rel])] = true;
+            delete node.to[rel];
             changed = true;
           }
         });
       }
+    });
+
+    Object.keys(removedEdges).forEach(edge => {
+      const cells = Object.values(this.cells).filter(cell => !!cell.edges[edge]);
+      this.removeCells(cells.map(c => c.id));
     });
 
     return changed;
@@ -169,16 +174,25 @@ export class Grid {
 
   // Adds a polygon to the grid, formed by a collection of node ids.
   addCell(rels: Array<string>, data?: Record<any, any>): Cell | null {
-    if (rels.length >= 3 && this.hasNodes(rels)) {
-      const key = rels.slice().sort().join('/');
-      const existing = Object.values(this.cells).find(c => c.rels.slice().sort().join('/') === key);
+    if (rels.length === 3 && this.hasNodes(rels)) {
+      const key = compositeId(rels);
+      const existing = Object.values(this.cells).find(c => compositeId(c.rels) === key);
       if (existing) {
         return existing;
       }
 
-      const cell = new Cell(data?.id ?? uuidv4(), rels, data);
-      this.cells[cell.id] = cell;
-      return cell;
+      if (this.joinNodes(rels)) {
+        const [a, b, c] = rels;
+
+        // wind references counter-clockwise
+        if (cross(this.getNode(a), this.getNode(b), this.getNode(c)) > 0) {
+          rels = rels.reverse();
+        }
+
+        const cell = new Cell(data?.id ?? uuidv4(), rels, data);
+        this.cells[cell.id] = cell;
+        return cell;
+      }
     }
     return null;
   }
@@ -213,6 +227,12 @@ export class Grid {
     return changed;
   }
 
+  // Gets an array of cells that contain the specified edge segment:
+  cellsWithEdge(n1: Node, n2: Node): Array<Cell> {
+    const edgeId = compositeId([n1.id, n2.id]);
+    return Object.values(this.cells).filter(cell => !!cell.edges[edgeId]);
+  }
+
   // Finds the lowest cost path between two nodes among the grid of nodes.
   // @param start: The node id within the seach grid to start at.
   // @param goal: The node id within the search grid to reach via lowest cost path.
@@ -221,7 +241,7 @@ export class Grid {
     start,
     goal,
     costForSegment = Point.distance,
-    costEstimateToGoal = Point.distance,
+    costEstimateToGoal = Point.distance2,
     bestCandidatePath = (a, _b) => a,
   }: {
     start: string,
@@ -387,29 +407,5 @@ export class Grid {
 
       return acc;
     }, []);
-  }
-
-  // Finds all adjacent line segments shared by two polygons.
-  // @param p1  First polygon to compare.
-  // @param p2  Second polygon to compare.
-  // @returns  Array of line segments.
-  getAdjacentCellSegments(c1: string, c2: string): Array<{ a: Node, b: Node }> {
-    const result: Array<{ a: Node, b: Node }> = [];
-    const ring1 = this.getCell(c1).rels.map(id => this.getNode(id));
-    const ring2 = this.getCell(c2).rels.map(id => this.getNode(id));
-
-    ring1.forEach((a, i) => {
-      const b = ring1[(i+1) % ring1.length];
-
-      ring2.forEach((c, j) => {
-        const d = ring2[(j+1) % ring2.length];
-
-        if (isSameLineSegment(a, b, c, d)) {
-          result.push({ a, b });
-        }
-      });
-    });
-
-    return result;
   }
 }
