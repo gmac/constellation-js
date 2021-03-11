@@ -68,6 +68,23 @@ Builds a Rect primitive with the following properties:
 
 Returns `true` if the point falls within the rectangle bounds.
 
+### Constellation.ExtendedGrid
+
+```js
+import { Grid, ExtendedGrid } from 'constellation';
+const grid = new Grid(data);
+const exgrid = new ExtendedGrid(grid);
+const path = exgrid.route(new Point(10, 10), new Point(100, 100));
+```
+
+**exgrid = new ExtendedGrid(grid)**
+
+Builds a new `ExtendedGrid` instance that wraps a basic `Grid`. An extended grid allows arbitrary points outside of the base grid to be routed between using the geometry of the base grid.
+
+**exgrid.route(a, b, confineToGrid?)**
+
+Receives basic points A and B, and builds a path of points between them that follows the constraints of the base grid geometry. Start point A is always connected into the grid at the nearest valid position. End point B will be constrained to fall within grid geometry unless `confineToGrid` is specified as false. In either scenario, A and B will connect directly if their constrained positions fall within a common cell or along a common line segment. Otherwise, they will attach to their nearest geometry features and routing follows the grid to navigate between them. Returns an array of Point objects definiting the route.
+
 ### Constellation.Grid
 
 ```js

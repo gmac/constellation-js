@@ -12,11 +12,15 @@
           this.y = y;
           this.data = data;
       }
-      // Tests the distance between two points.
+      // Find the distance between two points.
       Point.distance = function (a, b) {
+          return Math.sqrt(Point.distance2(a, b));
+      };
+      // A cheaper version of distance squared, for heuristics
+      Point.distance2 = function (a, b) {
           var x = b.x - a.x;
           var y = b.y - a.y;
-          return Math.sqrt(x * x + y * y);
+          return x * x + y * y;
       };
       return Point;
   }());
@@ -51,16 +55,18 @@
   function compositeId(ids) {
       return ids.slice().sort().join('/');
   }
+  // Test if point Z is left|on|right of an infinite 2D line.
+  // > 0 left, = 0 on, < 0 right
+  function cross(x, y, z) {
+      return (y.x - x.x) * (z.y - x.y) - (z.x - x.x) * (y.y - x.y);
+  }
   // Tests for counter-clockwise winding among three points.
   // @param x: Point X of triangle XYZ.
   // @param y: Point Y of triangle XYZ.
   // @param z: Point Z of triangle XYZ.
   // @param exclusive boolean: when true, equal points will be excluded from the test.
-  function ccw(x, y, z, exclusive) {
-      if (exclusive === void 0) { exclusive = false; }
-      return exclusive ?
-          (z.y - x.y) * (y.x - x.x) > (y.y - x.y) * (z.x - x.x) :
-          (z.y - x.y) * (y.x - x.x) >= (y.y - x.y) * (z.x - x.x);
+  function ccw(x, y, z) {
+      return cross(x, y, z) < 0;
   }
   // Tests for intersection between line segments AB and CD.
   // @param a: Point A of line AB.
@@ -107,8 +113,8 @@
   // @param offset: offsets the origin of the sector divides within the circle. Default is PI*2/16.
   // @return sector index (a number between 0 and X-1, where X is number of sectors).
   function angleSector(radians, sectors, offset) {
+      if (sectors === void 0) { sectors = 8; }
       var circ = Math.PI * 2;
-      sectors = sectors || 8;
       offset = offset || circ / (sectors * 2);
       if (radians < 0) {
           radians = circ + radians;
@@ -123,6 +129,9 @@
   // @param points: The ring of points to measure bounding on.
   // @return: a new Rect object of the ring's maximum extent.
   function boundingRectForPoints(points) {
+      if (!points.length) {
+          return new Rect(0, 0, 0, 0);
+      }
       var minX = points[0].x;
       var maxX = points[0].x;
       var minY = points[0].y;
@@ -140,16 +149,19 @@
   // @param points: An array of points forming a polygonal shape.
   // @return: true if point falls within point ring.
   function hitTestPointRing(p, points) {
-      var origin = new Point(0, p.y);
-      var hits = 0;
-      // Test intersection of an external ray against each polygon side.
-      points.forEach(function (s1, i) {
-          var s2 = points[(i + 1) % points.length];
-          origin.x = Math.min(origin.x, Math.min(s1.x, s2.x) - 1);
-          hits += (intersect(origin, p, s1, s2) ? 1 : 0);
+      var wn = 0; // winding number
+      points.forEach(function (a, i) {
+          var b = points[(i + 1) % points.length];
+          if (a.y <= p.y) {
+              if (b.y > p.y && cross(a, b, p) > 0) {
+                  wn += 1;
+              }
+          }
+          else if (b.y <= p.y && cross(a, b, p) < 0) {
+              wn -= 1;
+          }
       });
-      // Return true if an odd number of hits were found.
-      return hits % 2 > 0;
+      return wn !== 0;
   }
   // Snaps point P to the nearest position along line segment AB.
   // @param p: Point P to snap to line segment AB.
@@ -184,7 +196,7 @@
       for (var i = points.length - 1; i >= 0; i -= 1) {
           var a = points[i];
           if (Math.abs(p.x - a.x) < bestDist) {
-              var dist = Point.distance(p, a);
+              var dist = Point.distance2(p, a);
               if (dist < bestDist) {
                   bestPt = a;
                   bestDist = dist;
@@ -196,6 +208,85 @@
       }
       return bestPt;
   }
+
+  var ExtendedGrid = /** @class */ (function () {
+      function ExtendedGrid(grid) {
+          this.grid = grid;
+      }
+      // Creates a path between two external (non-grid) points, using the grid to navigate between them.
+      // Start and goal points will be integrated as best as possible into the grid, then route between.
+      // @param a  Starting Point object to path from.
+      // @param b  Goal Point object to bridge to.
+      // @param confineToGrid  Specify TRUE to lock final route point to within the grid.
+      // @return  an array of Point objects specifying a path to follow.
+      ExtendedGrid.prototype.route = function (a, b, confineToGrid) {
+          // 1) Connect points through common polygon (todo: region).
+          // 3) Snap points to grid, connect anchors to segment and related polys.
+          // 4) Direct connect points on common line segment.
+          // 5) Direct connect points in common polygon.
+          if (confineToGrid === void 0) { confineToGrid = true; }
+          // Connect points through a common polygon:
+          // Get polygon intersections for each point.
+          var cellsA = this.grid.cellsContainingPoint(a);
+          var cellsB = this.grid.cellsContainingPoint(b);
+          // Test if points can be bridged through the polygon grid:
+          // If so, a direction connection can be made.
+          // @todo – needs a polygon union with edge intersections
+          if (cellsA.find(function (cell) { return cellsB.includes(cell); })) {
+              return [a, b];
+          }
+          // Connect temporary anchors to the node grid via polygons:
+          var anchorA = this.addRouteAnchor(a, cellsA);
+          var anchorB = this.addRouteAnchor(b, cellsB, anchorA);
+          var path = this.grid.findPath({ start: anchorA.id, goal: anchorB.id });
+          this.grid.removeNodes([anchorA.id, anchorB.id]);
+          if (path) {
+              var points = path.nodes.map(function (n) { return new Point(n.x, n.y); });
+              if (Point.distance(a, anchorA) > 0) {
+                  points.unshift(a);
+              }
+              if (!confineToGrid && Point.distance(b, anchorB) > 0) {
+                  points.push(b);
+              }
+              return points;
+          }
+          return [];
+      };
+      ExtendedGrid.prototype.addRouteAnchor = function (pt, cells, prevAnchor) {
+          var _this = this;
+          var _a, _b, _c;
+          if (cells === void 0) { cells = []; }
+          var anchor = this.grid.addNode(pt.x, pt.y);
+          var edge = undefined;
+          // Attach to grid if there are no polygons to hook into:
+          // this may generate some new polygons for the point.
+          if (!cells.length) {
+              var segment = this.grid.snapPointToGrid(pt);
+              anchor.x = segment.p.x;
+              anchor.y = segment.p.y;
+              if (segment.a != null && segment.b != null) {
+                  this.grid.joinNodes([anchor.id, segment.a.id]);
+                  this.grid.joinNodes([anchor.id, segment.b.id]);
+                  cells = this.grid.cellsWithEdge(segment.a, segment.b);
+                  edge = compositeId([segment.a.id, segment.b.id]);
+                  if (edge === ((_a = prevAnchor === null || prevAnchor === void 0 ? void 0 : prevAnchor.data) === null || _a === void 0 ? void 0 : _a.edge)) {
+                      this.grid.joinNodes([anchor.id, prevAnchor.id]);
+                  }
+              }
+          }
+          // Attach node to related cell geometry:
+          cells.forEach(function (cell) {
+              cell.rels.forEach(function (rel) { return _this.grid.joinNodes([anchor.id, rel]); });
+          });
+          // Attach directly to previous anchor when possible
+          if ((_c = (_b = prevAnchor === null || prevAnchor === void 0 ? void 0 : prevAnchor.data) === null || _b === void 0 ? void 0 : _b.cells) === null || _c === void 0 ? void 0 : _c.some(function (c) { return cells.includes(c); })) {
+              this.grid.joinNodes([anchor.id, prevAnchor.id]);
+          }
+          anchor.data = { cells: cells, edge: edge };
+          return anchor;
+      };
+      return ExtendedGrid;
+  }());
 
   var Cell = /** @class */ (function () {
       function Cell(id, rels, data) {
@@ -446,6 +537,11 @@
                   return existing;
               }
               if (this.joinNodes(rels)) {
+                  var a = rels[0], b = rels[1], c = rels[2];
+                  // wind references counter-clockwise
+                  if (cross(this.getNode(a), this.getNode(b), this.getNode(c)) > 0) {
+                      rels = rels.reverse();
+                  }
                   var cell = new Cell((_a = data === null || data === void 0 ? void 0 : data.id) !== null && _a !== void 0 ? _a : uuidv4(), rels, data);
                   this.cells[cell.id] = cell;
                   return cell;
@@ -483,13 +579,18 @@
           });
           return changed;
       };
+      // Gets an array of cells that contain the specified edge segment:
+      Grid.prototype.cellsWithEdge = function (n1, n2) {
+          var edgeId = compositeId([n1.id, n2.id]);
+          return Object.values(this.cells).filter(function (cell) { return !!cell.edges[edgeId]; });
+      };
       // Finds the lowest cost path between two nodes among the grid of nodes.
       // @param start: The node id within the seach grid to start at.
       // @param goal: The node id within the search grid to reach via lowest cost path.
       // @return: Path found to goal
       Grid.prototype.findPath = function (_a) {
           var _this = this;
-          var start = _a.start, goal = _a.goal, _c = _a.costForSegment, costForSegment = _c === void 0 ? Point.distance : _c, _d = _a.costEstimateToGoal, costEstimateToGoal = _d === void 0 ? Point.distance : _d, _e = _a.bestCandidatePath, bestCandidatePath = _e === void 0 ? function (a, _b) { return a; } : _e;
+          var start = _a.start, goal = _a.goal, _c = _a.costForSegment, costForSegment = _c === void 0 ? Point.distance : _c, _d = _a.costEstimateToGoal, costEstimateToGoal = _d === void 0 ? Point.distance2 : _d, _e = _a.bestCandidatePath, bestCandidatePath = _e === void 0 ? function (a, _b) { return a; } : _e;
           var queue = [];
           var bestWeights = Object.create(null);
           var startNode = this.getNode(start);
@@ -628,15 +729,11 @@
               return acc;
           }, []);
       };
-      // Gets an array of cells that contain the specified edge segment:
-      Grid.prototype.cellsWithEdge = function (n1, n2) {
-          var edgeId = compositeId([n1.id, n2.id]);
-          return Object.values(this.cells).filter(function (cell) { return !!cell.edges[edgeId]; });
-      };
       return Grid;
   }());
 
   exports.Cell = Cell;
+  exports.ExtendedGrid = ExtendedGrid;
   exports.Grid = Grid;
   exports.Node = Node;
   exports.Path = Path;
@@ -648,6 +745,7 @@
   exports.boundingRectForPoints = boundingRectForPoints;
   exports.ccw = ccw;
   exports.compositeId = compositeId;
+  exports.cross = cross;
   exports.degreesToRadians = degreesToRadians;
   exports.hitTestPointRing = hitTestPointRing;
   exports.intersect = intersect;
