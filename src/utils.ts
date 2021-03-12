@@ -24,7 +24,7 @@ export function cross(x: Point, y: Point, z: Point): number {
 // @param z: Point Z of triangle XYZ.
 // @param exclusive boolean: when true, equal points will be excluded from the test.
 export function ccw(x: Point, y: Point, z: Point): boolean {
-  return cross(x, y, z) < 0;
+  return cross(x, y, z) > 0;
 }
 
 // Tests for intersection between line segments AB and CD.

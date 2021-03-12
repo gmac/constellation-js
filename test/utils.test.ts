@@ -35,19 +35,19 @@ describe('cross', () => {
 });
 
 describe('ccw', () => {
-  // A - -
-  // - - -
   // B - C
+  // - - -
+  // A - -
   const a: Point = new Point(0, 0);
   const b: Point = new Point(0, 2);
   const c: Point = new Point(2, 2);
 
   it('returns true for counter-clockwise winding', () => {
-    expect(ccw(a, b, c)).toEqual(true);
+    expect(ccw(a, c, b)).toEqual(true);
   });
 
   it('returns false for clockwise winding', () => {
-    expect(ccw(a, c, b)).toEqual(false);
+    expect(ccw(a, b, c)).toEqual(false);
   });
 
   it('returns zero for straight alignment', () => {
